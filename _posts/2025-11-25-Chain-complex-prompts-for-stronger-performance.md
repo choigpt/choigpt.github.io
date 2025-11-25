@@ -30,3 +30,11 @@ CoT 프롬프팅은 훌륭하지만, 만약 당신이 하려는 작업이 각 �
 최적화 팁 : 독립적인 작업은 병렬로 처리
 
 다시 후에 번역은 좀 다듬어야지
+
+클로드
+https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/overview
+
+챗지피티
+https://help.openai.com/en/articles/6654000-best-practices-for-prompt-engineering-with-the-openai-api
+
+둘 다 비슷한 소리
