@@ -2,7 +2,7 @@
 layout: post
 title: "Prompt Chaining"
 date: 2025-11-25 20:25:00 -0700
----프롬프트 체이닝
+---
 
 https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/chain-prompts
 
@@ -24,7 +24,7 @@ CoT 프롬프팅은 훌륭하지만, 만약 당신이 하려는 작업이 각 �
 문헌 분석이나 반복적인 컨텐츠 생성과 같이 여러 단계로 구성된 작업들에 사용해라.
 다양한 변형, 인용, 지시로 이루어진 작업에서, 프롬프트 체이닝은 클로드의 실수를 줄여준다.
 
-중요 : 체인 간의 각 연결은 클로드의 모든 어텐션을 받는다.
+중요 : 체인 간의 각 연결은 클로드의 모든 주의를 받는다.
 
 디버깅 팁
 만약 클로드가 어떤 단계를 놓치거나, 그 결과물이 실망스럽거나, 프롬프트에서 있는 그런 단계를 건너 뛴다면
@@ -38,8 +38,9 @@ xml이 좋아 : 프롬프트 간의 결과물을 전달할 때, xml을 사용해
 반복 : 클로드의 성능에 근거해서 서브 태스크를 재정의해라
 
 그 외에는 몇 가지 예시를 보여줌
+
 최적화 팁
-독립적인 작업은 병렬로 처리
+독립적인 작업은 병렬로 처리해라
 
 다시 후에 번역은 좀 다듬어야지
 
@@ -47,6 +48,8 @@ xml이 좋아 : 프롬프트 간의 결과물을 전달할 때, xml을 사용해
 
 클로드
 https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/overview
+
 챗지피티
 https://help.openai.com/en/articles/6654000-best-practices-for-prompt-engineering-with-the-openai-api
+
 둘 다 비슷한 소리
