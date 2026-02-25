@@ -3,9 +3,8 @@ title: 알림 SSE 구현 중 발견한 연쇄 버그와 구조 개선
 date: 2026-02-20
 tags: [SSE, Spring, JPA, 트러블슈팅, Java, 알림]
 permalink: /sse-notification-chained-bugs/
+excerpt: "sendEvent() 반환값 무시와 복구 쿼리 조건 불일치, 두 버그가 맞물려 오프라인 사용자의 알림이 전송된 것으로 기록되고 재연결해도 복구되지 않는 시나리오를 만들었다."
 ---
-
-# 알림 SSE 구현 중 발견한 연쇄 버그와 구조 개선
 
 ## 개요
 

@@ -7,9 +7,8 @@ tags:
   - 트러블슈팅
   - Java
 permalink: /spring-security-jwt-structure-bugs/
+excerpt: "컴파일도 되고 테스트도 통과하는데 런타임에서 만료 토큰이 500을 반환하는 버그. import 한 줄 차이로 생긴 패키지 불일치가 시작이었다."
 ---
-
-# Spring Security + JWT 구조 전반에 걸친 버그 및 설계 문제
 
 ## 개요
 

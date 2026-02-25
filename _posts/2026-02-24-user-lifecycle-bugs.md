@@ -3,9 +3,8 @@ title: 유저 도메인 — 인증 이후, 사용자 생명주기에서 무너�
 date: 2026-02-24
 tags: [Spring Security, JWT, 카카오로그인, 트러블슈팅, Java, 사용자관리]
 permalink: /user-lifecycle-bugs/
+excerpt: "getCurrentUserId()가 kakaoId를 반환하고 있었다. 메서드명과 실제 반환값이 달라 14개 서비스 전체에 잘못된 값이 흘러들어가고 있었다."
 ---
-
-# 유저 도메인 — 인증 이후, 사용자 생명주기에서 무너진 것들
 
 ## 개요
 

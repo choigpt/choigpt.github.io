@@ -3,9 +3,8 @@ title: 피드 도메인 — Redis 좋아요 파이프라인의 허점과 N+1
 date: 2026-02-21
 tags: [Redis, JPA, Spring, 트러블슈팅, Java, 피드]
 permalink: /feed-redis-like-n-plus-1/
+excerpt: "좋아요 수를 읽는 소스가 Redis, DB like_count 컬럼, feed_like 테이블 세 군데로 나뉘어 서로 다른 값을 반환할 수 있었다. Redis를 도입했는데 조회는 여전히 JPA 컬렉션을 통하고 있었다."
 ---
-
-# 피드 도메인 — Redis 좋아요 파이프라인의 허점과 N+1
 
 ## 개요
 

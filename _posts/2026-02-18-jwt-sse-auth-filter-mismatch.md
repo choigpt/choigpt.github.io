@@ -7,9 +7,8 @@ tags:
   - 트러블슈팅
   - Java
 permalink: /jwt-sse-auth-filter-mismatch/
+excerpt: "토큰을 생성하는 쪽과 파싱하는 쪽이 서로 다른 JWT 필드를 참조해 SSE 연결이 전면 불통이 된 버그. 단위·통합·부하 테스트 어디서도 잡히지 않았다."
 ---
-
-# JWT 인증 흐름 불일치로 인한 SSE 인증 실패 버그
 
 ## 개요
 

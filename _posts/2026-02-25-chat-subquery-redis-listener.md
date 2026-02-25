@@ -3,9 +3,8 @@ title: 채팅 도메인 — 상관 서브쿼리·Redis 리스너 미등록·N+1�
 date: 2026-02-25
 tags: [MySQL, Redis, JPA, WebSocket, STOMP, 성능최적화, 트러블슈팅, Java, 채팅, k6]
 permalink: /chat-subquery-redis-listener/
+excerpt: "k6 첫 측정에서 메시지 전송 성공률 0.9%, WebSocket 왕복 시간 측정 불가. 원인은 테스트 데이터 불일치, 상관 서브쿼리, 그리고 Redis 리스너 미등록이었다."
 ---
-
-# 채팅 도메인 — 상관 서브쿼리·Redis 리스너 미등록·N+1이 만든 성능 저하
 
 ## 개요
 

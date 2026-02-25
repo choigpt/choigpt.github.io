@@ -3,9 +3,8 @@ title: 모임 도메인 — 동시성 구멍과 유령 멤버
 date: 2026-02-22
 tags: [JPA, Spring, 동시성, 트러블슈팅, Java, 모임]
 permalink: /club-concurrency-ghost-members/
+excerpt: "memberCount++ 를 JPA dirty checking으로 처리해 동시 요청 시 Lost Update가 발생했고, 탈퇴 시 UserChatRoom을 삭제하지 않아 탈퇴한 사용자가 채팅방에 유령 멤버로 남았다."
 ---
-
-# 모임 도메인 — 동시성 구멍과 유령 멤버
 
 ## 개요
 

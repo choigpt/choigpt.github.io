@@ -3,9 +3,8 @@ title: SseAuthenticationFilter 제거 — SSE 인증을 필터 하나로 단일�
 date: 2026-02-19
 tags: [Spring Security, JWT, SSE, 트러블슈팅, Java]
 permalink: /sse-auth-filter-removal/
+excerpt: "SSE 전용 필터와 일반 요청 필터, 두 개의 JWT 필터가 경로를 나눠 갖던 구조를 하나로 통합했다. 분리가 오히려 복잡성을 높이고 있었다."
 ---
-
-# SseAuthenticationFilter 제거 — SSE 인증을 필터 하나로 단일화
 
 ## 개요
 

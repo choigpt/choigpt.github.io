@@ -3,9 +3,8 @@ title: 알림 API 성능 — 13% 성공률에서 100%로, 9번의 시도 기록
 date: 2026-02-26
 tags: [MySQL, InnoDB, HikariCP, SSE, Redis, 성능최적화, 트러블슈팅, Java, 알림, k6, Virtual Thread]
 permalink: /notification-api-performance-improvement/
+excerpt: "첫 측정에서 API 성공률 13.6%, 목록 조회 p95 59초. 인덱스 누락부터 비현실적인 시드 데이터까지, 9번의 시도 끝에 성공률 99.9%·p95 21ms에 도달했다."
 ---
-
-# 알림 API 성능 — 13% 성공률에서 100%로, 9번의 시도 기록
 
 ## 시작: 첫 측정값
 

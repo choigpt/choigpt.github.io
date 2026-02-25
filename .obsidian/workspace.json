@@ -25,14 +25,14 @@
             "id": "fe2070219e41e99e",
             "type": "leaf",
             "state": {
-              "type": "markdown",
+              "type": "split-diff-view",
               "state": {
-                "file": "README.md",
-                "mode": "source",
-                "source": false
+                "aFile": ".obsidian/workspace.json",
+                "bFile": ".obsidian/workspace.json",
+                "aRef": ""
               },
-              "icon": "lucide-file",
-              "title": "README"
+              "icon": "diff",
+              "title": "Diff: workspace.json  (Working Tree)"
             }
           }
         ],
@@ -171,13 +171,12 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "README.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "Outline of README"
+              "title": "Outline"
             }
           },
           {
@@ -212,32 +211,32 @@
   },
   "active": "fe2070219e41e99e",
   "lastOpenFiles": [
-    "spring-security-jwt-structure-bugs.md",
+    "_posts/2026-02-20-sse-notification-chained-bugs.md",
+    "_posts/2026-02-18-jwt-sse-auth-filter-mismatch.md",
+    "_posts/2026-02-17-spring-security-jwt-structure-bugs.md",
+    "_posts/2026-02-25-chat-subquery-redis-listener.md",
+    "_posts/2026-02-01-grayscale-filter.md",
+    "_posts/2026-02-05-reinforcement-learning-basics.md",
+    "_posts/2026-02-09-network-basics.md",
+    "_posts/2026-02-11-skip-connection.md",
+    "_posts/2026-02-13-spring-batch.md",
+    "_posts/2026-02-15-bubble-sort.md",
+    "_posts/2026-02-16-selection-sort.md",
+    "_posts/2026-02-19-sse-auth-filter-removal.md",
     "README.md",
+    "spring-security-jwt-structure-bugs.md",
     "jwt-sse-auth-filter-mismatch.md",
     "_posts/2026-02-24-user-lifecycle-bugs.md",
     "user-lifecycle-bugs.md",
-    "_posts/2026-02-17-spring-security-jwt-structure-bugs.md",
     "jwt-sse-auth-filter-mismatch 1.md",
-    "_posts/2026-02-19-sse-auth-filter-removal.md",
     "_posts/2026-02-21-feed-redis-like-n-plus-1.md",
-    "_posts/2026-02-25-chat-subquery-redis-listener.md",
     "sse-auth-filter-removal.md",
-    "_posts/2026-02-18-jwt-sse-auth-filter-mismatch.md",
-    "_posts/2026-02-16-selection-sort.md",
     "_posts/2026-02-26-notification-api-performance-improvement.md",
     "_posts/2026-02-26-notification-api-13-to-100-percent.md",
-    "_posts/2026-02-15-bubble-sort.md",
-    "_posts/2026-02-13-spring-batch.md",
     "_posts/2026-01-22-optimization.md",
     "_posts/2026-02-23-schedule-permission-fund-freeze.md",
     "_posts/2026-02-23-wallet-payment-toss-db-failure.md",
     "_posts/2026-02-24-chat-subquery-redis-listener.md",
-    "_posts/2026-02-25-notification-api-13-to-100-percent.md",
-    "_posts/2026-02-22-club-concurrency-ghost-members.md",
-    "_posts/2026-02-20-sse-notification-chained-bugs.md",
-    "_posts/2026-02-20-schedule-permission-fund-freeze.md",
-    "_posts/2026-02-19-sse-notification-chained-bugs.md",
     "_posts/2026-02-24-buddkit-trouble-shooting-10-old.md.bak",
     "_posts/2026-02-24-buddkit-trouble-shooting-11.md.bak",
     "_posts/2026-02-19-buddkit-backend-refactoring-index",
