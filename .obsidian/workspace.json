@@ -1,0 +1,702 @@
+{
+  "main": {
+    "id": "9f2b58e32b676a24",
+    "type": "split",
+    "children": [
+      {
+        "id": "76bb1c01287f041b",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "9238659e650f22c0",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "_posts/Buddkit - 트러블 슈팅 1화.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Buddkit - 트러블 슈팅 1화"
+            }
+          },
+          {
+            "id": "bfd339079c4ebee6",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Q-Learning.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Q-Learning"
+            }
+          },
+          {
+            "id": "15c69fe3b42cdfce",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "selection-sort.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "selection-sort"
+            }
+          },
+          {
+            "id": "03ed78d182b84497",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Q-Learning.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Q-Learning"
+            }
+          },
+          {
+            "id": "aecff39e5ef7fe45",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Q-Learning.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Q-Learning"
+            }
+          },
+          {
+            "id": "64942cd298290b8a",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "네트워크.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "네트워크"
+            }
+          },
+          {
+            "id": "61eff31d390be9f2",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "네트워크.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "네트워크"
+            }
+          },
+          {
+            "id": "5ff99faa602bd684",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Q-Learning.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Q-Learning"
+            }
+          },
+          {
+            "id": "35a6906f4161a4d4",
+            "type": "leaf",
+            "state": {
+              "type": "empty",
+              "state": {},
+              "icon": "lucide-file",
+              "title": "New tab"
+            }
+          },
+          {
+            "id": "22061e3553496d33",
+            "type": "leaf",
+            "state": {
+              "type": "empty",
+              "state": {},
+              "icon": "lucide-file",
+              "title": "New tab"
+            }
+          },
+          {
+            "id": "988363e846fe20e3",
+            "type": "leaf",
+            "state": {
+              "type": "empty",
+              "state": {},
+              "icon": "lucide-file",
+              "title": "New tab"
+            }
+          },
+          {
+            "id": "615da803dbcb0fdb",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "_posts/2026-02-25-network-basics.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "2026-02-25-network-basics"
+            }
+          },
+          {
+            "id": "2b0a5e423dc46732",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "regularization.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "regularization"
+            }
+          },
+          {
+            "id": "d142e9a1dfd1bee3",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "네트워크 - TCP IP 계층 정리.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "네트워크 - TCP IP 계층 정리"
+            }
+          },
+          {
+            "id": "7ee755d4df03ce5c",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "OSI 7계층, 진짜로 이해하기.md",
+                "mode": "preview",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "OSI 7계층, 진짜로 이해하기"
+            }
+          },
+          {
+            "id": "ecf5bae043fdcb91",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "OSI 7계층, 진짜로 이해하기.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "OSI 7계층, 진짜로 이해하기"
+            }
+          },
+          {
+            "id": "eb8e96b530b19e7c",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "regularization.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "regularization"
+            }
+          },
+          {
+            "id": "bfe12e42da767651",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Untitled 4.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Untitled 4"
+            }
+          },
+          {
+            "id": "04341d256d666e52",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "강화학습 기초.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "강화학습 기초"
+            }
+          },
+          {
+            "id": "a15761f1ba0dadc5",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "spring batch.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "spring batch"
+            }
+          },
+          {
+            "id": "f14aecb9fb0e98a9",
+            "type": "leaf",
+            "state": {
+              "type": "empty",
+              "state": {},
+              "icon": "lucide-file",
+              "title": "New tab"
+            }
+          },
+          {
+            "id": "ac0ee357a4a3d8e8",
+            "type": "leaf",
+            "state": {
+              "type": "smart-release-notes-view",
+              "state": {},
+              "icon": "file-text",
+              "title": "Release Notes"
+            }
+          },
+          {
+            "id": "d9b93f2e250a81fe",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Buddkit - 트러블 슈팅 1화.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Buddkit - 트러블 슈팅 1화"
+            }
+          },
+          {
+            "id": "b522e2e1154cb803",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Buddkit - 트러블 슈팅 1화.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Buddkit - 트러블 슈팅 1화"
+            }
+          },
+          {
+            "id": "12e11aeff61da303",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "알림 SSE 트러블 슈팅 - Post.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "알림 SSE 트러블 슈팅 - Post"
+            }
+          },
+          {
+            "id": "d5b2e47a8c8d3488",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "피드.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "피드"
+            }
+          },
+          {
+            "id": "1e84ec3e19daa437",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "클럽.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "클럽"
+            }
+          },
+          {
+            "id": "05b0db6a845a02fb",
+            "type": "leaf",
+            "state": {
+              "type": "empty",
+              "state": {},
+              "icon": "lucide-file",
+              "title": "New tab"
+            }
+          },
+          {
+            "id": "79d9a9f8516589ec",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "정산.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "정산"
+            }
+          },
+          {
+            "id": "aa968f90d36c45c6",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "지갑 결제.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "지갑 결제"
+            }
+          },
+          {
+            "id": "58b9aced5a135bae",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "지갑 결제.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "지갑 결제"
+            }
+          },
+          {
+            "id": "302a1cc067ba07bb",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "유저.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "유저"
+            }
+          },
+          {
+            "id": "5800899d138eefdb",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "트러블 슈팅.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "트러블 슈팅"
+            }
+          },
+          {
+            "id": "34c70b0f771c6b06",
+            "type": "leaf",
+            "state": {
+              "type": "split-diff-view",
+              "state": {
+                "aFile": ".smart-env/multi/_posts_2026-02-08-mdp_md.ajson",
+                "bFile": ".smart-env/multi/_posts_2026-02-08-mdp_md.ajson",
+                "aRef": "HEAD",
+                "bRef": ""
+              },
+              "icon": "diff",
+              "title": "Diff: _posts_2026-02-08-mdp_md.ajson  (Index)"
+            }
+          }
+        ],
+        "currentTab": 11
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "ac4b6a5274da3a60",
+    "type": "split",
+    "children": [
+      {
+        "id": "9329eec7676afd24",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "86844e30a0b147b0",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
+          },
+          {
+            "id": "e5de700532877e6c",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "da312bf08c23451d",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "d2f8c0df3a4fad51",
+    "type": "split",
+    "children": [
+      {
+        "id": "76e4fdb812706abf",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "60a21e2f0ace541d",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "README.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks for README"
+            }
+          },
+          {
+            "id": "a04874c0e5c533f4",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "_posts/2025-04-17-hello-world!.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links from 2025-04-17-hello-world!"
+            }
+          },
+          {
+            "id": "f6849b502cb17303",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "4d8660bdab0d14d2",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "All properties"
+            }
+          },
+          {
+            "id": "5ce59cc579cf44d3",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "프로젝트 트러블 슈팅.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline of 프로젝트 트러블 슈팅"
+            }
+          },
+          {
+            "id": "5643868b960435c5",
+            "type": "leaf",
+            "state": {
+              "type": "smart-connections-view",
+              "state": {},
+              "icon": "smart-connections",
+              "title": "Connections"
+            }
+          },
+          {
+            "id": "a20e877e0c0bd19d",
+            "type": "leaf",
+            "state": {
+              "type": "git-view",
+              "state": {},
+              "icon": "git-pull-request",
+              "title": "Source Control"
+            }
+          }
+        ],
+        "currentTab": 6
+      }
+    ],
+    "direction": "horizontal",
+    "width": 846.5
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false,
+      "bases:Create new base": false,
+      "obsidian-git:Open Git source control": false,
+      "obsidian-kanban:Create new board": false,
+      "templater-obsidian:Templater": false,
+      "smart-connections:Smart Connections: Open connections view": false,
+      "smart-connections:Smart Lookup: Open lookup view": false,
+      "smart-connections:Smart Connections: Open random connection": false
+    }
+  },
+  "active": "615da803dbcb0fdb",
+  "lastOpenFiles": [
+    "_posts/2026-02-25-ip-deep-dive.md",
+    "_posts/2026-02-19-buddkit-trouble-shooting-3.md",
+    "2026-02-19-buddkit-backend-refactoring-index.md",
+    "_posts/2026-02-24-buddkit-trouble-shooting-11.md",
+    "_posts/2026-02-24-buddkit-trouble-shooting-12.md",
+    "Buddkit - 트러블 슈팅 1화.md",
+    "Buddkit - 트러블 슈팅 2화.md",
+    "Buddkit - 트러블 슈팅 3화.md",
+    "Buddkit - 트러블 슈팅 4화.md",
+    "Buddkit - 트러블 슈팅 5화.md",
+    "Buddkit - 트러블 슈팅 6화.md",
+    "Buddkit - 트러블 슈팅 7화.md",
+    "Buddkit - 트러블 슈팅 8화.md",
+    "Buddkit - 트러블 슈팅 9화.md",
+    "Buddkit - 트러블 슈팅 10화.md",
+    "_posts/2026-02-25-osi-layers.md",
+    "_posts/2026-02-25-reinforcement-learning-basics.md",
+    "_posts/2026-02-25-selection-sort.md",
+    "_posts/2026-02-25-skip-connection.md",
+    "_posts/2026-02-25-spring-batch.md",
+    "_posts/2026-02-24-buddkit-trouble-shooting-10.md",
+    "_posts/2026-02-20-buddkit-trouble-shooting-9.md",
+    "_posts/2026-02-19-buddkit-trouble-shooting-4.md",
+    "_posts/2026-02-19-buddkit-trouble-shooting-5.md",
+    "_posts/2026-02-19-buddkit-trouble-shooting-6.md",
+    "_posts/2026-02-19-buddkit-trouble-shooting-2.md",
+    "LICENSE",
+    "Gemfile",
+    "404.html",
+    "attachments/Pasted image 20260224161446.png",
+    "attachments/Pasted image 20260224165544.png",
+    "attachments/Pasted image 20260224161410.png",
+    "assets/img/favicons/apple-icon-precomposed.png",
+    "attachments/Pasted image 20260224165532.png",
+    "attachments/Pasted image 20260224162101.png",
+    "attachments/Pasted image 20260224161911.png",
+    "attachments/Pasted image 20260224161808.png",
+    "ML-AI/딥러닝/regularization-demo.html",
+    "attachments/osi-assets/tcp-handshake.html",
+    "attachments/osi-assets/osi-wire.html",
+    "attachments/osi-assets/osi-capsule.html",
+    "attachments/osi-assets/layer7.html",
+    "attachments/osi-assets/layer4.html",
+    "attachments/osi-assets/layer3.html",
+    "attachments/Pasted image 20260224161829.png",
+    "Pasted image 20260224165544.png",
+    "Untitled.canvas"
+  ]
+}
