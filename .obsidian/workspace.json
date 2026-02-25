@@ -11,10 +11,14 @@
             "id": "db6cc35d5c9bba2d",
             "type": "leaf",
             "state": {
-              "type": "empty",
-              "state": {},
-              "icon": "lucide-file",
-              "title": "New tab"
+              "type": "split-diff-view",
+              "state": {
+                "aFile": "_posts/2026-02-25-chat-subquery-redis-listener.md",
+                "bFile": "_posts/2026-02-25-chat-subquery-redis-listener.md",
+                "aRef": ""
+              },
+              "icon": "diff",
+              "title": "Diff: 2026-02-25-chat-subquery-redis-listener  (Working Tree)"
             }
           }
         ]
@@ -190,12 +194,15 @@
       "obsidian-git:Open Git source control": false
     }
   },
-  "active": "86844e30a0b147b0",
+  "active": "db6cc35d5c9bba2d",
   "lastOpenFiles": [
-    "_posts/2026-02-20-sse-notification-chained-bugs.md",
+    "_posts/2026-02-26-notification-api-performance-improvement.md",
+    "_posts/2026-02-25-chat-subquery-redis-listener.md",
+    "_posts/2026-02-24-user-lifecycle-bugs.md",
+    "_posts/2026-02-23-wallet-payment-toss-db-failure.md",
     "_posts/2026-02-18-jwt-sse-auth-filter-mismatch.md",
     "_posts/2026-02-17-spring-security-jwt-structure-bugs.md",
-    "_posts/2026-02-25-chat-subquery-redis-listener.md",
+    "_posts/2026-02-20-sse-notification-chained-bugs.md",
     "_posts/2026-02-01-grayscale-filter.md",
     "_posts/2026-02-05-reinforcement-learning-basics.md",
     "_posts/2026-02-09-network-basics.md",
@@ -207,16 +214,13 @@
     "README.md",
     "spring-security-jwt-structure-bugs.md",
     "jwt-sse-auth-filter-mismatch.md",
-    "_posts/2026-02-24-user-lifecycle-bugs.md",
     "user-lifecycle-bugs.md",
     "jwt-sse-auth-filter-mismatch 1.md",
     "_posts/2026-02-21-feed-redis-like-n-plus-1.md",
     "sse-auth-filter-removal.md",
-    "_posts/2026-02-26-notification-api-performance-improvement.md",
     "_posts/2026-02-26-notification-api-13-to-100-percent.md",
     "_posts/2026-01-22-optimization.md",
     "_posts/2026-02-23-schedule-permission-fund-freeze.md",
-    "_posts/2026-02-23-wallet-payment-toss-db-failure.md",
     "_posts/2026-02-24-chat-subquery-redis-listener.md",
     "_posts/2026-02-24-buddkit-trouble-shooting-10-old.md.bak",
     "_posts/2026-02-24-buddkit-trouble-shooting-11.md.bak",
