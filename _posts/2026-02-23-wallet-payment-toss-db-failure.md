@@ -97,19 +97,7 @@ public void updateBalance(Long balance) {
 
 반면 정산·홀드 경로는 `SET posted_balance = posted_balance + :amount` 형태의 native query를 쓴다. DB가 현재 값을 읽고 더하는 단일 연산이라 동시성 문제가 없다. 충전 경로만 다른 방식을 쓰고 있었다.
 
----
-
-### 결제 금액 서버 검증 없음 — 클라이언트가 금액을 결정
-
-```java
-// PaymentService.java (수정 전)
-public void savePaymentInfo(SavePaymentRequestDto dto, HttpSession session) {
-    String redisKey = REDIS_PAYMENT_KEY_PREFIX + dto.getOrderId();
-    redisTemplate.opsForValue().set(redisKey, dto.getAmount(), TTL, TimeUnit.SECONDS);
-}
-```
-
-`/payments/save`에서 클라이언트가 전달한 `amount`를 그대로 Redis에 저장하고, `/payments/success`에서 다시 클라이언트가 전달한 값과 비교한다. 비교의 양쪽이 모두 클라이언트 입력이라 의미 있는 검증이 아니다. 서버가 "이 orderId는 얼마짜리 충전이어야 한다"를 독립적으로 결정하는 로직이 없었다.
+`findByUser()`에 `PESSIMISTIC_WRITE`가 걸려 있었는데, 이것이 Race Condition을 막으려는 의도였는지 다른 이유가 있었는지 원래 코드의 의도는 파악하기 어렵다. 다만 외부 API 호출을 포함하는 `@Transactional` 메서드 안에서 행 락을 잡으면, 토스 응답을 기다리는 수 초 동안 해당 지갑 행이 잠긴 채로 유지된다. 다른 요청이 같은 지갑에 접근하면 그 시간만큼 대기하게 되므로, 잔액 업데이트를 native query로 통일하면서 락도 함께 제거했다.
 
 ---
 
@@ -126,7 +114,21 @@ public ConfirmTossPayResponse confirm(ConfirmTossPayRequest req) {
 }
 ```
 
-`findByUser()`에 `@Lock(PESSIMISTIC_WRITE)`가 걸려 있어 행 락 문제가 있었던 것 외에도, `@Transactional` 메서드 전체에 걸쳐 DB 커넥션이 점유된다. 토스 API 응답이 오는 동안 커넥션이 반납되지 않는다. 잔액 업데이트를 native query로 교체하면서 행 락은 제거됐지만, 커넥션 점유 자체는 `@Transactional` 범위가 유지되는 한 남아있다. 이 문제는 결제 서비스 특성상 트랜잭션 경계를 완전히 분리하기 어려워 현재는 HikariCP 타임아웃과 커넥션 풀 크기 조정으로 수용했다. 토스 API 호출 전 DB 작업과 호출 후 DB 작업을 각각 별도 트랜잭션으로 명시적으로 분리하는 방향은 추후 리팩토링 대상이다.
+행 락은 제거됐지만, `@Transactional` 메서드 전체에 걸쳐 DB 커넥션이 점유되는 문제는 남아있다. 토스 API 응답이 오는 동안 커넥션이 반납되지 않는다. 결제 서비스 특성상 트랜잭션 경계를 완전히 분리하기 어려워 현재는 HikariCP 타임아웃과 커넥션 풀 크기 조정으로 수용했다. 토스 API 호출 전 DB 작업과 호출 후 DB 작업을 각각 별도 트랜잭션으로 명시적으로 분리하는 방향은 추후 리팩토링 대상이다.
+
+---
+
+### 결제 금액 서버 검증 없음 — 클라이언트가 금액을 결정
+
+```java
+// PaymentService.java (수정 전)
+public void savePaymentInfo(SavePaymentRequestDto dto, HttpSession session) {
+    String redisKey = REDIS_PAYMENT_KEY_PREFIX + dto.getOrderId();
+    redisTemplate.opsForValue().set(redisKey, dto.getAmount(), TTL, TimeUnit.SECONDS);
+}
+```
+
+`/payments/save`에서 클라이언트가 전달한 `amount`를 그대로 Redis에 저장하고, `/payments/success`에서 다시 클라이언트가 전달한 값과 비교한다. 비교의 양쪽이 모두 클라이언트 입력이라 의미 있는 검증이 아니다. 서버가 "이 orderId는 얼마짜리 충전이어야 한다"를 독립적으로 결정하는 로직이 없었다.
 
 ---
 
@@ -272,7 +274,7 @@ public void verifyPayment(String orderId, Long clientAmount) {
 int creditByUserId(@Param("userId") Long userId, @Param("amount") long amount);
 ```
 
-`confirm()`의 `wallet.updateBalance(wallet.getPostedBalance() + amount)` 호출을 제거하고 `creditByUserId()`로 교체했다. 정산·홀드 경로와 동일한 방식으로 통일됐다. DB가 현재 값을 읽고 더하는 단일 연산이므로 동시 실행에서도 값이 덮어써지지 않는다. `PESSIMISTIC_WRITE` 락도 제거됐다.
+`confirm()`의 `wallet.updateBalance(wallet.getPostedBalance() + amount)` 호출을 제거하고 `creditByUserId()`로 교체했다. 정산·홀드 경로와 동일한 방식으로 통일됐다. DB가 현재 값을 읽고 더하는 단일 연산이므로 동시 실행에서도 값이 덮어써지지 않는다. `PESSIMISTIC_WRITE` 락도 함께 제거됐다.
 
 ---
 
@@ -307,8 +309,7 @@ private User user;
 |------|------|
 | 토스 승인 후 DB 실패 시 돈 유실 | ✅ 해결 — 보상 트랜잭션 추가 |
 | 잔액 Race Condition (Java 덧셈 + SET) | ✅ 해결 — native query 통일 |
-| 행 락 잡은 채 외부 API 호출 | ✅ 해결 — PESSIMISTIC_WRITE 제거 |
-| `@Transactional` 범위 내 커넥션 점유 | ⚠️ 잔존 — HikariCP 튜닝으로 수용, 추후 트랜잭션 분리 예정 |
+| `PESSIMISTIC_WRITE` 행 락 + `@Transactional` 커넥션 점유 | ✅ 부분 해결 — 행 락 제거, 커넥션 점유는 HikariCP 튜닝으로 수용, 추후 트랜잭션 분리 예정 |
 | 결제 금액 서버 검증 없음 | ✅ 해결 — 서버 측 orderId·amount 생성·저장 |
 | `cancelPayment()` 자체 실패 시 처리 경로 없음 | ✅ 해결 — `payment_compensation` 테이블 기록 + 배치 처리 |
 | `reportFail()` self-invocation | ✅ 해결 — `PaymentFailureRecorder` 분리 |
@@ -323,7 +324,7 @@ private User user;
 
 ---
 
-## 교훈
+## 정리하며
 
 결제 코드에서 가장 위험한 건 눈에 잘 띄지 않는 문제들이었다. `wallet.getPostedBalance() + amount`는 평소에는 맞다. 동시 요청이 없으면 항상 정확한 값이 나온다. 그런데 정산과 충전이 동시에 일어나는 순간, 한쪽의 변경이 다른 쪽에 덮어써진다. 잔액이 조용히 틀어지고 로그에는 아무 에러가 없다.
 

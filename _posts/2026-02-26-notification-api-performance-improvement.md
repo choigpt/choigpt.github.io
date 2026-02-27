@@ -419,19 +419,22 @@ private void sendMissedNotifications(...) { }
 // @Transactional 미적용 → Lazy 로딩 시 커넥션을 반복 취득
 ```
 
-별도 `@Component`로 분리했다.
+별도 `@Component`로 분리하면서 Semaphore도 함께 도입했다.
 
 ```java
 @Component
 @RequiredArgsConstructor
 public class SseMissedNotificationRecovery {
     private final Semaphore recoverySemaphore = new Semaphore(30);
-    // 동시 복구 30개 제한 → 300 VU 접속 시 커넥션 풀 고갈 방지
 
     @Transactional(readOnly = true)  // 이제 프록시가 제대로 적용됨
     public void recover(Long userId, SseEmitter emitter) { ... }
 }
 ```
+
+Semaphore를 넣은 이유는 성능이 여전히 목표치에 못 미치는 상황에서, Virtual Thread가 무제한으로 늘어나면 스레드 수 자체가 새로운 병목이 될 수 있다는 우려 때문이었다. Virtual Thread는 생성 비용이 낮지만 수천 개가 동시에 HikariCP 대기열에 쌓이면 풀 경합이 오히려 심해진다. 동시 복구를 30개로 제한해 DB 커넥션 경합을 억제하는 방어막으로 판단했다.
+
+다만 이 판단에는 부작용이 있었다. `tryAcquire()`가 false를 반환할 때 복구를 조용히 스킵하는 방식이라, 서버 재시작 후 대규모 재접속 시 `sse_sent=false` 레코드가 무음으로 쌓이는 문제가 생겼다. 이 문제와 제거 과정은 이후 리팩토링 글에서 다룬다.
 
 ### 그 외: Redis fallback + connection-timeout 단축
 
@@ -549,7 +552,7 @@ unread count:              → 1.1ms
 
 ---
 
-## 정리
+## 정리하며
 
 **커넥션 풀 고갈의 증상은 다양하다.**
 5xx, 타임아웃뿐 아니라 언뜻 무관해 보이는 에러로도 나타날 수 있다. HikariCP의 `(total=N, active=N, idle=0, waiting=N)` 로그가 찍혀 있다면 다른 에러 원인을 찾기 전에 풀 고갈을 먼저 의심해야 한다.
@@ -563,8 +566,8 @@ HikariCP 300으로 올렸을 때 p95가 8배 악화됐다. MySQL은 동시 커�
 **Self-invocation은 @Transactional을 무력화한다.**
 같은 클래스 내 `this.method()` 호출은 Spring AOP 프록시를 거치지 않는다. 부하 테스트에서야 Lazy 로딩 오류로 드러났다. 별도 `@Component`로 분리하는 게 유일한 해결책이다.
 
-**인덱스로 해결 안 되는 느린 쿼리는 데이터 양을 의심해라.**
-인덱스, 버퍼풀, 코드 최적화를 전부 했는데 여전히 7초가 나왔다. 원인은 40M행 비현실적 시드 데이터였다. 인덱스를 타도 SELECT 컬럼이 인덱스에 없으면 테이블 룩업이 발생하고, 그 데이터가 버퍼풀보다 크면 디스크 I/O가 터진다. 유저당 200건으로 줄이자 모든 API가 20ms 이하로 떨어졌다. 부하 테스트는 현실적인 데이터 규모로 해야 의미 있는 결과가 나온다.
+> **인덱스로 해결 안 되는 느린 쿼리는 데이터 양을 의심해라.**
+> 인덱스, 버퍼풀, 코드 최적화를 전부 했는데 여전히 7초가 나왔다. 원인은 40M행 비현실적 시드 데이터였다. 인덱스를 타도 SELECT 컬럼이 인덱스에 없으면 테이블 룩업이 발생하고, 그 데이터가 버퍼풀보다 크면 디스크 I/O가 터진다. 유저당 200건으로 줄이자 모든 API가 20ms 이하로 떨어졌다. 부하 테스트는 현실적인 데이터 규모로 해야 의미 있는 결과가 나온다.
 
 ---
 
@@ -573,3 +576,5 @@ HikariCP 300으로 올렸을 때 p95가 8배 악화됐다. MySQL은 동시 커�
 **◀ 이전 글**  
 [채팅 도메인 — 상관 서브쿼리·Redis 리스너 미등록·N+1이 만든 성능 저하](/chat-subquery-redis-listener/)
 
+**다음 글 ▶**  
+[멀티 도메인 코드 정리 — 표면 정리부터 Semaphore 제거까지](/multi-domain-cleanup-surface-to-semaphore/)

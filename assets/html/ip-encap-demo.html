@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IP 계층이 실제로 하는 일</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Courier New', monospace;
+    background: #060d1a;
+    color: #e2e8f0;
+    padding: 24px;
+  }
+  .wrap { max-width: 820px; margin: 0 auto; }
+  .title-sub { font-size: 10px; color: #334155; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 4px; }
+  .title { font-size: 17px; font-weight: 700; color: #e2e8f0; letter-spacing: 1px; margin-bottom: 20px; }
+
+  .progress-bar { display: flex; gap: 4px; margin-bottom: 20px; }
+  .progress-seg {
+    flex: 1; height: 3px; border-radius: 2px;
+    background: #0d1f38;
+    transition: background 0.3s;
+  }
+  .progress-seg.done { background: #166534; }
+  .progress-seg.active { background: #4ade80; }
+
+  .viz { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 20px; min-height: 280px; flex-wrap: wrap; }
+
+  .stack { display: flex; flex-direction: column; gap: 0; width: 210px; }
+  .stack-label { font-size: 9px; color: #334155; letter-spacing: 2px; text-align: center; margin-bottom: 8px; }
+
+  .layer {
+    border-radius: 4px; padding: 10px;
+    border: 1px solid #0d1f38;
+    background: #070e1c;
+    transition: all 0.3s;
+  }
+  .layer.hl-tcp { background: #0a1e2a; border-color: #0ea5e9; }
+  .layer.hl-ip  { background: #0a1e10; border-color: #166534; }
+  .layer.hl-eth { background: #1a1208; border-color: #854d0e; }
+
+  .layer-name {
+    font-size: 9px; letter-spacing: 1px; margin-bottom: 6px;
+    color: #1e3a5f;
+    transition: color 0.3s;
+  }
+  .hl-tcp .layer-name { color: #0ea5e9; }
+  .hl-ip  .layer-name { color: #4ade80; }
+  .hl-eth .layer-name { color: #fbbf24; }
+
+  .layer-action { font-size: 9px; color: #f87171; margin-left: 6px; }
+  .layer-action.green { color: #4ade80; }
+
+  .arrow { text-align: center; padding: 4px 0; color: #1e3a5f; font-size: 13px; }
+
+  .data-block {
+    background: #0a1628; border: 1px solid #1e4a7f;
+    border-radius: 3px; padding: 7px 14px;
+    color: #94a3b8; font-size: 11px; text-align: center; letter-spacing: 1px;
+  }
+  .data-block.dim { background: #0d1117; border-color: #1f2937; color: #374151; }
+
+  .header-fields {
+    display: flex; flex-wrap: wrap; gap: 1px; margin-bottom: 2px;
+    transition: opacity 0.4s, transform 0.3s;
+  }
+  .header-fields.hidden { opacity: 0; transform: translateY(-4px); }
+  .header-fields.gone { display: none; }
+
+  .hfield {
+    background: #0a1e10; border-radius: 2px; padding: 2px 4px;
+    display: flex; flex-direction: column; align-items: center;
+    border: 1px solid #166534;
+  }
+  .hfield-label { font-size: 7px; color: #334155; }
+  .hfield-value { font-size: 8px; font-weight: 600; }
+  .hfield-value.green { color: #4ade80; }
+  .hfield-value.yellow { color: #fbbf24; }
+
+  .eth-fields { display: flex; gap: 1px; opacity: 0.3; transition: opacity 0.3s; }
+  .eth-fields.active { opacity: 1; }
+  .efield {
+    flex: 1; background: #100c04; border: 1px solid #2d1f04;
+    border-radius: 2px; padding: 3px 3px;
+    font-size: 7px; color: #6b5a2a; text-align: center;
+  }
+  .efield.ip { background: #0a1628; border-color: #1e4a7f; color: #4ade80; flex: 2; }
+
+  .mid-arrow { display: flex; flex-direction: column; align-items: center; gap: 8px; opacity: 0.2; transition: opacity 0.3s; font-size: 18px; color: #1e3a5f; }
+  .mid-arrow.active { opacity: 1; color: #4ade80; }
+
+  .router-box {
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    width: 150px; opacity: 0.2; transition: opacity 0.3s;
+  }
+  .router-box.active { opacity: 1; }
+  .router-label { font-size: 9px; color: #334155; letter-spacing: 2px; }
+  .router-inner {
+    background: #070e1c; border: 1px solid #0d1f38;
+    border-radius: 4px; padding: 12px; width: 100%;
+    transition: all 0.3s;
+  }
+  .router-box.active .router-inner { background: #0a1e10; border-color: #166534; }
+  .router-inner-label { font-size: 9px; color: #1e3a5f; margin-bottom: 8px; }
+  .router-box.active .router-inner-label { color: #4ade80; }
+  .router-step { display: flex; gap: 6px; align-items: center; margin-bottom: 3px; }
+  .router-step-num { font-size: 8px; color: #1e3a5f; }
+  .router-step-text { font-size: 9px; color: #1e3a5f; transition: color 0.3s; }
+  .router-box.active .router-step-text { color: #4ade80; }
+  .router-box.active .router-step-text.yellow { color: #fbbf24; }
+  .router-note { font-size: 8px; color: #1e3a5f; text-align: center; line-height: 1.5; }
+
+  .desc-box {
+    background: #070e1c; border: 1px solid #1e3a5f; border-radius: 6px;
+    padding: 14px 18px; min-height: 56px; margin-bottom: 16px;
+  }
+  .desc-title { font-size: 11px; color: #4ade80; font-weight: 700; margin-bottom: 6px; }
+  .desc-text { font-size: 11px; color: #64748b; line-height: 1.7; }
+  .desc-idle { font-size: 11px; color: #334155; line-height: 1.7; }
+
+  .controls { display: flex; gap: 10px; align-items: center; }
+  button {
+    border-radius: 4px; cursor: pointer; font-size: 11px;
+    font-family: 'Courier New', monospace; padding: 8px 16px;
+    transition: all 0.15s;
+  }
+  .btn-prev {
+    background: transparent; border: 1px solid #1e3a5f; color: #475569;
+  }
+  .btn-prev:disabled { color: #1e3a5f; cursor: not-allowed; }
+  .btn-next {
+    background: #0a2a1a; border: 1px solid #166534; color: #4ade80;
+  }
+  .btn-next:disabled { background: #0d1f35; border-color: #1e3a5f; color: #334155; cursor: not-allowed; }
+  .btn-reset {
+    background: transparent; border: 1px solid #0d1f38; color: #1e3a5f;
+    padding: 6px 10px; font-size: 10px; margin-left: auto;
+  }
+  .step-counter { font-size: 9px; color: #1e3a5f; margin-left: auto; }
+
+  .summary {
+    margin-top: 16px; padding: 10px 14px;
+    background: #0a1220; border: 1px solid #1e3a5f;
+    border-radius: 4px; border-left: 3px solid #4ade80;
+    font-size: 10px; color: #475569; line-height: 1.8;
+    display: none;
+  }
+  .summary.show { display: block; }
+  .summary .g { color: #4ade80; }
+  .summary .r { color: #f87171; }
+  .summary .y { color: #fbbf24; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="title-sub">Interactive</div>
+  <div class="title">IP 계층이 실제로 하는 일</div>
+
+  <div class="progress-bar" id="progressBar"></div>
+
+  <div class="viz">
+    <!-- Left stack -->
+    <div class="stack">
+      <div class="stack-label">송신 측</div>
+      <div class="layer" id="leftTCP">
+        <div class="layer-name">전송 계층 (TCP)</div>
+        <div class="data-block" id="leftTCPData">TCP Segment</div>
+      </div>
+      <div class="arrow">↓</div>
+      <div class="layer" id="leftIP" style="min-height:90px;">
+        <div class="layer-name">IP 계층<span class="layer-action green" id="leftIPAction"></span></div>
+        <div class="header-fields gone" id="leftHeader">
+          <div class="hfield"><span class="hfield-label">Ver</span><span class="hfield-value green">IPv4</span></div>
+          <div class="hfield"><span class="hfield-label">TTL</span><span class="hfield-value green">64</span></div>
+          <div class="hfield"><span class="hfield-label">Proto</span><span class="hfield-value green">TCP</span></div>
+          <div class="hfield"><span class="hfield-label">Src IP</span><span class="hfield-value yellow">192.168.1.1</span></div>
+          <div class="hfield"><span class="hfield-label">Dst IP</span><span class="hfield-value yellow">203.0.113.5</span></div>
+          <div class="hfield"><span class="hfield-label">Checksum</span><span class="hfield-value green">0x3A2F</span></div>
+        </div>
+        <div class="data-block" id="leftIPData">TCP Segment</div>
+      </div>
+      <div class="arrow">↓</div>
+      <div class="layer" id="leftEth">
+        <div class="layer-name">데이터 링크 (Ethernet)</div>
+        <div class="eth-fields" id="leftEthFields">
+          <div class="efield">Dst MAC</div>
+          <div class="efield">Src MAC</div>
+          <div class="efield ip">IP Packet</div>
+          <div class="efield">FCS</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mid arrows + router -->
+    <div class="mid-arrow" id="leftArrow">→</div>
+    <div class="router-box" id="routerBox">
+      <div class="router-label">라우터</div>
+      <div class="router-inner">
+        <div class="router-inner-label">IP 계층 (동일)</div>
+        <div class="router-step"><span class="router-step-num">1.</span><span class="router-step-text">헤더 읽기</span></div>
+        <div class="router-step"><span class="router-step-num">2.</span><span class="router-step-text yellow">Dst IP → 다음 홉</span></div>
+        <div class="router-step"><span class="router-step-num">3.</span><span class="router-step-text">TTL -1</span></div>
+        <div class="router-step"><span class="router-step-num">4.</span><span class="router-step-text">아래로 내림</span></div>
+      </div>
+      <div class="router-note">종단 호스트와<br>동일한 동작</div>
+    </div>
+    <div class="mid-arrow" id="rightArrow">→</div>
+
+    <!-- Right stack -->
+    <div class="stack">
+      <div class="stack-label">수신 측</div>
+      <div class="layer" id="rightTCP">
+        <div class="layer-name">전송 계층 (TCP)</div>
+        <div class="data-block dim" id="rightTCPData">TCP Segment</div>
+      </div>
+      <div class="arrow">↑</div>
+      <div class="layer" id="rightIP" style="min-height:90px;">
+        <div class="layer-name">IP 계층<span class="layer-action" id="rightIPAction"></span></div>
+        <div class="header-fields gone" id="rightHeader">
+          <div class="hfield"><span class="hfield-label">Ver</span><span class="hfield-value green">IPv4</span></div>
+          <div class="hfield"><span class="hfield-label">TTL</span><span class="hfield-value green">61</span></div>
+          <div class="hfield"><span class="hfield-label">Proto</span><span class="hfield-value green">TCP</span></div>
+          <div class="hfield"><span class="hfield-label">Src IP</span><span class="hfield-value yellow">192.168.1.1</span></div>
+          <div class="hfield"><span class="hfield-label">Dst IP</span><span class="hfield-value yellow">203.0.113.5</span></div>
+          <div class="hfield"><span class="hfield-label">Checksum</span><span class="hfield-value green">0x3A2F</span></div>
+        </div>
+        <div class="data-block" id="rightIPData">TCP Segment</div>
+      </div>
+      <div class="arrow">↑</div>
+      <div class="layer" id="rightEth">
+        <div class="layer-name">데이터 링크 (Ethernet)</div>
+        <div class="eth-fields" id="rightEthFields">
+          <div class="efield">Dst MAC</div>
+          <div class="efield">Src MAC</div>
+          <div class="efield ip">IP Packet</div>
+          <div class="efield">FCS</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="desc-box" id="descBox">
+    <div class="desc-idle">▶ 버튼을 눌러 IP 계층의 동작을 단계별로 확인하세요.</div>
+  </div>
+
+  <div class="controls">
+    <button class="btn-prev" id="btnPrev" onclick="changeStep(-1)" disabled>← 이전</button>
+    <button class="btn-next" id="btnNext" onclick="changeStep(1)">다음 →</button>
+    <span class="step-counter" id="stepCounter"></span>
+    <button class="btn-reset" onclick="changeStep(-99)">처음</button>
+  </div>
+
+  <div class="summary" id="summary">
+    IP 계층이 하는 일: <span class="g">헤더 붙이기</span> / <span class="g">헤더 떼기</span> / <span class="y">Dst IP 보고 다음 홉 결정</span>.<br>
+    IP가 하지 않는 일: <span class="r">도착 보장 / 순서 보장 / 재전송</span>. — 그건 TCP.
+  </div>
+</div>
+
+<script>
+const STEPS = [
+  { id: "idle" },
+  { id: "transport_down", title: "① TCP 세그먼트가 내려옴", desc: "전송 계층(TCP)이 IP 계층에게 데이터를 건넨다. \"이걸 203.0.113.5에 보내줘.\"" },
+  { id: "attach", title: "② IP 계층 — 헤더를 붙임", desc: "IP 계층은 Dst IP, Src IP, TTL 등을 채운 헤더를 앞에 붙인다. 이게 IP가 하는 일의 전부다." },
+  { id: "hand_down", title: "③ 아래로 넘김", desc: "헤더가 붙은 패킷을 데이터 링크 계층(Ethernet)으로 내린다. IP는 여기서 손을 뗀다." },
+  { id: "traveling", title: "④ 네트워크를 이동 중", desc: "라우터들이 Dst IP를 읽고 다음 홉으로 넘긴다. 라우터도 IP 계층을 실행하는 것뿐." },
+  { id: "receive_up", title: "⑤ 수신 측 — 아래에서 올라옴", desc: "데이터 링크 계층이 프레임을 벗기고 IP 패킷을 위로 올린다." },
+  { id: "strip", title: "⑥ IP 계층 — 헤더를 뗌", desc: "Dst IP가 자신인지 확인한다. 맞으면 헤더를 제거하고 데이터만 위로 올린다." },
+  { id: "transport_up", title: "⑦ 전송 계층으로 전달", desc: "IP 헤더가 없는 순수한 TCP 세그먼트가 전송 계층에 도달한다. IP의 역할 끝." },
+];
+
+let currentStep = 0;
+
+function applyStep(idx) {
+  const id = STEPS[idx].id;
+  const isMiddle = id === "traveling";
+
+  document.querySelectorAll('.progress-seg').forEach((s, i) => {
+    s.classList.remove('done', 'active');
+    if (i < idx - 1) s.classList.add('done');
+    else if (i === idx - 1) s.classList.add('active');
+  });
+
+  const hl = (el, cls) => { el.classList.remove('hl-tcp','hl-ip','hl-eth'); if(cls) el.classList.add(cls); };
+  hl(document.getElementById('leftTCP'),  id==='transport_down'?'hl-tcp':'');
+  hl(document.getElementById('leftIP'),   (id==='attach'||id==='hand_down')?'hl-ip':'');
+  hl(document.getElementById('leftEth'),  id==='hand_down'?'hl-eth':'');
+  hl(document.getElementById('rightTCP'), id==='transport_up'?'hl-tcp':'');
+  hl(document.getElementById('rightIP'),  (id==='receive_up'||id==='strip')?'hl-ip':'');
+  hl(document.getElementById('rightEth'), id==='receive_up'?'hl-eth':'');
+
+  const lh = document.getElementById('leftHeader');
+  (id==='attach'||id==='hand_down') ? lh.classList.remove('gone','hidden') : lh.classList.add('gone');
+  document.getElementById('leftIPAction').textContent = id==='attach'?'← 헤더 붙이는 중':'';
+
+  const rh = document.getElementById('rightHeader');
+  const ra = document.getElementById('rightIPAction');
+  if (id==='receive_up') { rh.classList.remove('gone','hidden'); ra.textContent=''; }
+  else if (id==='strip') { rh.classList.remove('gone'); rh.classList.add('hidden'); ra.textContent='← 헤더 떼는 중'; ra.className='layer-action'; }
+  else if (id==='transport_up') { rh.classList.add('gone'); ra.textContent=''; }
+  else { rh.classList.add('gone'); ra.textContent=''; }
+
+  document.getElementById('rightTCPData').className = 'data-block'+(id==='transport_up'?'':' dim');
+  document.getElementById('leftEthFields').classList.toggle('active', id==='hand_down'||id==='traveling');
+  document.getElementById('rightEthFields').classList.toggle('active', id==='receive_up');
+  document.getElementById('routerBox').classList.toggle('active', isMiddle);
+  document.getElementById('leftArrow').classList.toggle('active', isMiddle);
+  document.getElementById('rightArrow').classList.toggle('active', isMiddle);
+
+  const box = document.getElementById('descBox');
+  if (id==='idle') { box.innerHTML='<div class="desc-idle">▶ 버튼을 눌러 IP 계층의 동작을 단계별로 확인하세요.</div>'; }
+  else { box.innerHTML=`<div class="desc-title">${STEPS[idx].title}</div><div class="desc-text">${STEPS[idx].desc}</div>`; }
+
+  document.getElementById('btnPrev').disabled = idx===0;
+  document.getElementById('btnNext').disabled = idx===STEPS.length-1;
+  document.getElementById('stepCounter').textContent = idx>0?`${idx} / ${STEPS.length-1}`:'';
+  document.getElementById('summary').classList.toggle('show', idx===STEPS.length-1);
+}
+
+function changeStep(delta) {
+  if (delta===-99) currentStep=0;
+  else currentStep = Math.max(0, Math.min(STEPS.length-1, currentStep+delta));
+  applyStep(currentStep);
+}
+
+const pb = document.getElementById('progressBar');
+for (let i=0; i<STEPS.length-1; i++) { const s=document.createElement('div'); s.className='progress-seg'; pb.appendChild(s); }
+applyStep(0);
+</script>
+</body>
+</html>

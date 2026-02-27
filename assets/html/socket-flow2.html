@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>클라이언트 → 서버 소켓 매핑</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800&family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
+:root {
+  --bg:#06090e; --s1:#090d14; --s2:#0d1520;
+  --bdr:#162030; --bdr2:#1d3050;
+  --cl:#f59e0b;  --cl-bg:rgba(245,158,11,.08); --cl-bdr:rgba(245,158,11,.22);
+  --sv:#22d3ee;  --sv-bg:rgba(34,211,238,.07);  --sv-bdr:rgba(34,211,238,.2);
+  --pkt:#a78bfa; --pkt-bg:rgba(167,139,250,.09);--pkt-bdr:rgba(167,139,250,.28);
+  --ok:#34d399;  --ok-bg:rgba(52,211,153,.07);
+  --red:#f87171; --red-bg:rgba(248,113,113,.08);--red-bdr:rgba(248,113,113,.25);
+  --num:#fde68a;
+  --txt:#7a9ab8; --txt2:#3d5570; --wh:#d8e8f4;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--wh);font-family:'Noto Sans KR',sans-serif;
+  min-height:100vh;padding:20px 14px 48px;max-width:920px;margin:0 auto;}
+.hd{text-align:center;margin-bottom:18px;}
+.hd h1{font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:800;color:var(--wh);margin-bottom:4px;}
+.hd p{font-size:11px;color:var(--txt2);}
+.stage{display:grid;grid-template-columns:1fr 100px 1fr;gap:0;margin-bottom:12px;align-items:start;position:relative;}
+.node{background:var(--s1);border:1px solid var(--bdr);border-radius:10px;padding:12px;transition:border-color .3s;}
+.node.hi-cl {border-color:rgba(245,158,11,.4);}
+.node.hi-sv {border-color:rgba(34,211,238,.38);}
+.node.hi-pkt{border-color:rgba(167,139,250,.4);}
+.node.hi-red{border-color:rgba(248,113,113,.38);}
+.node-title{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:7px;}
+.nt-cl{color:var(--cl);} .nt-sv{color:var(--sv);}
+.badge{font-family:'JetBrains Mono',monospace;font-size:7px;font-weight:700;letter-spacing:1px;padding:2px 6px;border-radius:5px;}
+.bd-cl {background:var(--cl-bg); color:var(--cl); border:1px solid var(--cl-bdr);}
+.bd-sv {background:var(--sv-bg); color:var(--sv); border:1px solid var(--sv-bdr);}
+.bd-ip {background:rgba(245,158,11,.07);color:var(--cl);border:1px solid var(--cl-bdr);}
+.bd-tc {background:var(--sv-bg); color:var(--sv); border:1px solid var(--sv-bdr);}
+.bd-ok {background:var(--ok-bg); color:var(--ok); border:1px solid rgba(52,211,153,.22);}
+.bd-pk {background:var(--pkt-bg);color:var(--pkt);border:1px solid var(--pkt-bdr);}
+.bd-rd {background:var(--red-bg);color:var(--red);border:1px solid var(--red-bdr);}
+.lr{border-radius:6px;border:1px solid transparent;padding:7px 9px;margin-bottom:5px;transition:all .25s;}
+.lr .lr-top{display:flex;align-items:center;gap:6px;margin-bottom:3px;}
+.lr-name{font-family:'JetBrains Mono',monospace;font-size:8px;font-weight:700;letter-spacing:.5px;color:var(--txt2);transition:color .25s;}
+.lr-val{font-family:'JetBrains Mono',monospace;font-size:9.5px;font-weight:700;color:var(--txt2);opacity:.2;transition:all .25s;line-height:1.5;}
+.lr-val .n{color:var(--num);}
+.lr.on-cl {background:var(--cl-bg); border-color:var(--cl-bdr);}
+.lr.on-cl  .lr-name{color:var(--cl);}  .lr.on-cl  .lr-val{color:var(--cl);opacity:1;}
+.lr.on-sv {background:var(--sv-bg); border-color:var(--sv-bdr);}
+.lr.on-sv  .lr-name{color:var(--sv);}  .lr.on-sv  .lr-val{color:var(--sv);opacity:1;}
+.lr.on-pk {background:var(--pkt-bg);border-color:var(--pkt-bdr);}
+.lr.on-pk  .lr-name{color:var(--pkt);} .lr.on-pk  .lr-val{color:var(--pkt);opacity:1;}
+.lr.on-ok {background:var(--ok-bg); border-color:rgba(52,211,153,.2);}
+.lr.on-ok  .lr-name{color:var(--ok);}  .lr.on-ok  .lr-val{color:var(--ok);opacity:1;}
+.lr.on-rd {background:var(--red-bg);border-color:var(--red-bdr);}
+.lr.on-rd  .lr-name{color:var(--red);} .lr.on-rd  .lr-val{color:var(--red);opacity:1;}
+.lr.pre {border-color:rgba(34,211,238,.14);background:rgba(34,211,238,.03);}
+.lr.pre .lr-val{opacity:.45;color:var(--sv);}
+.lr.pre .lr-name{color:rgba(34,211,238,.4);}
+@keyframes pop{0%{transform:scale(1)}45%{transform:scale(1.04)}100%{transform:scale(1)}}
+.pop{animation:pop .3s ease;}
+.channel{display:flex;flex-direction:column;align-items:center;padding:8px 0;gap:0;position:relative;overflow:visible;}
+.ch-track{width:2px;flex:1;min-height:20px;background:linear-gradient(to bottom,var(--bdr2),transparent);}
+.ch-track.rev{background:linear-gradient(to top,var(--bdr2),transparent);}
+.pkt-lane{position:relative;width:100%;height:32px;display:flex;align-items:center;justify-content:center;overflow:visible;}
+.pkt-pill{position:absolute;background:var(--pkt-bg);border:1px solid var(--pkt-bdr);border-radius:14px;padding:4px 10px;font-family:'JetBrains Mono',monospace;font-size:8px;font-weight:700;color:var(--pkt);white-space:nowrap;box-shadow:0 0 14px rgba(167,139,250,.25);opacity:0;pointer-events:none;left:50%;transform:translateX(-50%);transition:none;}
+.pkt-pill.anim-right{animation:slide-right .55s cubic-bezier(.4,0,.2,1) forwards;}
+.pkt-pill.anim-left{animation:slide-left .55s cubic-bezier(.4,0,.2,1) forwards;}
+@keyframes slide-right{0%{opacity:0;transform:translateX(-50%) translateX(-60px);}15%{opacity:1;}100%{opacity:0;transform:translateX(-50%) translateX(60px);}}
+@keyframes slide-left{0%{opacity:0;transform:translateX(-50%) translateX(60px);}15%{opacity:1;}100%{opacity:0;transform:translateX(-50%) translateX(-60px);}}
+.pkt-pill::after{content:attr(data-arrow);display:block;font-size:10px;text-align:center;color:var(--pkt-bdr);margin-top:1px;}
+.queue-box{margin-top:7px;background:rgba(0,0,0,.28);border:1px solid var(--bdr);border-radius:7px;overflow:hidden;transition:all .3s;}
+.queue-hd{font-family:'JetBrains Mono',monospace;font-size:7px;letter-spacing:1.5px;color:var(--txt2);padding:4px 8px;border-bottom:1px solid var(--bdr);text-transform:uppercase;display:flex;align-items:center;justify-content:space-between;}
+.queue-hd .q-count{color:var(--pkt);font-weight:700;}
+.queue-slots{padding:6px 8px;display:flex;flex-direction:column;gap:4px;min-height:32px;}
+.q-slot{font-family:'JetBrains Mono',monospace;font-size:8px;padding:3px 7px;border-radius:4px;border:1px solid transparent;transition:all .35s;}
+.q-slot.empty{color:var(--txt2);border-color:rgba(30,48,80,.5);background:rgba(13,21,32,.5);}
+.q-slot.filled-pk{color:var(--pkt);border-color:var(--pkt-bdr);background:rgba(167,139,250,.08);}
+.q-slot.filled-ok{color:var(--ok);border-color:rgba(52,211,153,.2);background:rgba(52,211,153,.06);}
+.q-slot.popping{animation:slot-pop .4s ease forwards;}
+@keyframes slot-pop{0%{opacity:1;transform:translateX(0);}60%{opacity:0;transform:translateX(20px);}100%{opacity:0;transform:translateX(20px);}}
+.rbuf{margin-top:7px;background:rgba(0,0,0,.28);border:1px solid var(--bdr);border-radius:7px;overflow:hidden;display:none;}
+.rbuf.show{display:block;}
+.rbuf-hd{font-family:'JetBrains Mono',monospace;font-size:7px;letter-spacing:1.5px;color:var(--txt2);padding:4px 8px;border-bottom:1px solid var(--bdr);text-transform:uppercase;}
+.rbuf-bar-wrap{padding:5px 8px;}
+.rbuf-bar{height:10px;background:var(--bdr);border-radius:3px;overflow:hidden;}
+.rbuf-fill{height:100%;width:0;background:linear-gradient(90deg,var(--ok),rgba(52,211,153,.5));border-radius:3px;transition:width .6s ease;}
+.rbuf-label{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--ok);margin-top:3px;opacity:0;transition:opacity .3s;}
+.sock-tbl-wrap{margin-top:7px;background:rgba(0,0,0,.25);border:1px solid var(--bdr);border-radius:6px;overflow:hidden;display:none;}
+.sock-tbl-wrap.show{display:block;}
+.sock-tbl{width:100%;border-collapse:collapse;font-family:'JetBrains Mono',monospace;font-size:8px;}
+.sock-tbl th{color:var(--txt2);padding:4px 7px;border-bottom:1px solid var(--bdr);font-weight:400;}
+.sock-tbl td{padding:4px 7px;border-bottom:1px solid rgba(22,32,48,.5);}
+.sock-tbl tr.s-pre  td{color:rgba(34,211,238,.4);}
+.sock-tbl tr.s-hl   td{background:rgba(167,139,250,.1);color:var(--pkt);}
+.sock-tbl tr.s-ok   td{background:rgba(52,211,153,.06);color:var(--ok);}
+.sock-tbl tr.s-fail td{background:rgba(248,113,113,.05);color:rgba(248,113,113,.45);text-decoration:line-through;}
+.fd-pill{font-family:'JetBrains Mono',monospace;font-size:9px;display:block;margin:5px 7px;padding:4px 7px;border-radius:5px;border:1px solid var(--bdr);color:var(--txt2);transition:all .3s;}
+.fd-pill.ok    {background:var(--ok-bg);border-color:rgba(52,211,153,.25);color:var(--ok);}
+.fd-pill.search{background:var(--pkt-bg);border-color:var(--pkt-bdr);color:var(--pkt);}
+.fd-pill.fail  {background:var(--red-bg);border-color:var(--red-bdr);color:var(--red);}
+.status-box{background:var(--s1);border:1px solid var(--bdr2);border-radius:10px;padding:13px 16px;margin-bottom:12px;min-height:76px;}
+.st-meta{display:flex;align-items:center;gap:8px;margin-bottom:5px;}
+.st-step{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--txt2);letter-spacing:1px;}
+.st-txt{font-size:13px;color:var(--txt);line-height:1.8;}
+.st-txt b{color:var(--wh);}
+.st-txt .num{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:800;background:rgba(253,230,138,.1);color:var(--num);padding:0 4px;border-radius:3px;}
+.st-txt .fail{font-weight:700;color:var(--red);}
+.st-txt code{font-family:'JetBrains Mono',monospace;font-size:11px;background:rgba(0,0,0,.35);padding:1px 5px;border-radius:3px;color:var(--wh);}
+.c-cl{color:var(--cl);font-weight:700;} .c-sv{color:var(--sv);font-weight:700;}
+.c-pk{color:var(--pkt);font-weight:700;} .c-ok{color:var(--ok);font-weight:700;}
+.c-rd{color:var(--red);font-weight:700;}
+.ctrls{display:flex;align-items:center;justify-content:center;gap:10px;}
+.btn{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;letter-spacing:1px;padding:9px 20px;border-radius:7px;border:1px solid;cursor:pointer;transition:all .18s;}
+.btn-n{background:rgba(34,211,238,.09);border-color:rgba(34,211,238,.38);color:var(--sv);}
+.btn-n:hover:not(:disabled){background:rgba(34,211,238,.17);}
+.btn-p{background:rgba(20,32,50,.5);border-color:var(--bdr);color:var(--txt);}
+.btn-p:hover:not(:disabled){color:var(--wh);}
+.btn-r{background:transparent;border-color:var(--bdr);color:var(--txt2);padding:9px 13px;}
+.btn-r:hover{color:var(--wh);}
+.btn:disabled{opacity:.25;cursor:not-allowed;}
+.prog{display:flex;gap:5px;align-items:center;}
+.pd{width:6px;height:6px;border-radius:50%;background:var(--bdr2);transition:all .3s;}
+.pd.done{background:rgba(34,211,238,.45);}
+.pd.cur{background:var(--pkt);box-shadow:0 0 7px rgba(167,139,250,.55);transform:scale(1.25);}
+</style>
+</head>
+<body>
+<div class="hd">
+  <h1>클라이언트 → 서버 소켓 매핑</h1>
+  <p>socket() 생성 · 3-way handshake · 큐 · accept()</p>
+</div>
+<div class="stage">
+  <div class="node" id="nd-cl">
+    <div class="node-title nt-cl"><span class="badge bd-cl">CLIENT</span> 192.168.0.10</div>
+    <div class="lr" id="cl-app"><div class="lr-top"><span class="badge bd-cl">App</span><span class="lr-name">SOCKET</span></div><div class="lr-val">socket() → fd=<span class="n">5</span></div></div>
+    <div class="lr" id="cl-tcp"><div class="lr-top"><span class="badge bd-tc">L4</span><span class="lr-name">TCP</span></div><div class="lr-val">sport:<span class="n">52341</span>  dport:<span class="n">443</span></div></div>
+    <div class="lr" id="cl-ip"><div class="lr-top"><span class="badge bd-ip">L3</span><span class="lr-name">IP</span></div><div class="lr-val">src:<span class="n">192.168.0.10</span><br>dst:<span class="n">203.0.113.5</span>  proto=<span class="n">6</span></div></div>
+    <div class="lr" id="cl-est" style="display:none"><div class="lr-top"><span class="badge bd-ok">상태</span><span class="lr-name">ESTABLISHED</span></div><div class="lr-val" style="opacity:1;color:var(--ok)">connect() 완료 · fd=<span class="n">5</span> 사용 가능</div></div>
+  </div>
+  <div class="channel" id="channel">
+    <div class="ch-track"></div>
+    <div class="pkt-lane"><div class="pkt-pill" id="pkt-pill" data-arrow=""></div></div>
+    <div class="ch-track rev"></div>
+  </div>
+  <div class="node" id="nd-sv">
+    <div class="node-title nt-sv"><span class="badge bd-sv">SERVER</span> 203.0.113.5</div>
+    <div class="lr pre" id="sv-listen"><div class="lr-top"><span class="badge bd-sv">L4</span><span class="lr-name">LISTEN (대기중)</span></div><div class="lr-val">bind(<span class="n">443</span>) · listen() · fd=<span class="n">3</span></div></div>
+    <div class="lr" id="sv-ip"><div class="lr-top"><span class="badge bd-ip">L3</span><span class="lr-name">IP</span></div><div class="lr-val">daddr=<span class="n">203.0.113.5</span> ✓<br>proto=<span class="n">6</span> → TCP로 전달</div></div>
+    <div class="lr" id="sv-tcp"><div class="lr-top"><span class="badge bd-tc">L4</span><span class="lr-name">TCP</span></div><div class="lr-val" id="sv-tcp-val">dport:<span class="n">443</span> · sport:<span class="n">52341</span></div></div>
+    <div class="sock-tbl-wrap" id="sock-wrap"><table class="sock-tbl"><thead><tr><th>state</th><th>4-tuple</th><th>fd</th></tr></thead><tbody id="sock-body"></tbody></table><span class="fd-pill" id="fd-res">—</span></div>
+    <div class="queue-box" id="queue-box" style="display:none">
+      <div class="queue-hd">backlog queue<span class="q-count" id="q-count">0 / 3</span></div>
+      <div class="queue-slots" id="q-slots">
+        <div class="q-slot empty" id="qs0">— empty —</div>
+        <div class="q-slot empty" id="qs1">— empty —</div>
+        <div class="q-slot empty" id="qs2">— empty —</div>
+      </div>
+    </div>
+    <div class="rbuf" id="rbuf"><div class="rbuf-hd">receive buffer</div><div class="rbuf-bar-wrap"><div class="rbuf-bar"><div class="rbuf-fill" id="rbuf-fill"></div></div><div class="rbuf-label" id="rbuf-label">데이터 저장 중…</div></div></div>
+    <div class="lr" id="sv-app" style="display:none"><div class="lr-top"><span class="badge bd-sv">App</span><span class="lr-name">accept()</span></div><div class="lr-val" id="sv-app-val" style="opacity:1">큐에서 꺼내는 중…</div></div>
+  </div>
+</div>
+<div class="status-box">
+  <div class="st-meta"><div class="st-step" id="st-step">STEP 0 / 10</div><div class="badge" id="st-badge" style="display:none"></div></div>
+  <div class="st-txt" id="st-txt">▶ <b>NEXT</b>를 눌러 전체 과정을 따라가세요.<br>서버는 이미 포트 <span class="num">443</span>에서 연결을 대기중입니다.</div>
+</div>
+<div class="ctrls">
+  <button class="btn btn-p" id="btn-p" onclick="go(-1)" disabled>◀ PREV</button>
+  <div class="prog" id="prog"></div>
+  <button class="btn btn-n" id="btn-n" onclick="go(1)">NEXT ▶</button>
+  <button class="btn btn-r" onclick="reset()">↺</button>
+</div>
+<script>
+const TOTAL=11;let cur=0;
+const steps=[
+{badge:null,hi:{cl:'',sv:''},cl:{},sv:{listen:'pre'},pkt:null,sock:null,queue:null,rbuf:null,accept:null,
+txt:`▶ <b>NEXT</b>를 눌러 전체 과정을 따라가세요.<br>서버는 이미 포트 <span class="num">443</span>에서 연결을 대기중입니다.`},
+{badge:{t:'CLIENT  socket()',c:'bd-cl'},hi:{cl:'hi-cl',sv:''},cl:{app:'on-cl'},sv:{listen:'pre'},pkt:null,sock:null,queue:null,rbuf:null,accept:null,
+txt:`클라이언트가 <code>socket()</code>을 호출합니다.<br>커널이 <code>struct sock</code>을 생성하고 파일 디스크립터 <span class="num">fd = 5</span>를 반환합니다.`},
+{badge:{t:'CLIENT  L4  TCP',c:'bd-tc'},hi:{cl:'hi-cl',sv:''},cl:{app:'on-ok',tcp:'on-cl'},sv:{listen:'pre'},pkt:null,sock:null,queue:null,rbuf:null,accept:null,
+txt:`<code>connect(203.0.113.5, 443)</code> 호출.<br>OS가 임시 포트 <span class="num">52341</span>을 자동 할당합니다.<br>TCP: sport <span class="num">52341</span> · dport <span class="num">443</span> · Flags <span class="num">SYN</span>`},
+{badge:{t:'① SYN  →',c:'bd-pk'},hi:{cl:'hi-cl',sv:'hi-sv'},cl:{app:'on-ok',tcp:'on-cl',ip:'on-cl'},sv:{listen:'pre',ip:'on-pk',tcp:'on-pk'},pkt:{lbl:'SYN',dir:'right'},sock:null,queue:null,rbuf:null,accept:null,
+txt:`<span class="num">① SYN</span> — 클라이언트 → 서버<br>src <span class="num">192.168.0.10:52341</span>  dst <span class="num">203.0.113.5:443</span><br>서버 L3 수신 · <code>proto=6</code> → TCP 계층으로 전달`},
+{badge:{t:'검색 1단계  ESTABLISHED',c:'bd-rd'},hi:{cl:'',sv:'hi-red'},cl:{},sv:{listen:'pre',ip:'on-ok',tcp:'on-rd'},pkt:null,
+sock:{show:true,rows:[{cls:'s-fail',cells:['ESTABLISHED','192.168.0.10:52341 ↔ :443','—']},{cls:'s-pre',cells:['LISTEN','*:443','3']}],res:'✗ ESTABLISHED — 매칭 없음',rCls:'fail'},
+queue:null,rbuf:null,accept:null,
+txt:`<b>1단계:</b> ESTABLISHED 해시 테이블에서 4-tuple 완전일치 검색<br><code>(192.168.0.10, 52341, 203.0.113.5, 443)</code><br><span class="fail">→ 결과 없음.</span> 처음 오는 연결 → <b>2단계로 이동</b>`},
+{badge:{t:'검색 2단계  LISTEN',c:'bd-pk'},hi:{cl:'',sv:'hi-pkt'},cl:{},sv:{listen:'on-pk',ip:'on-ok',tcp:'on-pk'},pkt:null,
+sock:{show:true,rows:[{cls:'s-pre',cells:['LISTEN','*:443','3']},{cls:'s-hl',cells:['SYN-RECV','192.168.0.10:52341 ↔ :443','4(신규)']}],res:'✓ LISTEN 발견 → 새 struct sock 생성',rCls:'search'},
+queue:{show:true,slots:[{cls:'filled-pk',txt:'52341 SYN-RECV'},'empty','empty'],count:'1 / 3'},rbuf:null,accept:null,
+txt:`<b>2단계:</b> LISTEN 테이블에서 dport=<span class="num">443</span> 검색 → <span class="c-ok">발견 ✓</span><br>새 <code>struct sock</code> 생성 · backlog 큐에 <span class="c-pk">SYN-RECV</span> 상태로 추가됩니다.`},
+{badge:{t:'② SYN-ACK  ←',c:'bd-pk'},hi:{cl:'hi-cl',sv:'hi-sv'},cl:{app:'on-ok',tcp:'on-pk'},sv:{listen:'pre',ip:'on-ok',tcp:'on-pk'},pkt:{lbl:'SYN-ACK',dir:'left'},
+sock:{show:true,rows:[{cls:'s-pre',cells:['LISTEN','*:443','3']},{cls:'s-hl',cells:['SYN-RECV','192.168.0.10:52341 ↔ :443','4']}],res:'SYN-ACK 전송 · ACK 대기중',rCls:'search'},
+queue:{show:true,slots:[{cls:'filled-pk',txt:'52341 SYN-RECV'},'empty','empty'],count:'1 / 3'},rbuf:null,accept:null,
+txt:`<span class="num">② SYN-ACK</span> — 서버 → 클라이언트<br>클라이언트가 수신하면 <code>connect()</code>가 반환됩니다.`},
+{badge:{t:'③ ACK  →  ESTABLISHED',c:'bd-ok'},hi:{cl:'hi-cl',sv:'hi-sv'},cl:{app:'on-ok',tcp:'on-ok',ip:'on-ok',est:true},sv:{listen:'pre',ip:'on-ok',tcp:'on-ok'},pkt:{lbl:'ACK',dir:'right'},
+sock:{show:true,rows:[{cls:'s-pre',cells:['LISTEN','*:443','3']},{cls:'s-ok',cells:['ESTABLISHED','192.168.0.10:52341 ↔ :443','4']}],res:'✓ ESTABLISHED 등록 완료',rCls:'ok'},
+queue:{show:true,slots:[{cls:'filled-ok',txt:'52341 ESTABLISHED'},'empty','empty'],count:'1 / 3'},rbuf:null,accept:null,
+txt:`<span class="num">③ ACK</span> — 클라이언트 → 서버 · 3-way handshake 완료<br>소켓 상태 <span class="c-ok">ESTABLISHED</span> · accept 큐로 이동합니다.`},
+{badge:{t:'accept()  큐에서 꺼냄',c:'bd-sv'},hi:{cl:'',sv:'hi-sv'},cl:{},sv:{listen:'pre',ip:'on-ok',tcp:'on-ok'},pkt:null,
+sock:{show:true,rows:[{cls:'s-pre',cells:['LISTEN','*:443','3']},{cls:'s-ok',cells:['ESTABLISHED','192.168.0.10:52341 ↔ :443','4']}],res:'accept() → fd=4 반환',rCls:'ok'},
+queue:{show:true,slots:['pop','empty','empty'],count:'0 / 3'},rbuf:null,accept:{show:true,val:'큐에서 꺼냄 → fd=<span class="n">4</span> 반환'},
+txt:`<code>accept()</code>가 ESTABLISHED 큐에서 소켓을 꺼냅니다.<br>새 파일 디스크립터 <span class="num">fd = 4</span>를 생성해 <code>struct sock</code>에 연결합니다.<br>LISTEN 소켓(fd=<span class="num">3</span>)은 그대로 다음 연결을 계속 받습니다.`},
+{badge:{t:'DATA →  receive buffer',c:'bd-ok'},hi:{cl:'hi-cl',sv:'hi-sv'},cl:{app:'on-ok',tcp:'on-ok'},sv:{listen:'pre',ip:'on-ok',tcp:'on-ok'},pkt:{lbl:'DATA',dir:'right'},
+sock:{show:true,rows:[{cls:'s-pre',cells:['LISTEN','*:443','3']},{cls:'s-ok',cells:['ESTABLISHED','192.168.0.10:52341 ↔ :443','4']}],res:'✓ ESTABLISHED 4-tuple 즉시 발견',rCls:'ok'},
+queue:{show:true,slots:['empty','empty','empty'],count:'0 / 3'},rbuf:{show:true,pct:60},accept:{show:true,val:'recv(fd=<span class="n">4</span>, buf) 대기중'},
+txt:`데이터 패킷 — 이번엔 <b>1단계에서 바로 성공</b>합니다.<br>4-tuple 즉시 발견 → 해당 소켓의 <span class="c-ok">receive buffer</span>에 데이터 저장`},
+{badge:{t:'recv()  사용자 공간 전달',c:'bd-ok'},hi:{cl:'',sv:'hi-sv'},cl:{},sv:{listen:'pre',ip:'on-ok',tcp:'on-ok'},pkt:null,
+sock:{show:true,rows:[{cls:'s-pre',cells:['LISTEN','*:443','3']},{cls:'s-ok',cells:['ESTABLISHED','192.168.0.10:52341 ↔ :443','4']}],res:'recv(fd=4, buf) 완료',rCls:'ok'},
+queue:{show:true,slots:['empty','empty','empty'],count:'0 / 3'},rbuf:{show:true,pct:0},accept:{show:true,val:'recv(fd=<span class="n">4</span>, buf) → 데이터 읽기 완료'},
+txt:`<code>recv(fd=<span class="num">4</span>, buf, size)</code> 호출<br>fd → <code>struct sock</code> → receive buffer → 사용자 공간으로 복사<br><b>fd는 커널 소켓 구조체를 사용자 공간에 연결하는 핸들입니다.</b>`},
+];
+const CL_ROWS=['app','tcp','ip'],SV_ROWS=['listen','ip','tcp'];
+function render(){
+  const s=steps[cur];
+  document.getElementById('st-step').textContent=`STEP ${cur} / ${TOTAL-1}`;
+  const badge=document.getElementById('st-badge');
+  if(s.badge){badge.style.display='inline-block';badge.textContent=s.badge.t;badge.className='badge '+s.badge.c;}
+  else badge.style.display='none';
+  document.getElementById('nd-cl').className='node '+(s.hi.cl||'');
+  document.getElementById('nd-sv').className='node '+(s.hi.sv||'');
+  CL_ROWS.forEach(k=>{const el=document.getElementById('cl-'+k);if(!el)return;el.classList.remove('on-cl','on-sv','on-pk','on-ok','on-rd','pre','pop');el.querySelector('.lr-val').style.opacity='.2';});
+  document.getElementById('cl-est').style.display=s.cl.est?'block':'none';
+  Object.entries(s.cl).forEach(([k,cls])=>{if(k==='est')return;const el=document.getElementById('cl-'+k);if(!el)return;el.classList.add(cls,'pop');el.querySelector('.lr-val').style.opacity='1';});
+  SV_ROWS.forEach(k=>{const el=document.getElementById('sv-'+k);if(!el)return;el.classList.remove('on-cl','on-sv','on-pk','on-ok','on-rd','pre','pop');el.querySelector('.lr-val').style.opacity='.2';});
+  Object.entries(s.sv).forEach(([k,cls])=>{const el=document.getElementById('sv-'+k);if(!el)return;el.classList.add(cls,'pop');el.querySelector('.lr-val').style.opacity=(cls==='pre')?'.5':'1';});
+  const pill=document.getElementById('pkt-pill');pill.className='pkt-pill';pill.style.opacity='0';
+  if(s.pkt){pill.textContent=s.pkt.lbl;pill.setAttribute('data-arrow',s.pkt.dir==='right'?'→':'←');void pill.offsetWidth;pill.className='pkt-pill anim-'+s.pkt.dir;}
+  const wrap=document.getElementById('sock-wrap'),body=document.getElementById('sock-body'),fdEl=document.getElementById('fd-res');
+  if(s.sock){wrap.classList.add('show');body.innerHTML='';s.sock.rows.forEach(row=>{const tr=document.createElement('tr');tr.className=row.cls;tr.innerHTML=row.cells.map(c=>`<td>${c}</td>`).join('');body.appendChild(tr);});fdEl.innerHTML=s.sock.res;fdEl.className='fd-pill '+(s.sock.rCls||'');}
+  else wrap.classList.remove('show');
+  const qbox=document.getElementById('queue-box');
+  if(s.queue){qbox.style.display='block';document.getElementById('q-count').textContent=s.queue.count;['qs0','qs1','qs2'].forEach((id,i)=>{const el=document.getElementById(id),slot=s.queue.slots[i];if(slot==='pop'){el.className='q-slot filled-ok popping';el.textContent='52341 ESTABLISHED';setTimeout(()=>{el.className='q-slot empty';el.textContent='— empty —';},400);}else if(slot==='empty'){el.className='q-slot empty';el.textContent='— empty —';}else{el.className='q-slot '+slot.cls;el.textContent=slot.txt;}});}
+  else qbox.style.display='none';
+  const rbuf=document.getElementById('rbuf'),rfill=document.getElementById('rbuf-fill'),rlbl=document.getElementById('rbuf-label');
+  if(s.rbuf){rbuf.classList.add('show');setTimeout(()=>{rfill.style.width=s.rbuf.pct+'%';rlbl.style.opacity=s.rbuf.pct>0?'1':'0';},50);}
+  else{rbuf.classList.remove('show');rfill.style.width='0';rlbl.style.opacity='0';}
+  const appRow=document.getElementById('sv-app'),appVal=document.getElementById('sv-app-val');
+  if(s.accept){appRow.style.display='block';appRow.className='lr on-ok pop';appVal.innerHTML=s.accept.val;}
+  else appRow.style.display='none';
+  document.getElementById('st-txt').innerHTML=s.txt;
+  const pg=document.getElementById('prog');pg.innerHTML='';
+  for(let i=0;i<TOTAL;i++){const d=document.createElement('div');d.className='pd'+(i<cur?' done':i===cur?' cur':'');pg.appendChild(d);}
+  document.getElementById('btn-p').disabled=cur===0;
+  document.getElementById('btn-n').disabled=cur===TOTAL-1;
+}
+function go(d){cur=Math.max(0,Math.min(TOTAL-1,cur+d));render();}
+function reset(){cur=0;render();}
+render();
+</script>
+</body>
+</html>

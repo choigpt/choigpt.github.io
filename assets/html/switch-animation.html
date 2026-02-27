@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>스위치</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Noto+Sans+KR:wght@400;700&display=swap');
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #080c14;
+    display: flex; align-items: center; justify-content: center;
+    min-height: 100vh; font-family: 'Noto Sans KR', sans-serif;
+    padding: 20px;
+  }
+  .card {
+    width: 480px; background: #0e1624;
+    border: 1px solid #1e3a5f; border-radius: 16px;
+    padding: 20px; color: #fff;
+  }
+  .badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; letter-spacing: 3px; color: #2a5070;
+    text-transform: uppercase; margin-bottom: 14px;
+  }
+  .tabs { display: flex; gap: 6px; margin-bottom: 16px; }
+  .tab {
+    flex: 1; padding: 8px; border-radius: 8px;
+    font-size: 11px; font-weight: 700; cursor: pointer;
+    border: 1px solid #1e3a5f; color: #3a6080;
+    background: transparent; transition: all .2s;
+    font-family: 'Noto Sans KR', sans-serif;
+  }
+  .tab.bad  { background: rgba(255,68,68,.08);  border-color: rgba(255,68,68,.4);  color: #ff4444; }
+  .tab.good { background: rgba(0,212,255,.08);  border-color: rgba(0,212,255,.4);  color: #00d4ff; }
+  .scene { display: none; }
+  .scene.active { display: block; }
+  .network {
+    position: relative; background: #060a10;
+    border: 1px solid #1a3050; border-radius: 10px;
+    margin-bottom: 10px; overflow: hidden;
+  }
+  .packet {
+    position: absolute; border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'JetBrains Mono', monospace; font-size: 8px; font-weight: 700;
+    pointer-events: none; opacity: 0; z-index: 10; padding: 2px 6px;
+    white-space: nowrap;
+  }
+  .pkt-a { background:rgba(0,212,255,.2); border:1px solid #00d4ff; color:#00d4ff; }
+  .pkt-w { background:rgba(255,107,53,.15); border:1px solid #ff6b35; color:#ff6b35; }
+  .mac-table {
+    background: #060a10; border: 1px solid #1a3050;
+    border-radius: 8px; padding: 10px 12px; margin-bottom: 10px;
+  }
+  .tbl-label { font-family:'JetBrains Mono',monospace; font-size:9px; color:#2a4060; letter-spacing:2px; margin-bottom:6px; }
+  .mac-row {
+    display:flex; gap:8px; align-items:center;
+    padding:4px 6px; border-radius:4px;
+    font-family:'JetBrains Mono',monospace; font-size:10px; margin-bottom:3px;
+    opacity:0; transition:opacity .4s;
+  }
+  .mac-row.show { opacity:1; }
+  .mac-row .port { color:#3a6080; width:42px; }
+  .mac-row .arr  { color:#1e3a5f; }
+  .mac-row.ra { background:rgba(0,212,255,.06);  } .mac-row.ra .mv { color:#00d4ff; }
+  .mac-row.rb { background:rgba(255,107,53,.06); } .mac-row.rb .mv { color:#ff6b35; }
+  .mac-row.rc { background:rgba(57,255,20,.06);  } .mac-row.rc .mv { color:#39ff14; }
+  .mac-row.rd { background:rgba(192,132,252,.06);} .mac-row.rd .mv { color:#c084fc; }
+  .status {
+    text-align:center; font-size:11px; font-weight:700;
+    padding:6px; border-radius:6px; min-height:30px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .status.bad  { color:#ff6b35; background:rgba(255,107,53,.06); border:1px solid rgba(255,107,53,.15); }
+  .status.good { color:#39ff14; background:rgba(57,255,20,.05);  border:1px solid rgba(57,255,20,.15); }
+  .status.info { color:#3a6080; background:rgba(0,212,255,.04);  border:1px solid rgba(0,212,255,.1); }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="badge">OSI Layer 2 · Data Link · Switch</div>
+  <div class="tabs">
+    <button class="tab bad"  id="tab-no"  onclick="setTab('no')">❌ 스위치가 없다면</button>
+    <button class="tab"      id="tab-yes" onclick="setTab('yes')">✅ 스위치가 있다면</button>
+  </div>
+
+  <div class="scene active" id="scene-no">
+    <div class="network" style="height:190px;" id="net-no">
+      <svg id="svg-no" style="position:absolute;inset:0;width:100%;height:100%" viewBox="0 0 480 190" preserveAspectRatio="none">
+        <line id="bus-line" x1="40" y1="95" x2="440" y2="95" stroke="#1e3a5f" stroke-width="3"/>
+        <line x1="80"  y1="95" x2="80"  y2="50" stroke="#1e3a5f" stroke-width="1.5"/>
+        <line x1="200" y1="95" x2="200" y2="50" stroke="#1e3a5f" stroke-width="1.5"/>
+        <line x1="300" y1="95" x2="300" y2="145" stroke="#1e3a5f" stroke-width="1.5"/>
+        <line x1="400" y1="95" x2="400" y2="145" stroke="#1e3a5f" stroke-width="1.5"/>
+        <line id="bus-left"  x1="80" y1="95" x2="80"  y2="95" stroke="#ff6b35" stroke-width="3" opacity="0"/>
+        <line id="bus-right" x1="80" y1="95" x2="80"  y2="95" stroke="#ff6b35" stroke-width="3" opacity="0"/>
+      </svg>
+      <div style="position:absolute;left:52px;top:8px;text-align:center">
+        <div style="font-size:20px">💻</div>
+        <div style="font-size:11px;font-weight:700;color:#00d4ff">A</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:#2a5070">AA:AA</div>
+      </div>
+      <div style="position:absolute;left:172px;top:8px;text-align:center">
+        <div style="font-size:20px">💻</div>
+        <div style="font-size:11px;font-weight:700;color:#ff6b35">B</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:#2a5070">BB:BB</div>
+      </div>
+      <div style="position:absolute;left:272px;top:108px;text-align:center">
+        <div style="font-size:20px">💻</div>
+        <div style="font-size:11px;font-weight:700;color:#39ff14">C</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:#2a5070">CC:CC</div>
+      </div>
+      <div style="position:absolute;left:372px;top:108px;text-align:center">
+        <div style="font-size:20px">💻</div>
+        <div style="font-size:11px;font-weight:700;color:#c084fc">D</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:#2a5070">DD:DD</div>
+      </div>
+      <div class="packet pkt-a" id="pkt-no" style="left:0;top:0">A→B</div>
+    </div>
+    <div class="mac-table">
+      <div class="tbl-label">// MAC 테이블 — 없음</div>
+      <div style="font-size:11px;color:#3a4a60;text-align:center;padding:4px 0">
+        하나의 선에 모두 연결 → 신호는 <span style="color:#ff6b35;font-weight:700">선 전체로 퍼진다</span>
+      </div>
+    </div>
+    <div class="status bad" id="st-no">A가 B에게 보내면...</div>
+  </div>
+
+  <div class="scene" id="scene-yes">
+    <div class="network" style="height:210px;" id="net-yes">
+      <svg id="svg-yes" style="position:absolute;inset:0;pointer-events:none" viewBox="0 0 480 210">
+        <line id="wy-a" x1="40"  y1="92"  x2="240" y2="107" stroke="#1e3a5f" stroke-width="1.5"/>
+        <line id="wy-b" x1="440" y1="92"  x2="240" y2="107" stroke="#1e3a5f" stroke-width="1.5"/>
+        <line id="wy-c" x1="40"  y1="175" x2="240" y2="107" stroke="#1e3a5f" stroke-width="1.5"/>
+        <line id="wy-d" x1="440" y1="175" x2="240" y2="107" stroke="#1e3a5f" stroke-width="1.5"/>
+      </svg>
+      <div style="position:absolute;left:10px;top:68px;text-align:center;width:58px">
+        <div style="font-size:20px">💻</div>
+        <div style="font-size:11px;font-weight:700;color:#00d4ff">A</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:#2a5070">AA:AA</div>
+      </div>
+      <div style="position:absolute;right:10px;top:68px;text-align:center;width:58px">
+        <div style="font-size:20px">💻</div>
+        <div style="font-size:11px;font-weight:700;color:#ff6b35">B</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:#2a5070">BB:BB</div>
+      </div>
+      <div style="position:absolute;left:10px;bottom:12px;text-align:center;width:58px">
+        <div style="font-size:20px">💻</div>
+        <div style="font-size:11px;font-weight:700;color:#39ff14">C</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:#2a5070">CC:CC</div>
+      </div>
+      <div style="position:absolute;right:10px;bottom:12px;text-align:center;width:58px">
+        <div style="font-size:20px">💻</div>
+        <div style="font-size:11px;font-weight:700;color:#c084fc">D</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:#2a5070">DD:DD</div>
+      </div>
+      <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+                  background:#0a1828;border:2px solid #1e4a7f;border-radius:10px;
+                  padding:8px 12px;text-align:center;width:76px">
+        <div style="font-size:9px;color:#2a6090;font-family:'JetBrains Mono',monospace;letter-spacing:1px">SWITCH</div>
+        <div style="font-size:13px;font-weight:700;color:#4a8abf;margin-top:2px">스위치</div>
+      </div>
+      <div class="packet pkt-a" id="pkt-yes" style="left:0;top:0">A→B</div>
+    </div>
+    <div class="mac-table">
+      <div class="tbl-label">// MAC 주소 테이블</div>
+      <div class="mac-row ra" id="mr-a"><span class="port">Port 1</span><span class="arr">→</span><span class="mv">AA:AA</span><span style="color:#1a4050;margin-left:auto;font-size:9px">💻 A</span></div>
+      <div class="mac-row rb" id="mr-b"><span class="port">Port 2</span><span class="arr">→</span><span class="mv">BB:BB</span><span style="color:#1a4050;margin-left:auto;font-size:9px">💻 B</span></div>
+      <div class="mac-row rc" id="mr-c"><span class="port">Port 3</span><span class="arr">→</span><span class="mv">CC:CC</span><span style="color:#1a4050;margin-left:auto;font-size:9px">💻 C</span></div>
+      <div class="mac-row rd" id="mr-d"><span class="port">Port 4</span><span class="arr">→</span><span class="mv">DD:DD</span><span style="color:#1a4050;margin-left:auto;font-size:9px">💻 D</span></div>
+    </div>
+    <div class="status info" id="st-yes"> </div>
+  </div>
+</div>
+<script>
+let tab='no', tmr=null;
+function setTab(t) {
+  tab=t;
+  document.getElementById('tab-no').className  = 'tab' + (t==='no'  ? ' bad'  : '');
+  document.getElementById('tab-yes').className = 'tab' + (t==='yes' ? ' good' : '');
+  document.querySelectorAll('.scene').forEach(el=>el.classList.remove('active'));
+  document.getElementById('scene-'+t).classList.add('active');
+  if(tmr) clearTimeout(tmr);
+  t==='no' ? runNo() : runYes();
+}
+function animateBusSpread(fromX, cb) {
+  const leftLine  = document.getElementById('bus-left');
+  const rightLine = document.getElementById('bus-right');
+  const busMin=40, busMax=440;
+  let progress=0;
+  const steps=40, interval=18;
+  leftLine.setAttribute('x1', fromX); leftLine.setAttribute('x2', fromX);
+  rightLine.setAttribute('x1', fromX); rightLine.setAttribute('x2', fromX);
+  leftLine.setAttribute('opacity','1');
+  rightLine.setAttribute('opacity','1');
+  const iv = setInterval(()=>{
+    progress++;
+    const spread = (progress/steps)*(busMax-busMin);
+    const l = Math.max(busMin, fromX - spread);
+    const r = Math.min(busMax, fromX + spread);
+    leftLine.setAttribute('x1', l); leftLine.setAttribute('x2', fromX);
+    rightLine.setAttribute('x1', fromX); rightLine.setAttribute('x2', r);
+    if(progress>=steps){
+      clearInterval(iv);
+      setTimeout(()=>{
+        leftLine.setAttribute('opacity','0');
+        rightLine.setAttribute('opacity','0');
+        if(cb) cb();
+      }, 400);
+    }
+  }, interval);
+}
+function runNo() {
+  resetBus();
+  const st = document.getElementById('st-no');
+  document.getElementById('pkt-no').style.opacity='0';
+  function cycle() {
+    st.textContent = '신호가 버스(공유선) 전체로 퍼진다!';
+    resetBus();
+    animateBusSpread(80, ()=>{
+      st.textContent = 'B, C, D 모두 신호를 받음 — B만 필요한데도!';
+      tmr = setTimeout(cycle, 2000);
+    });
+  }
+  tmr = setTimeout(cycle, 500);
+}
+function resetBus() {
+  document.getElementById('bus-left').setAttribute('opacity','0');
+  document.getElementById('bus-right').setAttribute('opacity','0');
+}
+const PY = { A:{x:40,y:92}, B:{x:440,y:92}, C:{x:40,y:175}, D:{x:440,y:175}, SW:{x:240,y:107} };
+function setWire(id, stroke, sw) {
+  const el = document.getElementById(id);
+  el.setAttribute('stroke', stroke);
+  el.setAttribute('stroke-width', sw);
+}
+function resetWires() {
+  ['a','b','c','d'].forEach(n => setWire('wy-'+n, '#1e3a5f', 1.5));
+}
+function movePktYes(from, to, ms, cb) {
+  const el = document.getElementById('pkt-yes');
+  const par = el.parentElement;
+  const sx = par.offsetWidth/480, sy = par.offsetHeight/210;
+  el.style.transition='none';
+  el.style.left=(PY[from].x*sx - el.offsetWidth/2)+'px';
+  el.style.top =(PY[from].y*sy - el.offsetHeight/2)+'px';
+  el.style.opacity='1';
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    el.style.transition=`left ${ms}ms linear, top ${ms}ms linear`;
+    el.style.left=(PY[to].x*sx - el.offsetWidth/2)+'px';
+    el.style.top =(PY[to].y*sy - el.offsetHeight/2)+'px';
+  }));
+  setTimeout(()=>{ el.style.opacity='0'; if(cb) cb(); }, ms+20);
+}
+function runYes() {
+  ['a','b','c','d'].forEach(x=>document.getElementById('mr-'+x).classList.remove('show'));
+  resetWires();
+  const st = document.getElementById('st-yes');
+  st.className = 'status info';
+  st.textContent = '스위치 켜짐 — MAC 테이블 비어있음';
+  document.getElementById('pkt-yes').style.opacity='0';
+  let learned = new Set();
+  function learn(from, to, label, next) {
+    st.className='status info';
+    st.textContent = `${from}가 ${to}에게 전송 → MAC ${from} 기억`;
+    resetWires();
+    setWire('wy-'+from.toLowerCase(), '#888', 2);
+    document.getElementById('pkt-yes').textContent = label;
+    movePktYes(from,'SW',400,()=>{
+      learned.add(from);
+      document.getElementById('mr-'+from.toLowerCase()).classList.add('show');
+      if(learned.has(to)) {
+        st.textContent=`MAC ${to} 알고 있음 → ${to}에게만!`;
+        setWire('wy-'+to.toLowerCase(), '#00d4ff', 2.5);
+        movePktYes('SW',to,400,()=>{ resetWires(); tmr=setTimeout(next,600); });
+      } else {
+        st.className='status bad';
+        st.textContent=`MAC ${to} 모름 → Flood (일단 다 보냄)`;
+        ['A','B','C','D'].filter(n=>n!==from).forEach(n=>setWire('wy-'+n.toLowerCase(),'#555',1.5));
+        tmr=setTimeout(()=>{
+          learned.add(to);
+          document.getElementById('mr-'+to.toLowerCase()).classList.add('show');
+          resetWires();
+          tmr=setTimeout(next,500);
+        },900);
+      }
+    });
+  }
+  function mainCycle() {
+    ['a','b','c','d'].forEach(x=>document.getElementById('mr-'+x).classList.add('show'));
+    document.getElementById('pkt-yes').textContent='A→B';
+    function cycle() {
+      st.className='status info';
+      st.textContent='A가 B에게 전송...';
+      resetWires();
+      setWire('wy-a','#00d4ff',2.5);
+      movePktYes('A','SW',450,()=>{
+        st.className='status good';
+        st.textContent='BB:BB = Port 2 → B에게만! C, D는 조용함 ✓';
+        resetWires();
+        setWire('wy-b','#00d4ff',2.5);
+        setWire('wy-c','#0e1a28',1);
+        setWire('wy-d','#0e1a28',1);
+        movePktYes('SW','B',450,()=>{
+          resetWires();
+          tmr=setTimeout(cycle,2000);
+        });
+      });
+    }
+    cycle();
+  }
+  learn('C','D','C→D', ()=>{
+    learn('A','B','A→B', ()=>{
+      tmr=setTimeout(mainCycle,400);
+    });
+  });
+}
+runNo();
+</script>
+</body>
+</html>

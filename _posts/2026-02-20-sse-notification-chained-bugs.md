@@ -151,6 +151,10 @@ private String generateHeartbeatEventId() {
 
 `IOException`만 catch하는 `SseEmitter.send()`는 `IllegalStateException` 발생 시 `cleanupConnection()`이 호출되지 않아 `activeConnections`에 죽은 연결이 남는다. `updateSseSentStatus()`는 트랜잭션 컨텍스트 없이 실행되며 내부의 `entityManager.clear()`가 1차 캐시 사이드이펙트를 유발했다. 놓친 메시지는 DB에서 전부 가져온 후 자바 코드에서 시간 조건으로 필터링하는 전체 스캔 구조였다.
 
+**FCM 미사용 의존성**: 초기에 FCM으로 알림을 구현하다가 SSE로 방향을 바꿨는데, `firebase-admin:9.5.0` 의존성이 `build.gradle`에 제거되지 않은 채 남아 있었다.
+
+**FCM 연동 + 알림 타입 미연동**: SSE로 전환하면서 FCM 연동이 빠진 상태다. 알림 타입 3(정산 완료)과 5(모임 해산)도 이벤트 발행 코드가 없어 해당 상황에서 알림이 생성되지 않는다.
+
 ---
 
 ## 해결
@@ -230,7 +234,7 @@ Event ID는 `Last-Event-ID` 헤더 기반 시각 비교를 제거하고, `sseSen
 
 ---
 
-## 교훈
+## 정리하며
 
 **반환값이 있는 메서드에서 반환값을 쓰지 않는 것은 거의 항상 버그다.** `sseSent` 필드, `idx_notification_sse_failed` 인덱스처럼 만들어두고 실제로 쓰지 않는 코드는 없는 것보다 더 나쁠 수 있다. "이미 고려한 것처럼 보이게" 만드는 함정이 된다.
 

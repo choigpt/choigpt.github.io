@@ -136,7 +136,7 @@ List<Long> joinedClubIds = userClubRepository.findByClubIdsByUserId(userId);  //
 
 ---
 
-## 교훈
+## 정리하며
 
 > **Mock으로 우회한 부분은 테스트되지 않은 부분이다.**
 > 인증처럼 시스템 전반에 영향을 미치는 횡단 관심사는 **실제와 동일한 흐름을 한 번이라도 통과시키는 통합 테스트**가 반드시 필요하다. 성능 수치 측정과 기능 정확성 검증은 서로를 대체하지 않는다.

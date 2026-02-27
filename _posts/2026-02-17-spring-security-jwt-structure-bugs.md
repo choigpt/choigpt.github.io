@@ -40,7 +40,7 @@ jjwt가 던지는 예외는 `io.jsonwebtoken.JwtException`이고, catch하는 �
 
 반면 `SseAuthenticationFilter`는 올바르게 `io.jsonwebtoken.JwtException`을 사용하고 있어서, 두 필터 사이에 불일치가 있었다.
 
-이 혼란의 근원은 `build.gradle`에 있었다. `spring-boot-starter-oauth2-client` 의존성이 포함되어 있었고, 이 때문에 `org.springframework.security.oauth2.jwt` 패키지가 클래스패스에 올라왔다. 필터를 작성할 때 IDE의 자동완성이 같은 이름의 두 클래스 중 Spring OAuth2 패키지 쪽을 먼저 제안했고, 그대로 쓴 것으로 보인다.
+이 혼란의 근원은 `build.gradle`에 있었다. `spring-boot-starter-oauth2-client` 의존성이 포함되어 있었고, 이 때문에 `org.springframework.security.oauth2.jwt` 패키지가 클래스패스에 올라왔다.
 
 ---
 
@@ -107,7 +107,7 @@ kakaoService.unlink(currentUser.getKakaoAccessToken());  // 연결 끊기 → lo
 
 ### 기타 설계 문제
 
-`SecurityConfig`에 `@Profile("!test")`가 붙어 있어 테스트 프로필에서 `SecurityConfig` 자체가 로드되지 않았다. [Spring Security·JWT 편](/spring-security-jwt-structure-bugs/)의 SSE 인증 실패 버그가 테스트에서 잡히지 않은 근본 원인 중 하나였다.
+`SecurityConfig`에 `@Profile("!test")`가 붙어 있어 테스트 프로필에서 `SecurityConfig` 자체가 로드되지 않았다. [SSE 인증 실패 편](/jwt-sse-auth-filter-mismatch/)의 SSE 인증 실패 버그가 테스트에서 잡히지 않은 근본 원인 중 하나였다.
 
 `withdraw` 엔드포인트는 `try` 블록과 `catch` 블록 양쪽에서 `withdrawUser()`를 호출하고 있어 특정 예외 상황에서 이중 호출이 가능한 구조였다. 카카오 `unlink()` 실패 시 catch 블록에서도 `withdrawUser()`를 재호출하는 패턴이었는데, 첫 번째 호출로 이미 INACTIVE가 된 사용자를 다시 탈퇴 처리하면서 관련 리소스 정리가 중복 실행됐다. 이 수정은 [유저 도메인 편](/user-lifecycle-bugs/) 유저 도메인 작업 중 `withdrawUser()` 전면 재정비와 함께 처리했다. `try-catch` 구조를 정리해 `withdrawUser()`는 정상 경로에서만 한 번 호출되고, 카카오 API 실패는 탈퇴 성공과 분리해 응답하도록 변경했다.
 
@@ -220,7 +220,7 @@ withdrawUser() → kakaoService.unlink()  // 연결 해제 (기존 유지)
 
 ---
 
-## 교훈
+## 정리하며
 
 보안 관련 코드는 컴파일이 되고 테스트가 통과해도 런타임에서 전혀 다른 동작을 할 수 있다. `JwtException` 패키지 불일치가 대표적인 예로, 아무런 컴파일 에러 없이 만료 토큰에서 500이 터지는 버그가 숨어 있었다.
 

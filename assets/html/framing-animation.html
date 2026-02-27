@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>프레이밍</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Noto+Sans+KR:wght@400;700&display=swap');
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #080c14;
+    display: flex; align-items: center; justify-content: center;
+    min-height: 100vh; font-family: 'Noto Sans KR', sans-serif;
+  }
+  .card {
+    width: 460px; background: #0e1624;
+    border: 1px solid #1e3a5f; border-radius: 16px;
+    padding: 20px; color: #fff;
+  }
+  .badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; letter-spacing: 3px; color: #2a5070;
+    text-transform: uppercase; margin-bottom: 14px;
+  }
+  .tabs { display: flex; gap: 6px; margin-bottom: 16px; }
+  .tab {
+    flex: 1; padding: 7px; border-radius: 8px;
+    font-size: 11px; font-weight: 700; cursor: pointer;
+    border: 1px solid #1e3a5f; color: #3a6080;
+    background: transparent; transition: all .2s;
+    font-family: 'Noto Sans KR', sans-serif;
+  }
+  .tab.active { background: rgba(0,212,255,.08); border-color: rgba(0,212,255,.4); color: #00d4ff; }
+
+  .scene { display: none; }
+  .scene.active { display: block; }
+
+  .computers { display: flex; gap: 8px; margin-bottom: 8px; }
+  .pc {
+    flex: 1; text-align: center; background: #060a10;
+    border-radius: 8px; padding: 8px 4px; font-size: 10px;
+  }
+  .pc .icon { font-size: 18px; margin-bottom: 3px; }
+  .pc .name { color: #3a6080; }
+  .pc .data {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; margin-top: 4px; letter-spacing: 1px;
+  }
+  .pc.a { border: 1px solid rgba(0,212,255,.25); }
+  .pc.a .data { color: #00d4ff; }
+  .pc.b { border: 1px solid rgba(255,107,53,.25); }
+  .pc.b .data { color: #ff6b35; }
+  .pc.c { border: 1px solid rgba(57,255,20,.25); }
+  .pc.c .data { color: #39ff14; }
+
+  .arrow-row {
+    display: flex; justify-content: space-around;
+    color: #1e3a5f; font-size: 13px; margin-bottom: 6px;
+  }
+
+  .box {
+    background: #060a10; border: 1px solid #1a3050;
+    border-radius: 8px; padding: 10px 12px; margin-bottom: 10px;
+  }
+  .box-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; color: #2a4060; letter-spacing: 2px; margin-bottom: 6px;
+  }
+  .bits-row {
+    display: flex; gap: 3px; min-height: 30px;
+    align-items: center; flex-wrap: wrap;
+  }
+
+  .bit {
+    font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 700;
+    width: 20px; text-align: center; border-radius: 3px; padding: 2px 0; flex-shrink: 0;
+  }
+  .bit-a { color: #00d4ff; }
+  .bit-b { color: #ff6b35; }
+  .bit-c { color: #39ff14; }
+  .bit-grey { color: #4a6880; }
+  .bit-sep {
+    color: #a0a0ff; font-size: 10px; width: 22px;
+    background: rgba(160,160,255,.12); border: 1px solid rgba(160,160,255,.35);
+  }
+
+  .status { text-align: center; font-size: 11px; font-weight: 700; margin-top: 10px; min-height: 16px; }
+  .status.bad { color: #ff4444; }
+  .status.good { color: #39ff14; }
+
+  .question { color: #ff4444; font-size: 15px; animation: blink .9s infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.15} }
+
+  .frame-group {
+    display: inline-flex; gap: 2px; align-items: center;
+    margin-right: 6px; margin-bottom: 4px; padding: 3px 5px; border-radius: 5px;
+  }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="badge">OSI Layer 2 · Data Link · Framing</div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="setTab('problem')">❌ 프레이밍 없음</button>
+    <button class="tab" onclick="setTab('solution')">✅ 프레이밍 있음</button>
+  </div>
+
+  <div class="scene active" id="scene-problem">
+    <div class="computers">
+      <div class="pc a"><div class="icon">💻</div><div class="name">A</div><div class="data">11100</div></div>
+      <div class="pc b"><div class="icon">💻</div><div class="name">B</div><div class="data">00011</div></div>
+      <div class="pc c"><div class="icon">💻</div><div class="name">C</div><div class="data">1110</div></div>
+    </div>
+    <div class="arrow-row"><span>↓</span><span>↓</span><span>↓</span></div>
+    <div class="box">
+      <div class="box-label">// 전선 — A→B→C 순서로 섞여서 흐름</div>
+      <div class="bits-row" id="wire-problem"></div>
+    </div>
+    <div class="box" style="border-color:#2a1010">
+      <div class="box-label">// 수신측 — 0과 1만 보임, 어디서 끊어야 할지 모름</div>
+      <div class="bits-row" id="recv-problem"></div>
+    </div>
+    <div class="status bad">111000011110 — 어디가 A? 어디가 B? 어디가 C?</div>
+  </div>
+
+  <div class="scene" id="scene-solution">
+    <div class="computers">
+      <div class="pc a"><div class="icon">💻</div><div class="name">A</div><div class="data">[S]11100[E]</div></div>
+      <div class="pc b"><div class="icon">💻</div><div class="name">B</div><div class="data">[S]00011[E]</div></div>
+      <div class="pc c"><div class="icon">💻</div><div class="name">C</div><div class="data">[S]1110[E]</div></div>
+    </div>
+    <div class="arrow-row"><span>↓</span><span>↓</span><span>↓</span></div>
+    <div class="box">
+      <div class="box-label">// 전선 — 똑같이 흐르지만 [S][E] 플래그가 붙어있음</div>
+      <div class="bits-row" id="wire-solution"></div>
+    </div>
+    <div class="box" style="border-color:#0a2a10">
+      <div class="box-label">// 수신측 — S~E 사이를 잘라내면 끝</div>
+      <div class="bits-row" id="recv-solution"></div>
+    </div>
+    <div class="status good" id="status-sol"> </div>
+  </div>
+</div>
+
+<script>
+let tab = 'problem', timer = null;
+const SPEED = 480;
+
+const STREAM = [
+  {v:1,c:'a'},{v:1,c:'a'},{v:1,c:'a'},{v:0,c:'a'},{v:0,c:'a'},
+  {v:0,c:'b'},{v:0,c:'b'},{v:0,c:'b'},{v:1,c:'b'},{v:1,c:'b'},
+  {v:1,c:'c'},{v:1,c:'c'},{v:1,c:'c'},{v:0,c:'c'},
+];
+
+const FRAMES = [
+  { label:'A', start:0,  end:4,  bc:'a', col:'#00d4ff', bg:'rgba(0,212,255,.08)',  border:'rgba(0,212,255,.3)' },
+  { label:'B', start:5,  end:9,  bc:'b', col:'#ff6b35', bg:'rgba(255,107,53,.08)', border:'rgba(255,107,53,.3)' },
+  { label:'C', start:10, end:13, bc:'c', col:'#39ff14', bg:'rgba(57,255,20,.06)',  border:'rgba(57,255,20,.3)'  },
+];
+
+function setTab(t) {
+  tab = t;
+  document.querySelectorAll('.tab').forEach((el,i) =>
+    el.classList.toggle('active', (i===0&&t==='problem')||(i===1&&t==='solution'))
+  );
+  document.querySelectorAll('.scene').forEach(el => el.classList.remove('active'));
+  document.getElementById('scene-'+t).classList.add('active');
+  if(timer) clearInterval(timer);
+  t === 'problem' ? runProblem() : runSolution();
+}
+
+function runProblem() {
+  const wireEl = document.getElementById('wire-problem');
+  const recvEl = document.getElementById('recv-problem');
+  recvEl.innerHTML = '';
+  let idx=0, wireBuf=[];
+
+  function step() {
+    if(idx >= STREAM.length) {
+      clearInterval(timer);
+      setTimeout(() => {
+        idx=0; wireBuf=[]; wireEl.innerHTML=''; recvEl.innerHTML='';
+        timer = setInterval(step, SPEED);
+      }, 1600);
+      return;
+    }
+    const b = STREAM[idx++];
+    wireBuf.push(b);
+    wireEl.innerHTML = wireBuf.slice(-14).map(bit =>
+      `<span class="bit bit-${bit.c}">${bit.v}</span>`
+    ).join('');
+    recvEl.querySelectorAll('.question').forEach(e=>e.remove());
+    const sp = document.createElement('span');
+    sp.className = 'bit bit-grey';
+    sp.textContent = b.v;
+    recvEl.appendChild(sp);
+    const q = document.createElement('span');
+    q.className = 'question'; q.textContent = '?';
+    recvEl.appendChild(q);
+  }
+  timer = setInterval(step, SPEED);
+}
+
+function runSolution() {
+  const wireEl = document.getElementById('wire-solution');
+  const recvEl = document.getElementById('recv-solution');
+  const statusEl = document.getElementById('status-sol');
+  recvEl.innerHTML=''; statusEl.textContent='';
+
+  const frameStream = [];
+  FRAMES.forEach(f => {
+    frameStream.push({v:'S', cls:'bit-sep', sep:true});
+    STREAM.slice(f.start, f.end+1).forEach(b => frameStream.push({v:b.v, cls:'bit-'+b.c, frame:f}));
+    frameStream.push({v:'E', cls:'bit-sep', sep:true, frameEnd:f});
+  });
+
+  let idx=0, wireBuf=[];
+
+  function step() {
+    if(idx >= frameStream.length) {
+      clearInterval(timer);
+      setTimeout(() => {
+        idx=0; wireBuf=[]; wireEl.innerHTML=''; recvEl.innerHTML=''; statusEl.textContent='';
+        timer = setInterval(step, SPEED);
+      }, 1600);
+      return;
+    }
+    const b = frameStream[idx++];
+    wireBuf.push(b);
+    wireEl.innerHTML = wireBuf.slice(-16).map(bit =>
+      `<span class="bit ${bit.cls}">${bit.v}</span>`
+    ).join('');
+    if(b.frameEnd) {
+      const f = b.frameEnd;
+      const grp = document.createElement('div');
+      grp.className = 'frame-group';
+      grp.style.cssText = `background:${f.bg};border:1px solid ${f.border};`;
+      grp.innerHTML =
+        `<span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#5070a0;padding:1px 3px">S</span>` +
+        STREAM.slice(f.start, f.end+1).map(b=>`<span style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:${f.col}">${b.v}</span>`).join('') +
+        `<span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#5070a0;padding:1px 3px">E</span>` +
+        `<span style="font-size:10px;color:${f.col};margin-left:3px">← ${f.label}</span>`;
+      recvEl.appendChild(grp);
+      statusEl.style.color = f.col;
+      statusEl.textContent = `프레임 ${f.label} 분리 완료 ✓`;
+    }
+  }
+  timer = setInterval(step, SPEED);
+}
+
+runProblem();
+</script>
+</body>
+</html>

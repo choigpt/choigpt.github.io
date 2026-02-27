@@ -162,6 +162,14 @@ public void updateScheduleStatus() {
 
 `findAllUserSettlementIdsBySettlementIdAndStatus`라는 이름인데 실제로는 `userId`를 반환한다. 이름이 암시하는 반환 타입과 실제가 다르다. 완전히 동일한 쿼리를 가진 `findActiveParticipantIds`도 중복 선언되어 있었다.
 
+**`Schedule` 엔티티 `@Builder.Default` 누락**
+
+`Schedule` 엔티티의 컬렉션 필드에 `@Builder.Default`가 없어 빌더로 생성 시 `null`이 들어간다. 이후 컬렉션을 순회하는 로직에서 NPE가 발생할 수 있다. `= new ArrayList<>()`로 초기화를 추가했다.
+
+**`ScheduleDetailResponseDto` status 필드 누락**
+
+상세 조회 응답 DTO에 `scheduleStatus` 필드가 없어 클라이언트가 스케줄 상태(`READY`/`ENDED` 등)를 알 수 없었다. 필드를 추가하고 매핑 로직에 포함했다.
+
 ---
 
 ## 해결
@@ -277,8 +285,8 @@ private void validateScheduleBelongsToClub(Schedule schedule, Long clubId) {
 | 배치 로직 비즈니스 서비스 안에 혼재 | ✅ 해결 — `ScheduleBatchService` 분리 |
 | 전체 컬렉션 로딩 삭제 | ✅ 해결 — 직접 삭제로 교체 |
 | 메서드명 불일치 + 중복 | ✅ 해결 — 이름 수정 + 중복 제거 |
-| `@Builder.Default` 누락 | ✅ 해결 — 적용 |
-| `ScheduleDetailResponseDto` status 누락 | ✅ 해결 — 필드 추가 |
+| `@Builder.Default` 누락 | ✅ 해결 — 컬렉션 필드 초기화 추가 |
+| `ScheduleDetailResponseDto` status 누락 | ✅ 해결 — 필드 추가 및 매핑 |
 | `updateSchedule()` 비용 변경 부분 실패 정합성 | ⚠️ 잔존 — 비용 변경 기능 운영 환경 비활성화로 수용 |
 | `ScheduleDeletedEvent` 리스너 실패 시 고아 Settlement | ⚠️ 잔존 — 배치 스캔으로 정리 예정 |
 | `@Scheduled` 다중 서버 중복 실행 | ⚠️ 잔존 — `@SchedulerLock` 미적용 |
@@ -286,11 +294,11 @@ private void validateScheduleBelongsToClub(Schedule schedule, Long clubId) {
 
 ---
 
-## 교훈
+## 정리하며
 
 `joinSchedule()`의 Race Condition은 찾기 쉽지 않았다. 로컬에서는 동시 요청을 흉내 내기 어렵고, 단위 테스트는 순차적으로 실행되니 보이지 않는다. "조회하고 체크하고 저장한다"는 패턴 자체가 Race Condition의 씨앗이다. DB 레벨의 Unique Constraint가 없으면 애플리케이션 레벨의 체크는 동시 요청 앞에서 무력하다.
 
-`deleteSchedule()`의 지갑 동결 버그는 더 고전적인 문제였다. `joinSchedule()`이 홀드를 걸었으면 `deleteSchedule()`이 풀어줘야 하는데, 만든 사람과 지운 사람이 달랐거나 순서가 뒤바뀌어 그냥 넘어간 것이다. [모임 도메인 편](/club-concurrency-ghost-members/)의 `leaveClub()`에서 채팅방을 지우지 않은 것과 같은 패턴이다.
+`deleteSchedule()`의 지갑 동결 버그는 더 고전적인 문제였다. `joinSchedule()`이 홀드를 걸었으면 `deleteSchedule()`이 풀어줘야 하는데 풀어주지 않았다. [모임 도메인 편](/club-concurrency-ghost-members/)의 `leaveClub()`에서 채팅방을 지우지 않은 것과 같은 패턴이다.
 
 > **생성과 해제는 항상 짝을 이뤄야 한다.**
 > 지갑에 홀드를 걸었다면 해제하는 경로가 반드시 존재해야 한다. 정상 흐름뿐 아니라 삭제, 취소, 예외 상황에서도 빠짐없이.

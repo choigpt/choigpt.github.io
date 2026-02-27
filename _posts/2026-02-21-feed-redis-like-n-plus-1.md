@@ -161,7 +161,7 @@ public class FeedService {
 
 **이미지 URL 검증 없음**: `javascript:alert(1)`, `file:///etc/passwd` 같은 값이 그대로 저장될 수 있었다. presigned URL 기반 S3 업로드 구조인데 서버에서 S3 도메인 검증을 하지 않고 있었다.
 
-**`likedFeedIds`가 항상 빈 Set**: `FeedMainService.java`에서 `Set<Long> likedFeedIds = Collections.emptySet()`으로 하드코딩되어 있었다. 배치 조회로 채울 의도로 만든 필드인데 빈 Set으로 남아 N+1 문제를 가중시켰다.
+**`likedFeedIds`가 항상 빈 Set**: `FeedMainService.java`에서 `Set<Long> likedFeedIds = Collections.emptySet()`으로 하드코딩되어 있었다. 빈 Set으로 남아 N+1 문제를 가중시켰다.
 
 **리피드 시 원본 피드 접근 권한 미확인**: 리피드를 올릴 모임의 멤버십만 확인하고, 원본 피드가 속한 모임에 접근 권한이 있는지는 확인하지 않았다.
 
@@ -251,11 +251,10 @@ private void ensureLikeCacheWarmed(Long feedId) {
 | 이미지 URL 검증 없음 | ✅ 해결 — S3 도메인 패턴 검증 추가 |
 | `likedFeedIds` 항상 빈 Set | ✅ 해결 — 배치 조회 구현 |
 | 리피드 시 원본 피드 접근 권한 미확인 | ✅ 해결 — 모임 멤버십 검증 추가 |
-| 댓글 삭제 권한에 모임 LEADER 미반영 | ⚠️ 잔존 — 설계 논의 필요 |
 
 ---
 
-## 교훈
+## 정리하며
 
 Redis를 도입해 성능을 높이려는 시도 자체는 옳았다. 문제는 Lua → Stream → Consumer → DB로 이어지는 파이프라인을 만들어두고, 각 단계의 검증을 챙기지 않은 것이다. Redis에서 비동기로 DB를 따라가게 해놓고 조회는 여전히 `getFeedLikes().size()`로 DB를 읽으니, Redis를 도입한 의미가 없었다.
 

@@ -218,7 +218,7 @@ if (userClub.getClubRole() != ClubRole.LEADER) {
 
 **`ClubLike` 미사용 엔티티**
 
-`ClubLike` 엔티티와 `club_like` 테이블이 존재하지만 참조하는 Repository, Service, Controller가 전무하다. Feed 도메인처럼 Redis + Lua로 구현하려다 미완성으로 남은 것으로 보인다.
+`ClubLike` 엔티티와 `club_like` 테이블이 존재하지만 참조하는 Repository, Service, Controller가 전무하다. 왜 남아 있는지는 코드만으로는 알 수 없다.
 
 ---
 
@@ -314,16 +314,13 @@ record ClubWithMemberCount(Club club, Long memberCount) {}
 | `findMyClubs` 상관 서브쿼리 | ✅ 해결 — `memberCount` 컬럼 직접 사용 |
 | `Object[]` 반환 + 구조 불일치 | ✅ 해결 — `ClubWithMemberCount` record 통일 |
 | 잘못된 ErrorCode | ✅ 해결 — `CLUB_MODIFY_FORBIDDEN`으로 변경 |
-| 데드 코드 (`createOrderSpecifiers`) | ✅ 해결 — 제거 |
-| 중복/미사용 import | ✅ 해결 — 정리 |
 | 정원 체크 Race Condition | ⚠️ 잔존 — SELECT + INSERT 원자성 보장 필요 |
 | LEADER 이전 / 모임 삭제 불가 | ⚠️ 잔존 — 기능 미구현 |
 | `ClubLike` 미사용 엔티티 | ⚠️ 잔존 — 구현 또는 제거 결정 필요 |
-| `List.contains()` O(n) | ⚠️ 잔존 — `Set`으로 변환 필요 |
 
 ---
 
-## 교훈
+## 정리하며
 
 `memberCount++`와 `user_club` Unique Constraint 누락은 따로 보면 작은 실수처럼 보인다. 그런데 둘이 겹치면 동시에 두 명이 가입할 때 중복 레코드가 생기고, 멤버 수도 2번 증가한다. 동시성 문제는 단독으로 보면 재현하기 어렵고, 조합되면 데이터가 조용히 틀어지기 때문에 테스트로 잡기가 가장 어렵다.
 
