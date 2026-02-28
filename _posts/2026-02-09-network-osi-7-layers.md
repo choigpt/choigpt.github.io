@@ -18,15 +18,15 @@ category: CS
 
 우리가 생각한 0과 1은 이렇게 생겼죠.
 
-![[signal_ideal_2.png]]
+![이상적인 디지털 신호](/signal_ideal_2.png)
 
 하지만 전선을 통과하면 실제로는 이렇게 됩니다:
 
-![[signal_wire.png]]
+![전선 통과 후 신호](/signal_wire.png)
 
 모서리가 둥글어집니다. 속도를 빠르게 올리면 신호가 완전히 올라가기도 전에 다음 신호가 시작돼서
 
-![[signal_compare_5.png]]
+![고속 전송 시 신호 판별 문제](/signal_compare_5.png)
 
 "이게 0이야? 1이야?" 판별이 어려워집니다.
 
@@ -47,13 +47,13 @@ category: CS
 
 스위치는 **MAC 주소(2계층 주소)** 기반으로 프레임을 전달하고, 목적지 MAC이 어느 포트에 있는지 테이블을 학습해서 **필요한 포트로만 포워딩**합니다.
 
-![[switch-animation.html]]
+<iframe src="/assets/html/switch-animation.html" width="100%" height="480" frameborder="0" style="border-radius:8px;"></iframe>
 
 ## 규칙 2: 프레임 단위 구분
 
 여러 장치가 동시에 보내면 수신 측에는 비트가 **쭉 붙어서** 들어옵니다. 어디서 끊어야 할지 알 수가 없죠. 그래서 데이터를 **프레임(Frame)** 단위로 포장합니다.
 
-![[framing-animation.html]]
+<iframe src="/assets/html/framing-animation.html" width="100%" height="480" frameborder="0" style="border-radius:8px;"></iframe>
 
 실제로는 앞뒤 플래그 비트열, 길이(length) 필드, 혹은 이스케이프(비트/바이트 스터핑) 같은 방식으로 경계를 표시합니다.
 
@@ -151,7 +151,7 @@ IP의 역할은 네트워크 간 전달에 한정됩니다.
 
 > **한 문장 요약**: IP는 "전달을 위한 최소 규칙"만 제공하는, 비연결·비신뢰 네트워크 프로토콜이다.
 
-![[ip-encap-demo.html]]
+<iframe src="/assets/html/ip-encap-demo.html" width="100%" height="560" frameborder="0" style="border-radius:8px;"></iframe>
 
 ---
 
@@ -309,7 +309,7 @@ recv() 호출 시 사용자 공간 전달
 
 > **한 문장 핵심**: 포트 매핑은 커널 TCP 스택이 4-tuple을 키로 소켓 구조체를 조회하는 과정이며, 파일 디스크립터는 그 소켓 구조체를 사용자 공간에 연결하는 핸들이다.
 
-![[socket-flow2.html]]
+<iframe src="/assets/html/socket-flow2.html" width="100%" height="560" frameborder="0" style="border-radius:8px;"></iframe>
 
 ---
 
