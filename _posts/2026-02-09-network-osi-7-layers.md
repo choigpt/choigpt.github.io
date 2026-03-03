@@ -18,15 +18,15 @@ category: CS
 
 우리가 생각한 0과 1은 이렇게 생겼죠.
 
-![이상적인 디지털 신호](/signal_ideal_2.png)
+![이상적인 디지털 신호](/assets/img/posts/signal_ideal_2.png)
 
 하지만 전선을 통과하면 실제로는 이렇게 됩니다:
 
-![전선 통과 후 신호](/signal_wire.png)
+![전선 통과 후 신호](/assets/img/posts/signal_wire.png)
 
 모서리가 둥글어집니다. 속도를 빠르게 올리면 신호가 완전히 올라가기도 전에 다음 신호가 시작돼서
 
-![고속 전송 시 신호 판별 문제](/signal_compare_5.png)
+![고속 전송 시 신호 판별 문제](/assets/img/posts/signal_compare_5.png)
 
 "이게 0이야? 1이야?" 판별이 어려워집니다.
 

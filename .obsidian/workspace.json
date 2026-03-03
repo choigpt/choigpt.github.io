@@ -541,12 +541,14 @@
             "id": "bf006bf394833e93",
             "type": "leaf",
             "state": {
-              "type": "image",
+              "type": "split-diff-view",
               "state": {
-                "file": "signal_compare_1.png"
+                "aFile": "_posts/2026-02-09-network-osi-7-layers.md",
+                "bFile": "_posts/2026-02-09-network-osi-7-layers.md",
+                "aRef": ""
               },
-              "icon": "lucide-image",
-              "title": "signal_compare_1"
+              "icon": "diff",
+              "title": "Diff: 2026-02-09-network-osi-7-layers  (Working Tree)"
             }
           }
         ],
@@ -726,11 +728,14 @@
   },
   "active": "bf006bf394833e93",
   "lastOpenFiles": [
+    "signal_compare_1.png",
+    "_posts/2026-02-09-network-osi-7-layers.md.tmp.16640.1772517893177",
+    "_posts/2026-02-09-network-osi-7-layers.md.tmp.16640.1772517892039",
+    "_posts/2026-02-09-network-osi-7-layers.md.tmp.16640.1772517890766",
     "signal_ideal.png",
     "assets/img/posts/signal_compare_5.png",
     "assets/img/posts/signal_wire.png",
     "assets/img/posts/signal_ideal_2.png",
-    "signal_compare_1.png",
     "signal_wire.png",
     "signal_ideal_2.png",
     "signal_compare_5.png",
@@ -767,11 +772,7 @@
     "assets/html/switch-animation.html",
     "assets/html/framing-animation.html",
     "assets/html",
-    "assets/img/posts",
-    "_posts/2026-02-24-buddkit-trouble-shooting-10-old.md.bak",
-    "_posts/2026-02-24-buddkit-trouble-shooting-11.md.bak",
     "attachments/Pasted image 20260224161446.png",
-    "attachments/Pasted image 20260224165544.png",
     "Untitled.canvas"
   ]
 }
