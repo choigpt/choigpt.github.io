@@ -389,8 +389,8 @@ public Feed createRefeed(String content, Club targetClub, User user) {
 
 ## 시리즈 탐색
 
-**◀ 이전 글**  
+**◀ 이전 글**
 [채팅 도메인 리팩토링 — WebSocket 핸들러부터 커서 페이징 DTO까지](/chat-domain-deep-refactoring/)
 
-**다음 글 ▶**  
+**▶ 다음 글**
 [Finance 도메인 부하 테스트 — Mock 없이는 보이지 않던 버그](/finance-domain-load-test-mock-exposed-hidden-bug/)

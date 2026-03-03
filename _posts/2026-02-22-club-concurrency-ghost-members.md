@@ -333,8 +333,8 @@ record ClubWithMemberCount(Club club, Long memberCount) {}
 
 ## 시리즈 탐색
 
-**◀ 이전 글**  
+**◀ 이전 글**
 [피드 도메인 — Redis 좋아요 파이프라인의 허점과 N+1](/feed-redis-like-n-plus-1/)
 
-**다음 글 ▶**  
+**▶ 다음 글**
 [스케줄 도메인 — 권한 체크 순서 하나가 자금 동결로 이어지는 구조](/schedule-permission-fund-freeze/)

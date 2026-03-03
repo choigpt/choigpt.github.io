@@ -265,8 +265,8 @@ Redis를 도입해 성능을 높이려는 시도 자체는 옳았다. 문제는 
 
 ## 시리즈 탐색
 
-**◀ 이전 글**  
+**◀ 이전 글**
 [알림 SSE 구현 중 발견한 연쇄 버그와 구조 개선](/sse-notification-chained-bugs/)
 
-**다음 글 ▶**  
+**▶ 다음 글**
 [모임 도메인 — 동시성 구멍과 유령 멤버](/club-concurrency-ghost-members/)

@@ -213,5 +213,8 @@ Caused by: org.hibernate.PersistentObjectException: detached entity passed to pe
 
 ## 시리즈 탐색
 
-**◀ 이전 글**  
+**◀ 이전 글**
 [피드 도메인 리팩토링 — 442줄 서비스를 4개로 쪼갠 기록](/feed-domain-442-line-service-split/)
+
+**▶ 다음 글**
+[SSE 알림 부하 테스트 — 7가지 시나리오로 찾은 연결 한계와 잔여 병목](/sse-notification-load-test-analysis/)

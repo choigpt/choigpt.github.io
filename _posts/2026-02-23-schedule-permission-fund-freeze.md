@@ -307,8 +307,8 @@ private void validateScheduleBelongsToClub(Schedule schedule, Long clubId) {
 
 ## 시리즈 탐색
 
-**◀ 이전 글**  
+**◀ 이전 글**
 [모임 도메인 — 동시성 구멍과 유령 멤버](/club-concurrency-ghost-members/)
 
-**다음 글 ▶**  
-[지갑·결제 도메인 — 토스 승인 후 DB가 죽으면 자금이 유실될 수 있다](/wallet-payment-toss-db-failure/)
+**▶ 다음 글**
+[지갑 결제 도메인 — 토스 승인 후 DB가 죽으면 자금이 유실될 수 있다](/wallet-payment-toss-db-failure/)

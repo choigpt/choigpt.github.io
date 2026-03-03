@@ -11,17 +11,546 @@
             "id": "db6cc35d5c9bba2d",
             "type": "leaf",
             "state": {
+              "type": "markdown",
+              "state": {
+                "file": "_posts/2026-02-09-network-osi-7-layers.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "2026-02-09-network-osi-7-layers"
+            }
+          },
+          {
+            "id": "23a6c79b9bdfa63d",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "_posts/2026-02-26-feed-performance-load-test.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "2026-02-26-feed-performance-load-test"
+            }
+          },
+          {
+            "id": "e3df9626061262d4",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Untitled 1.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Untitled 1"
+            }
+          },
+          {
+            "id": "6b9ad0f013c31fea",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Untitled 2.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Untitled 2"
+            }
+          },
+          {
+            "id": "173964238f55ffe2",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Untitled 2.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Untitled 2"
+            }
+          },
+          {
+            "id": "aad3c1f2aa39acd1",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Untitled 3.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Untitled 3"
+            }
+          },
+          {
+            "id": "dcbe9b51ffefe632",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "_posts/2026-01-20- Gauss-Markov-Theorem.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "2026-01-20- Gauss-Markov-Theorem"
+            }
+          },
+          {
+            "id": "9dc558ba57e81688",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "_posts/2026-02-27-multi-domain-refactoring-phase1-2.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "2026-02-27-multi-domain-refactoring-phase1-2"
+            }
+          },
+          {
+            "id": "f61211c8923ffb02",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "_posts/2026-02-23-schedule-permission-fund-freeze.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "2026-02-23-schedule-permission-fund-freeze"
+            }
+          },
+          {
+            "id": "6477ce7340bdef9a",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "_posts/2026-02-17-spring-security-jwt-structure-bugs.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "2026-02-17-spring-security-jwt-structure-bugs"
+            }
+          },
+          {
+            "id": "770b439c64dabcf7",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "arp protocol.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "arp protocol"
+            }
+          },
+          {
+            "id": "03b76fcd5a2a5347",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "sts.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "sts"
+            }
+          },
+          {
+            "id": "15b71935e403b39c",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "cross entropy.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "cross entropy"
+            }
+          },
+          {
+            "id": "9b82d3319e52a29f",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "notification-api-performance-improvement.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "notification-api-performance-improvement"
+            }
+          },
+          {
+            "id": "a0c2b72e8bf1a1a7",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "_posts/2026-02-09-network-osi-7-layers.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "2026-02-09-network-osi-7-layers"
+            }
+          },
+          {
+            "id": "26145c812ea860a5",
+            "type": "leaf",
+            "state": {
+              "type": "release-notes",
+              "state": {
+                "currentVersion": "1.12.4"
+              },
+              "icon": "lucide-book-up",
+              "title": "릴리즈 노트 1.12.4"
+            }
+          },
+          {
+            "id": "afea652e32d8871b",
+            "type": "leaf",
+            "state": {
               "type": "split-diff-view",
               "state": {
-                "aFile": "_posts/2026-02-25-chat-subquery-redis-listener.md",
-                "bFile": "_posts/2026-02-25-chat-subquery-redis-listener.md",
+                "aFile": "websocket.md",
+                "bFile": "websocket.md",
                 "aRef": ""
               },
               "icon": "diff",
-              "title": "Diff: 2026-02-25-chat-subquery-redis-listener  (Working Tree)"
+              "title": "Diff: websocket  (Working Tree)"
+            }
+          },
+          {
+            "id": "c0576526aeeb8310",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "lstm.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "lstm"
+            }
+          },
+          {
+            "id": "7ea837f9d73ab342",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "cbow skep gram.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "cbow skep gram"
+            }
+          },
+          {
+            "id": "79cac8d5d5e35848",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "bath normalization.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "bath normalization"
+            }
+          },
+          {
+            "id": "a0a6d2f6e65a1c39",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "배열.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "배열"
+            }
+          },
+          {
+            "id": "bf3e239393723408",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "리ㅡ트.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "리ㅡ트"
+            }
+          },
+          {
+            "id": "215cacb21c83fa6b",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Untitled 5.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Untitled 5"
+            }
+          },
+          {
+            "id": "73f0d4ca1c63fb2b",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "_posts/2026-03-01-sse-notification-load-test-analysis.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "2026-03-01-sse-notification-load-test-analysis"
+            }
+          },
+          {
+            "id": "1a5dbcfc56b6701d",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "채팅.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "채팅"
+            }
+          },
+          {
+            "id": "52bf7dec42efc82f",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "피드이거이거이거.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "피드이거이거이거"
+            }
+          },
+          {
+            "id": "eb92223a82ff61d6",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "클럽.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "클럽"
+            }
+          },
+          {
+            "id": "6562072ce05a6cc6",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "검색.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "검색"
+            }
+          },
+          {
+            "id": "fa00c1aafcc2f811",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "중간 리팩토링.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "중간 리팩토링"
+            }
+          },
+          {
+            "id": "d05509bf8ed98183",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "다양한 테스트용 리패곹링.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "다양한 테스트용 리패곹링"
+            }
+          },
+          {
+            "id": "7f00092eaadffe3b",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "변경후 알림 테스트.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "변경후 알림 테스트"
+            }
+          },
+          {
+            "id": "e9eb4ff9ba66d3c6",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "채팅 ㅏㄷ양한 테스트용 리팩토링.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "채팅 ㅏㄷ양한 테스트용 리팩토링"
+            }
+          },
+          {
+            "id": "4c9bc12687e2eecc",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "피드 다양한 실험.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "피드 다양한 실험"
+            }
+          },
+          {
+            "id": "b5a508c16655e953",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "리팩토링후 결제 다양한 실험.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "리팩토링후 결제 다양한 실험"
+            }
+          },
+          {
+            "id": "8027402520d98b5c",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "검색 es fulltext 비교.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "검색 es fulltext 비교"
+            }
+          },
+          {
+            "id": "6024c0bdd17742bc",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "한번더 리팩토링.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "한번더 리팩토링"
+            }
+          },
+          {
+            "id": "d85feeebd3be7224",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "디비별 ㅏㅊ이 실험시도.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "디비별 ㅏㅊ이 실험시도"
+            }
+          },
+          {
+            "id": "e3aed15d56d98385",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "mysql postgre 계획 ㅣㅂ교.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "mysql postgre 계획 ㅣㅂ교"
+            }
+          },
+          {
+            "id": "bf006bf394833e93",
+            "type": "leaf",
+            "state": {
+              "type": "image",
+              "state": {
+                "file": "signal_compare_1.png"
+              },
+              "icon": "lucide-image",
+              "title": "signal_compare_1"
             }
           }
-        ]
+        ],
+        "currentTab": 38
       }
     ],
     "direction": "vertical"
@@ -44,7 +573,7 @@
                 "autoReveal": false
               },
               "icon": "lucide-folder-closed",
-              "title": "Files"
+              "title": "파일 탐색기"
             }
           },
           {
@@ -78,7 +607,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 422.5
+    "width": 301.5
   },
   "right": {
     "id": "d2f8c0df3a4fad51",
@@ -156,12 +685,13 @@
             "state": {
               "type": "outline",
               "state": {
+                "file": "_posts/2026-02-09-network-osi-7-layers.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "Outline"
+              "title": "Outline of 2026-02-09-network-osi-7-layers"
             }
           },
           {
@@ -179,69 +709,69 @@
       }
     ],
     "direction": "horizontal",
-    "width": 609.5
+    "width": 284.5
   },
   "left-ribbon": {
     "hiddenItems": {
+      "switcher:빠른 전환기 열기": false,
+      "graph:그래프 뷰 열기": false,
+      "canvas:새 캔버스 만들기": false,
+      "daily-notes:오늘의 일일 노트 열기": false,
+      "templates:템플릿 삽입": false,
+      "command-palette:명령어 팔레트 열기": false,
+      "bases:새 베이스 생성하기": false,
       "templater-obsidian:Templater": false,
-      "switcher:Open quick switcher": false,
-      "graph:Open graph view": false,
-      "canvas:Create new canvas": false,
-      "daily-notes:Open today's daily note": false,
-      "templates:Insert template": false,
-      "command-palette:Open command palette": false,
-      "bases:Create new base": false,
       "obsidian-git:Open Git source control": false
     }
   },
-  "active": "db6cc35d5c9bba2d",
+  "active": "bf006bf394833e93",
   "lastOpenFiles": [
-    "_posts/2026-02-26-notification-api-performance-improvement.md",
-    "_posts/2026-02-25-chat-subquery-redis-listener.md",
-    "_posts/2026-02-24-user-lifecycle-bugs.md",
-    "_posts/2026-02-23-wallet-payment-toss-db-failure.md",
-    "_posts/2026-02-18-jwt-sse-auth-filter-mismatch.md",
-    "_posts/2026-02-17-spring-security-jwt-structure-bugs.md",
-    "_posts/2026-02-20-sse-notification-chained-bugs.md",
-    "_posts/2026-02-01-grayscale-filter.md",
-    "_posts/2026-02-05-reinforcement-learning-basics.md",
-    "_posts/2026-02-09-network-basics.md",
-    "_posts/2026-02-11-skip-connection.md",
-    "_posts/2026-02-13-spring-batch.md",
-    "_posts/2026-02-15-bubble-sort.md",
-    "_posts/2026-02-16-selection-sort.md",
-    "_posts/2026-02-19-sse-auth-filter-removal.md",
+    "signal_ideal.png",
+    "assets/img/posts/signal_compare_5.png",
+    "assets/img/posts/signal_wire.png",
+    "assets/img/posts/signal_ideal_2.png",
+    "signal_compare_1.png",
+    "signal_wire.png",
+    "signal_ideal_2.png",
+    "signal_compare_5.png",
+    "_posts/2026-03-03-search-engine-abstraction-es-vs-fulltext.md",
+    "검색 es fulltext 비교.md",
+    "favicon.png",
+    "검색.md",
+    "리팩토링후 결제 다양한 실험.md",
+    "디비별 ㅏㅊ이 실험시도.md",
+    "_posts/2026-03-03-search-load-test-not-exists-optimization.md",
+    "_posts/2026-03-03-multi-domain-refactoring-errorcode-code-quality.md",
+    "_posts/2026-01-30-cnn.md",
+    "_posts/2026-03-03-multi-vendor-comparison-postgresql-dynamodb-rabbitmq.md",
+    "_posts/2026-03-03-multi-vendor-comparison-postgresql-dynamodb-rabbitmq.md.tmp.16640.1772514773765",
+    "_posts/2026-03-03-feed-storage-abstraction-lua-script-backend-comparison.md",
+    "_posts/2026-03-03-notification-storage-abstraction-mysql-mongodb.md",
+    "한번더 리팩토링.md",
+    "활성화 함수.md",
+    "arp protocol.md",
+    "autoencoder.md",
+    "cbow skep gram.md",
     "README.md",
-    "spring-security-jwt-structure-bugs.md",
-    "jwt-sse-auth-filter-mismatch.md",
-    "user-lifecycle-bugs.md",
-    "jwt-sse-auth-filter-mismatch 1.md",
-    "_posts/2026-02-21-feed-redis-like-n-plus-1.md",
-    "sse-auth-filter-removal.md",
-    "_posts/2026-02-26-notification-api-13-to-100-percent.md",
-    "_posts/2026-01-22-optimization.md",
-    "_posts/2026-02-23-schedule-permission-fund-freeze.md",
-    "_posts/2026-02-24-chat-subquery-redis-listener.md",
+    "dfs.md",
+    "dto.md",
+    "finance-domain-load-test-mock-exposed-hidden-bug.md",
+    "lstm.md",
+    "notification-api-performance-improvement.md",
+    "_posts/2026-02-26-feed-performance-load-test.md",
+    "Untitled.md",
+    "_posts/2026-02-27-feed-domain-querydsl-refactoring.md",
+    "2026-02-09-network-osi-7-layers.pdf",
+    "assets/html/ip-encap-demo.html",
+    "assets/html/socket-flow2.html",
+    "assets/html/switch-animation.html",
+    "assets/html/framing-animation.html",
+    "assets/html",
+    "assets/img/posts",
     "_posts/2026-02-24-buddkit-trouble-shooting-10-old.md.bak",
     "_posts/2026-02-24-buddkit-trouble-shooting-11.md.bak",
-    "_posts/2026-02-19-buddkit-backend-refactoring-index",
-    "LICENSE",
-    "Gemfile",
-    "404.html",
     "attachments/Pasted image 20260224161446.png",
     "attachments/Pasted image 20260224165544.png",
-    "attachments/Pasted image 20260224161410.png",
-    "assets/img/favicons/apple-icon-precomposed.png",
-    "attachments/Pasted image 20260224165532.png",
-    "attachments/Pasted image 20260224162101.png",
-    "attachments/Pasted image 20260224161911.png",
-    "attachments/Pasted image 20260224161808.png",
-    "ML-AI/딥러닝/regularization-demo.html",
-    "attachments/osi-assets/tcp-handshake.html",
-    "attachments/osi-assets/osi-wire.html",
-    "attachments/osi-assets/osi-capsule.html",
-    "attachments/Pasted image 20260224161829.png",
-    "Pasted image 20260224165544.png",
     "Untitled.canvas"
   ]
 }

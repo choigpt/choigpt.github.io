@@ -145,8 +145,8 @@ List<Long> joinedClubIds = userClubRepository.findByClubIdsByUserId(userId);  //
 
 ## 시리즈 탐색
 
-**◀ 이전 글**  
+**◀ 이전 글**
 [Spring Security + JWT 구조 전반에 걸친 버그 및 설계 문제](/spring-security-jwt-structure-bugs/)
 
-**다음 글 ▶**  
+**▶ 다음 글**
 [SseAuthenticationFilter 제거 — SSE 인증을 필터 하나로 단일화](/sse-auth-filter-removal/)

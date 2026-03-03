@@ -322,8 +322,8 @@ debug 레벨이어야 할 started/completed 로그도 모두 제거했다.
 
 ## 시리즈 탐색
 
-**◀ 이전 글**  
+**◀ 이전 글**
 [멀티 도메인 코드 정리 — 표면 정리부터 Semaphore 제거까지](/multi-domain-cleanup-surface-to-semaphore/)
 
-**다음 글 ▶**  
+**▶ 다음 글**
 [피드 도메인 리팩토링 — 442줄 서비스를 4개로 쪼갠 기록](/feed-domain-442-line-service-split/)

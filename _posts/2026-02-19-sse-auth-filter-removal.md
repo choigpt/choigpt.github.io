@@ -131,8 +131,8 @@ private String extractToken(HttpServletRequest request) {
 
 ## 시리즈 탐색
 
-**◀ 이전 글**  
+**◀ 이전 글**
 [JWT 인증 흐름 불일치로 인한 SSE 인증 실패 버그](/jwt-sse-auth-filter-mismatch/)
 
-**다음 글 ▶**  
+**▶ 다음 글**
 [알림 SSE 구현 중 발견한 연쇄 버그와 구조 개선](/sse-notification-chained-bugs/)
