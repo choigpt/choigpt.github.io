@@ -1,6 +1,6 @@
 ---
 title: 멀티 도메인 코드 정리 — 표면 정리부터 Semaphore 제거까지
-date: 2026-02-27
+date: 2026-02-28
 tags:
   - Spring
   - Java
@@ -11,16 +11,16 @@ tags:
   - 동시성
   - 설계
 permalink: /multi-domain-cleanup-surface-to-semaphore/
-excerpt: 성능 개선 사이클을 돌리면서 코드를 다시 보다 보니 가독성이 떨어지는 곳들이 눈에 걸렸다.
-  IllegalArgumentException이 CustomException으로, ResponseEntity<?>가 구체 타입으로, 그리고
-  NotificationService 안에 숨어있던 Redis 카운터 로직이 별도 Bean으로 분리됐다.
+excerpt: 성능 개선 사이클 중 가독성이 낮은 코드를 식별했다.
+  IllegalArgumentException을 CustomException으로, ResponseEntity<?>를 구체 타입으로 변경하고,
+  NotificationService 내부의 Redis 카운터 로직을 별도 Bean으로 분리했다.
 ---
 
 ## 개요
 
-목표는 전체 시스템의 성능과 품질을 함께 끌어올리는 것이었다. 사이클을 돌리면서 진행하다 보니 성능 작업 중에 코드를 다시 보게 되는 순간들이 생겼고, 읽기 어렵거나 책임이 뒤섞인 곳들이 자연스럽게 눈에 걸렸다.
+목표는 전체 시스템의 성능과 코드 품질을 함께 개선하는 것이었다. 성능 작업 중 코드를 재검토하면서 가독성이 낮거나 책임이 혼재된 부분을 식별했다.
 
-체계적인 계획보다는 사이클 중에 눈에 걸리는 것을 고쳐나간 방식이라 도메인별 깊이가 고르지 않다. Phase 1은 Chat·Feed·Club·Notification 전 도메인을 대상으로 표면적인 문제를 쓸어냈고, Phase 2는 알림 모듈에 집중해 성능 작업 중 미뤄뒀던 구조 문제들을 정리했다. Redis 카운터 로직 분리, 병렬 SSE 전송, Executor 통합이 주요 내용이다.
+체계적인 계획보다는 사이클 중 식별된 문제를 순차적으로 수정하는 방식이라 도메인별 깊이가 고르지 않다. Phase 1은 Chat·Feed·Club·Notification 전 도메인을 대상으로 표면적인 문제를 쓸어냈고, Phase 2는 알림 모듈에 집중해 성능 작업 중 미뤄뒀던 구조 문제들을 정리했다. Redis 카운터 로직 분리, 병렬 SSE 전송, Executor 통합이 주요 내용이다.
 
 ---
 
@@ -28,7 +28,7 @@ excerpt: 성능 개선 사이클을 돌리면서 코드를 다시 보다 보니 
 
 ### Chat
 
-가장 먼저 눈에 띈 건 예외 처리 방식이었다. `IllegalArgumentException`을 그대로 던지고 있었고, `existsByXxx` 대신 `findById` + `.isPresent()` 조합을 쓰는 곳이 여러 군데였다.
+첫 번째 수정 대상은 예외 처리 방식이었다. `IllegalArgumentException`을 그대로 던지고 있었고, `existsByXxx` 대신 `findById` + `.isPresent()` 조합을 쓰는 곳이 여러 군데였다.
 
 ```java
 // 수정 전 — 도메인 맥락 없는 런타임 예외
@@ -60,7 +60,7 @@ private static final int CLUB_CHUNK_SIZE = 5;
 
 ### Club
 
-`withdraw()` 메서드명이 금융 용어처럼 읽혀서 `leaveClub()`으로 변경했다. `Optional.get()` 직접 호출을 `Optional.map().orElse()` 패턴으로 교체했다. null을 직접 다루지 않는 방향이다. 다른 도메인에 비해 구조적 문제가 적어 변경 범위가 작았다.
+`withdraw()` 메서드명이 금융 용어와 혼동될 수 있어 `leaveClub()`으로 변경했다. `Optional.get()` 직접 호출을 `Optional.map().orElse()` 패턴으로 교체했다. null을 직접 다루지 않는 방향이다. 다른 도메인에 비해 구조적 문제가 적어 변경 범위가 작았다.
 
 ### Notification Controller
 
@@ -70,7 +70,7 @@ private static final int CLUB_CHUNK_SIZE = 5;
 
 ## Phase 2 — 알림 모듈 후속 정리
 
-성능 작업을 하다 보면 가독성이나 테스트 가능성을 챙기기가 어렵다. 알림 모듈이 딱 그랬다. 동작은 하는데 `NotificationService` 안에 Redis 로직이 섞여 있었고, 복구 로직에 Semaphore가 달려 있었고, Executor 설정이 두 파일에 나뉘어 있었다. 기능 추가도 아니고 새로운 개념도 아닌, 그냥 밀린 정리를 한 것이다.
+성능 작업 과정에서 가독성과 테스트 가능성 개선이 지연된 부분이 있었다. 알림 모듈이 해당됐다. `NotificationService` 안에 Redis 로직이 혼재했고, 복구 로직에 Semaphore가 설정돼 있었고, Executor 설정이 두 파일에 분산돼 있었다. 이 단계에서 해당 구조 문제를 정리했다.
 
 ### NotificationUnreadCounter 분리 (SRP)
 
@@ -183,9 +183,9 @@ if (!semaphore.tryAcquire()) {
 
 ## 정리하며
 
-Phase 1에서 가장 많이 발견된 패턴은 "만들어뒀는데 안 쓰는 것"이었다. 이미 `existsById`가 있는데 `findById().isPresent()`를 쓰거나, `CustomException`이 있는데 `IllegalArgumentException`을 던지거나, 헬퍼 메서드가 있는데 인라인으로 반복하거나. 도메인마다 작업하는 사람이 달라서 생긴 관습 불일치였다.
+Phase 1에서 반복적으로 발견된 패턴은 "이미 존재하지만 사용되지 않는 기능"이었다. `existsById`가 있는데 `findById().isPresent()`를 사용하거나, `CustomException`이 있는데 `IllegalArgumentException`을 던지거나, 헬퍼 메서드가 있는데 인라인으로 반복하는 등의 사례다. 도메인별 작업자가 달라 생긴 관습 불일치였다.
 
-Phase 2의 Semaphore 제거는 "보호 로직이 오히려 서비스를 해친다"는 사례였다. 재시작 후 대규모 재접속 시 복구 알림의 대부분이 무음으로 스킵되고 있었는데, 로그에 warn만 찍혀서 알아채기 어려웠다. 실제로 이 문제는 `sse_sent=false` 레코드가 누적되면서 다음 재연결 때마다 복구 대상이 점점 늘어나는 형태로 드러났을 것이다.
+Phase 2의 Semaphore 제거는 보호 로직이 오히려 서비스에 부정적 영향을 준 사례다. 재시작 후 대규모 재접속 시 복구 알림 대부분이 무음으로 스킵됐으며, 로그에 warn만 기록되어 발견이 어려웠다. 이 문제는 `sse_sent=false` 레코드가 누적되면서 다음 재연결 시 복구 대상이 증가하는 형태로 나타난다.
 
 > **제한 로직을 추가하기 전에, 그 제한이 실패했을 때 어떻게 동작하는지를 먼저 확인해야 한다.**
 > tryAcquire()가 false를 반환할 때 "그냥 넘어가는" 방식은 조용한 데이터 유실로 이어질 수 있다.

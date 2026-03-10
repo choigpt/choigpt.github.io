@@ -8,9 +8,9 @@ excerpt: "좋아요 수를 읽는 소스가 Redis, DB like_count 컬럼, feed_li
 
 ## 개요
 
-피드 코드를 다시 살펴보던 중, 좋아요 수를 표시하는 소스가 **세 군데**인데 세 군데가 각각 다른 값을 반환할 수 있다는 걸 발견했다. Redis 카운터, DB의 `like_count` 컬럼, `feed_like` 테이블의 row 수. 셋 중 아무것도 실제 화면에 표시되는 값의 정답이라고 보장할 수 없었다.
+피드 코드를 점검한 결과, 좋아요 수를 표시하는 소스가 **세 군데**이며 각각 다른 값을 반환할 수 있는 상태였다. Redis 카운터, DB의 `like_count` 컬럼, `feed_like` 테이블의 row 수. 셋 중 아무것도 실제 화면에 표시되는 값의 정답이라고 보장할 수 없었다.
 
-좋아요 성능을 높이려고 Redis + Stream + Consumer로 이어지는 비동기 파이프라인을 도입했는데, 각 단계에서 검증과 복구 로직이 빠지면서 오히려 데이터가 세 곳으로 쪼개져버린 것이다. 여기에 N+1 쿼리, 피드 접근 권한 구멍까지 겹쳐 있었다.
+좋아요 성능을 높이려고 Redis + Stream + Consumer로 이어지는 비동기 파이프라인을 도입했는데, 각 단계에서 검증과 복구 로직이 빠지면서 데이터가 세 곳으로 분산되는 결과를 초래했다. 여기에 N+1 쿼리, 피드 접근 권한 구멍까지 겹쳐 있었다.
 
 ---
 
@@ -171,7 +171,7 @@ public class FeedService {
 
 ### 좋아요 수 단일 소스로 통일 — `like_count` 비정규화 컬럼 활용
 
-`getFeedLikes().size()` 호출을 전부 제거하고 `feed.getLikeCount()`로 통일했다. Consumer가 업데이트하지만 아무도 읽지 않던 `like_count` 컬럼을 드디어 사용하게 됐다. 조회 API는 `likeCountMap`을 배치로 한 번에 가져와서 각 피드에 매핑한다.
+`getFeedLikes().size()` 호출을 전부 제거하고 `feed.getLikeCount()`로 통일했다. Consumer가 업데이트하지만 조회 코드에서 사용하지 않던 `like_count` 컬럼을 실제 조회에 활용하도록 변경했다. 조회 API는 `likeCountMap`을 배치로 한 번에 가져와서 각 피드에 매핑한다.
 
 ---
 
@@ -259,7 +259,7 @@ private void ensureLikeCacheWarmed(Long feedId) {
 Redis를 도입해 성능을 높이려는 시도 자체는 옳았다. 문제는 Lua → Stream → Consumer → DB로 이어지는 파이프라인을 만들어두고, 각 단계의 검증을 챙기지 않은 것이다. Redis에서 비동기로 DB를 따라가게 해놓고 조회는 여전히 `getFeedLikes().size()`로 DB를 읽으니, Redis를 도입한 의미가 없었다.
 
 > **비동기 파이프라인을 만들었다면 조회도 그 파이프라인의 결과물을 읽어야 한다.**
-> 쓰기는 Redis를 통하고 읽기는 JPA 컬렉션을 통하면, 파이프라인은 그림의 떡이다.
+> 쓰기는 Redis를 통하고 읽기는 JPA 컬렉션을 통하면, 파이프라인이 실제로 활용되지 않는다.
 
 ---
 

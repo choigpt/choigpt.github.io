@@ -8,9 +8,9 @@ excerpt: "스케줄 삭제 시 참여자 지갑 홀드금을 해제하는 코드
 
 ## 개요
 
-스케줄(일정) 코드를 다시 살펴보다가 `createSchedule()`에서 이상한 순서를 발견했다. DB에 먼저 저장하고, 그 다음에 권한을 확인하고 있었다. `@Transactional`로 롤백되니까 기능상 문제는 없지만, 권한이 없는 사용자의 요청마다 쓸데없이 INSERT가 나간다.
+스케줄(일정) 코드를 재검토하는 과정에서 `createSchedule()`의 실행 순서 문제를 확인했다. DB에 먼저 저장하고, 그 다음에 권한을 확인하고 있었다. `@Transactional`로 롤백되므로 기능상 문제는 없지만, 권한이 없는 사용자의 요청마다 불필요한 INSERT가 발생한다.
 
-그런데 `deleteSchedule()`을 보다가 훨씬 심각한 걸 발견했다. 스케줄을 삭제할 때 참여자들의 지갑 홀드금을 해제하는 코드가 없었다. 스케줄이 삭제되면 그 시점에 지갑에 잡혀 있던 예약금이 영구적으로 동결된다. 사용자 자금이 묶이는 문제였다.
+`deleteSchedule()`에는 더 심각한 결함이 있었다. 스케줄을 삭제할 때 참여자들의 지갑 홀드금을 해제하는 코드가 없었다. 스케줄이 삭제되면 그 시점에 지갑에 잡혀 있던 예약금이 영구적으로 동결된다.
 
 여기에 `joinSchedule()`의 동시성 구멍까지 있었다. 정원 체크와 중복 참여 체크 사이에 시간 갭이 있고, `user_schedule` 테이블에 Unique Constraint가 없어서 동시에 두 요청이 들어오면 같은 사용자가 2번 참여하고 예약금도 2배 빠져나간다.
 
@@ -31,7 +31,7 @@ deleteSchedule()  → Schedule 삭제 + ChatRoom 삭제
                   (❌ 지갑 홀드 해제 없음, ❌ Settlement 정리 없음)
 ```
 
-`joinSchedule()`이 지갑에 홀드를 걸고, `deleteSchedule()`이 그걸 풀어줘야 하는데 풀어주지 않았다. 생성과 해제가 비대칭이었다.
+`joinSchedule()`이 지갑에 홀드를 걸고, `deleteSchedule()`이 이를 해제해야 하지만 해제하지 않았다. 생성과 해제가 비대칭 구조였다.
 
 ---
 
@@ -201,7 +201,7 @@ public void deleteSchedule(Long clubId, Long scheduleId) {
 
 ### `joinSchedule()` — 3중 방어
 
-단일 방어로는 Race Condition을 막을 수 없어서 세 겹으로 잡았다.
+단일 방어로는 Race Condition을 막을 수 없으므로 3단계 방어를 적용했다.
 
 ```java
 // 1. 비관적 락
@@ -296,9 +296,9 @@ private void validateScheduleBelongsToClub(Schedule schedule, Long clubId) {
 
 ## 정리하며
 
-`joinSchedule()`의 Race Condition은 찾기 쉽지 않았다. 로컬에서는 동시 요청을 흉내 내기 어렵고, 단위 테스트는 순차적으로 실행되니 보이지 않는다. "조회하고 체크하고 저장한다"는 패턴 자체가 Race Condition의 씨앗이다. DB 레벨의 Unique Constraint가 없으면 애플리케이션 레벨의 체크는 동시 요청 앞에서 무력하다.
+`joinSchedule()`의 Race Condition은 로컬 환경에서 재현이 어렵다. 동시 요청을 시뮬레이션하기 어렵고, 단위 테스트는 순차적으로 실행되므로 드러나지 않는다. "조회하고 체크하고 저장한다"는 패턴 자체가 Race Condition의 원인이 된다. DB 레벨의 Unique Constraint가 없으면 애플리케이션 레벨의 체크는 동시 요청에 대해 무력하다.
 
-`deleteSchedule()`의 지갑 동결 버그는 더 고전적인 문제였다. `joinSchedule()`이 홀드를 걸었으면 `deleteSchedule()`이 풀어줘야 하는데 풀어주지 않았다. [모임 도메인 편](/club-concurrency-ghost-members/)의 `leaveClub()`에서 채팅방을 지우지 않은 것과 같은 패턴이다.
+`deleteSchedule()`의 지갑 동결 버그는 리소스 생성-해제 비대칭 문제에 해당한다. `joinSchedule()`이 홀드를 걸었으면 `deleteSchedule()`이 해제해야 하지만 해제하지 않았다. [모임 도메인 편](/club-concurrency-ghost-members/)의 `leaveClub()`에서 채팅방을 삭제하지 않은 것과 동일한 패턴이다.
 
 > **생성과 해제는 항상 짝을 이뤄야 한다.**
 > 지갑에 홀드를 걸었다면 해제하는 경로가 반드시 존재해야 한다. 정상 흐름뿐 아니라 삭제, 취소, 예외 상황에서도 빠짐없이.

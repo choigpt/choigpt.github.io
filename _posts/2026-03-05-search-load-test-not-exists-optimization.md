@@ -1,6 +1,6 @@
 ---
 title: 검색 도메인 부하 테스트 — NOT IN 한 줄이 만든 62배 차이
-date: 2026-03-03
+date: 2026-03-05
 tags: [Elasticsearch, MySQL, QueryDSL, 성능최적화, k6, 부하테스트, N+1, 인덱스, nori, Java]
 permalink: /search-load-test-not-exists-optimization/
 excerpt: "ES + MySQL 이중 구조 검색 도메인에 부하를 걸었다. 300VU에서 keyword_accuracy 79% FAIL, 내 모임 p95 760ms. 스트레스 테스트(500VU, user_club 280만건)에서 teammates_clubs p95가 11초까지 치솟았다. fetchJoin+groupBy 조합 실패, DISTINCT→groupBy 전환을 거쳐 NOT IN → NOT EXISTS 한 줄 변경으로 62배 개선. 18/18 전 구간 통과까지의 기록."
@@ -15,7 +15,7 @@ excerpt: "ES + MySQL 이중 구조 검색 도메인에 부하를 걸었다. 300V
 | 필터 검색 | MySQL / QueryDSL | 관심사, 지역 조건 |
 | 검색 대상 | Club | name, description 필드 |
 
-엔드포인트는 6개다. 키워드 검색, 관심사/지역 필터, 추천, 내 모임(`my_clubs`), 팀원 클럽(`teammates_clubs`). ES 쪽은 빨랐다. 문제는 MySQL 쪽, 특히 `teammates_clubs`의 다단계 JOIN 쿼리에서 터졌다.
+엔드포인트는 6개다. 키워드 검색, 관심사/지역 필터, 추천, 내 모임(`my_clubs`), 팀원 클럽(`teammates_clubs`). ES 쪽은 응답 시간이 양호했다. 문제는 MySQL 쪽, 특히 `teammates_clubs`의 다단계 JOIN 쿼리에서 발생했다.
 
 ---
 
@@ -34,7 +34,7 @@ Club 20만 건을 ES에 인덱싱한 뒤 첫 부하를 걸었다.
 | 지역 검색 | 17.14ms | 180ms | p95<500 | PASS |
 | 추천 | 41.05ms | 251ms | p95<800 | PASS |
 
-성능은 전 항목 PASS. 하지만 두 가지가 걸렸다.
+성능은 전 항목 PASS. 다만 두 가지 문제가 있었다.
 
 **병목: 내 모임 조회 (p95 760ms)**
 
@@ -51,7 +51,7 @@ Club 20만 건을 ES에 인덱싱한 뒤 첫 부하를 걸었다.
 | keyword_accuracy | 79.13% | >90% | FAIL |
 | filter_accuracy | 100% | >90% | PASS |
 
-`'축구'` 검색 결과에 `'풋볼'`만 포함된 케이스가 21%였다. ES는 동의어 확장으로 정상 검색했지만, k6의 `containsAny` 매칭 로직이 원본 키워드만 검사해서 발생한 오탐이었다. 검색 자체는 작동하지만 **테스트 검증 로직이 엄격한 문제**였다.
+`'축구'` 검색 결과에 `'풋볼'`만 포함된 케이스가 21%였다. ES는 동의어 확장으로 정상 검색했지만, k6의 `containsAny` 매칭 로직이 원본 키워드만 검사해서 발생한 오탐이었다. 검색 자체는 정상 동작하지만 **테스트 검증 로직이 동의어를 고려하지 않는 문제**였다.
 
 ---
 
@@ -121,7 +121,7 @@ function keywordOrSynonymFound(results, keyword) {
 @Index(name = "idx_user_club_user", columnList = "user_id")
 ```
 
-> `uk_user_club (user_id, club_id)` Unique Constraint가 이미 있어서 user_id 기반 조회 자체는 가능했다. 핵심 병목은 `user_settlement` 인덱스 부재였다.
+> `uk_user_club (user_id, club_id)` Unique Constraint가 이미 있어서 user_id 기반 조회 자체는 가능했다. 주요 병목은 `user_settlement` 인덱스 부재였다.
 
 ### 1차 수정 결과
 
@@ -136,7 +136,7 @@ function keywordOrSynonymFound(results, keyword) {
 
 ---
 
-## 스트레스 테스트 — 500VU에서 터지다
+## 스트레스 테스트 — 500VU에서 threshold 초과
 
 데이터 규모를 키웠다. user_club을 유저당 20~50개로 확대해 전체 280만 건, user_settlement 5만 건+. 7-Phase, 500VU, 21분 스트레스 테스트를 설계했다.
 
@@ -154,7 +154,7 @@ function keywordOrSynonymFound(results, keyword) {
 | peak | 439ms | 1.95s | <1,500ms | FAIL |
 | 에러율 | — | 0.28% | <5% | PASS |
 
-`teammates_clubs`가 p95 11초로 가장 심각했다. 성공률 80%, 5xx 에러 664건이 전부 이 API에 집중됐다.
+`teammates_clubs`가 p95 11초로 가장 높은 지연을 보였다. 성공률 80%, 5xx 에러 664건이 전부 이 API에 집중됐다.
 
 ---
 
@@ -169,7 +169,7 @@ Step 3: 100명의 모든 모임에서 내 모임 제외  → 13,333개 club_id (
 Step 4: IN(13,333개) club JOIN interest  → 대량 IN절
 ```
 
-**핵심: Step 3에 LIMIT이 없었다.** 100명 × 유저당 280개 모임 = ~28,000건을 스캔해서 DISTINCT 후 13,333개 club_id를 메모리에 올린 뒤, Step 4에서 `IN(13,333)` 대량 IN절을 날리고 있었다.
+**원인: Step 3에 LIMIT이 없었다.** 100명 × 유저당 280개 모임 = ~28,000건을 스캔해서 DISTINCT 후 13,333개 club_id를 메모리에 올린 뒤, Step 4에서 `IN(13,333)` 대량 IN절을 날리고 있었다.
 
 ### 1차 시도 — Step 3+4 통합, fetchJoin+groupBy
 
@@ -249,7 +249,7 @@ Using where; Using index; Using temporary; Using filesort
 
 1. **club 테이블 JOIN이 불필요했다.** `member_count` 정렬만을 위해 14,445번 nested loop를 돌았다. Step 4에서 이미 동일한 정렬을 수행하므로 Step 3의 정렬은 중복이었다.
 2. **NOT IN 서브쿼리가 비효율적이었다.** 매 행마다 서브쿼리를 평가했다.
-3. **GROUP BY + ORDER BY 조합이 filesort를 유발했다.** 단독 실행은 37ms지만 500 VU 동시에 temporary table과 filesort가 메모리/CPU를 서로 빼앗았다.
+3. **GROUP BY + ORDER BY 조합이 filesort를 유발했다.** 단독 실행은 37ms지만 500 VU 동시에 temporary table과 filesort가 메모리/CPU 자원을 경합했다.
 
 ### 수정 내용
 
@@ -326,11 +326,11 @@ List<Long> filteredClubIds = queryFactory
 
 ## 정리하며
 
-**단독 실행이 빠르다고 부하 테스트를 건너뛰면 안 된다.** Step 3은 단독으로 37ms였다. 500 VU 동시 접근에서 타임아웃이 난다. `Using temporary; Using filesort`는 단독에서는 괜찮지만, 동시 접근이 늘면 메모리와 CPU를 서로 빼앗는다. 고부하 환경에서만 드러나는 경합이 있다.
+**단독 실행이 빠르다고 부하 테스트를 건너뛰면 안 된다.** Step 3은 단독으로 37ms였다. 500 VU 동시 접근에서 타임아웃이 난다. `Using temporary; Using filesort`는 단독에서는 괜찮지만, 동시 접근이 늘면 메모리와 CPU 자원 경합이 발생한다. 고부하 환경에서만 드러나는 경합이 있다.
 
 **불필요한 정렬을 하고 있었다.** Step 3의 `ORDER BY member_count DESC`는 Step 4에서 이미 수행하는 정렬을 중복으로 하고 있었다. 그 정렬을 위해 club 테이블을 14,445번 JOIN하고 있었다. 정렬 결과가 Step 4에서 덮어씌워지니 처음부터 의미 없는 JOIN이었다.
 
-**중간 결과셋 크기가 핵심이다.** 13,333개 club_id를 메모리에 올린 뒤 `IN(13,333)`을 날리는 구조였다. NOT EXISTS로 DB 레벨에서 antijoin 처리하고 DISTINCT + LIMIT으로 early termination을 걸자 0.6ms로 떨어졌다.
+**중간 결과셋 크기가 근본 원인이다.** 13,333개 club_id를 메모리에 올린 뒤 `IN(13,333)`을 날리는 구조였다. NOT EXISTS로 DB 레벨에서 antijoin 처리하고 DISTINCT + LIMIT으로 early termination을 걸자 0.6ms로 떨어졌다.
 
 > **중간 결과셋이 크다는 건 DB가 할 일을 애플리케이션이 떠맡고 있다는 신호다.**
 
@@ -353,7 +353,7 @@ List<Long> filteredClubIds = queryFactory
 ## 시리즈 탐색
 
 **◀ 이전 글**
-[클럽 도메인 부하 테스트 — Virtual Thread Pinning이 JVM을 죽인 날](/club-load-test-virtual-thread-pinning/)
+[클럽 도메인 부하 테스트 — Virtual Thread Pinning에 의한 JVM 크래시 분석](/club-load-test-virtual-thread-pinning/)
 
 **▶ 다음 글**
 [채팅 도메인 — Storage 추상화, WHERE IN 풀스캔, WebSocket 1,000VU 극한 테스트](/chat-storage-websocket-extreme-test/)

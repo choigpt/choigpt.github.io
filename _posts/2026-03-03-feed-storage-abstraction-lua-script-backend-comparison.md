@@ -168,7 +168,7 @@ Consumer는 이벤트를 배치로 묶어서 DB에 반영한다. `like_count`는
 
 ### 검증 결과
 
-1,000 VUs로 좋아요 토글을 집중 공격했다. 결과는 conflict 0이었다. Lua Script가 SET 기반 멱등성을 보장하므로, 같은 유저가 동시에 토글해도 SISMEMBER 결과가 일관된다. 이 구조는 수정할 필요가 없었다.
+1,000 VUs로 좋아요 토글을 집중 테스트했다. 결과는 conflict 0이었다. Lua Script가 SET 기반 멱등성을 보장하므로, 같은 유저가 동시에 토글해도 SISMEMBER 결과가 일관된다. 이 구조는 수정할 필요가 없었다.
 
 ---
 
@@ -234,7 +234,7 @@ existsById 캐싱과 MongoDB 어댑터가 준비된 상태에서, 3가지 구성
 
 MySQL + Redis cache와 MongoDB + Redis cache의 throughput 차이는 1 req/s로 무의미하다. p95에서 MongoDB가 47ms 빠르지만, 이것은 existsById 캐싱의 효과(951ms -> 514ms)에 비하면 미미하다.
 
-**핵심 발견: 진짜 개선은 Storage backend 교체가 아니라 existsById의 Redis 캐싱이었다.**
+**결과: 유의미한 개선은 Storage backend 교체가 아니라 existsById의 Redis 캐싱이었다.**
 
 다만 mixed read+write 시나리오에서는 MongoDB의 비정규화 구조가 유의미한 차이를 만들었다.
 

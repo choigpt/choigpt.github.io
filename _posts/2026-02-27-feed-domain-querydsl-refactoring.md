@@ -1,5 +1,5 @@
 ---
-title: 피드 도메인 리팩토링 — 442줄 서비스를 4개로 쪼갠 기록
+title: 피드 도메인 리팩토링 — 442줄 서비스를 4개로 분리한 과정
 date: 2026-02-27
 tags:
   - Spring
@@ -11,16 +11,16 @@ tags:
   - 설계
   - 캐시
 permalink: /feed-domain-442-line-service-split/
-excerpt: FeedQueryService 442줄에 SQL, 캐시, 렌더링 로직이 섞여 있었다. 네이티브 쿼리 6개를
+excerpt: FeedQueryService 442줄에 SQL, 캐시, 렌더링 로직이 혼재했다. 네이티브 쿼리 6개를
   JPQL/QueryDSL로 전환하고, 서비스를
-  FeedCacheService·FeedRenderService·FeedLikeWarmupService로 분리한 기록.
+  FeedCacheService·FeedRenderService·FeedLikeWarmupService로 분리한 과정.
 ---
 
 ## 개요
 
-피드 도메인은 다른 팀원이 설계한 코드다. 성능 개선 작업을 병행하면서 구조를 파악해나간 부분이라, 원 설계 의도를 완전히 알지 못하는 상태에서 진행한 리팩토링이다.
+피드 도메인은 다른 팀원이 설계한 코드다. 성능 개선 작업을 병행하며 구조를 파악한 뒤 진행한 리팩토링이다.
 
-부하 테스트를 통해 성능을 끌어올린 뒤, 코드를 다시 읽었다. `FeedQueryService`가 442줄이었고, 한 클래스 안에 클럽 피드 조회·전체 피드 조회·Redis 캐시·인메모리 캐시·렌더링·UNION ALL 동적 SQL이 뒤섞여 있었다.
+부하 테스트를 통해 성능을 개선한 뒤 코드를 재검토했다. `FeedQueryService`가 442줄이었고, 한 클래스 안에 클럽 피드 조회·전체 피드 조회·Redis 캐시·인메모리 캐시·렌더링·UNION ALL 동적 SQL이 혼재했다.
 
 문제는 코드 길이가 아니라 레이어 침범이었다. 서비스가 SQL을 직접 조합하고 있었고, Redis 직렬화 로직이 서비스에 인라인으로 있었다. 네이티브 쿼리는 컴파일 타임 검증이 없어서 리팩토링 중 실수를 잡기 어려웠다.
 
@@ -376,9 +376,9 @@ public Feed createRefeed(String content, Club targetClub, User user) {
 
 ## 정리하며
 
-가장 큰 문제는 SQL이 서비스에 있었다는 것이다. `EntityManager`를 직접 받아 `StringBuilder`로 문자열 조합하는 코드가 `FeedQueryService`에 있었다. 레이어 침범이고, 컴파일 타임 검증도 없다. QueryDSL로 옮기면서 문자열 SQL이 타입 안전 코드로 바뀌었고, IDE가 오류를 잡을 수 있게 됐다.
+주요 문제는 SQL이 서비스 레이어에 위치했다는 점이다. `EntityManager`를 직접 받아 `StringBuilder`로 문자열 조합하는 코드가 `FeedQueryService`에 있었다. 레이어 침범이고, 컴파일 타임 검증도 없다. QueryDSL로 옮기면서 문자열 SQL이 타입 안전 코드로 바뀌었고, IDE가 오류를 잡을 수 있게 됐다.
 
-`static ConcurrentHashMap`이 서비스에 있을 때의 문제는 테스트에서 처음 드러났다. 테스트 케이스 간 캐시 상태가 공유돼 순서에 따라 통과/실패가 달라지는 flaky test가 생겼다. Bean으로 분리하고 `@BeforeEach`에서 mock을 주입하면 격리가 보장된다.
+`static ConcurrentHashMap`이 서비스에 위치할 때의 문제는 테스트에서 확인됐다. 테스트 케이스 간 캐시 상태가 공유돼 순서에 따라 통과/실패가 달라지는 flaky test가 생겼다. Bean으로 분리하고 `@BeforeEach`에서 mock을 주입하면 격리가 보장된다.
 
 `FeedLikeService`의 `static ExecutorService`는 단위 테스트에서 실제 스레드가 실행돼 비동기 워밍업 로직이 테스트 도중 DB를 치는 문제를 만들었다. 인프라 생명주기(스레드풀 시작/종료)는 Spring Bean의 `@PostConstruct`/`DisposableBean`이 관리하는 게 맞다.
 
@@ -393,4 +393,4 @@ public Feed createRefeed(String content, Club targetClub, User user) {
 [채팅 도메인 리팩토링 — WebSocket 핸들러부터 커서 페이징 DTO까지](/chat-domain-deep-refactoring/)
 
 **▶ 다음 글**
-[Finance 도메인 부하 테스트 — Mock 없이는 보이지 않던 버그](/finance-domain-load-test-mock-exposed-hidden-bug/)
+[Finance 도메인 부하 테스트 — Mock 도입 후 발견된 버그](/finance-domain-load-test-mock-exposed-hidden-bug/)

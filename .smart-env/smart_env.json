@@ -71,6 +71,6 @@
     "results_limit": 20
   },
   "embedding_models": {
-    "default_model_key": "transformers#1766500256441"
+    "default_model_key": "transformers#1773029845165"
   }
 }

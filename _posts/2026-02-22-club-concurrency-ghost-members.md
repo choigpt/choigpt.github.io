@@ -8,9 +8,9 @@ excerpt: "memberCount++ 를 JPA dirty checking으로 처리해 동시 요청 시
 
 ## 개요
 
-모임(Club) 코드를 다시 살펴보던 중, 멤버 수를 관리하는 방식에 심각한 동시성 문제가 있다는 걸 발견했다. `memberCount++`를 JPA dirty checking으로 처리하고 있어서 동시 요청 시 Lost Update가 발생한다. 거기에 `user_club` 테이블에 Unique Constraint가 없어서 동시에 두 요청이 들어오면 중복 가입이 가능했다.
+모임(Club) 코드를 점검한 결과, 멤버 수를 관리하는 방식에 동시성 문제가 존재했다. `memberCount++`를 JPA dirty checking으로 처리하고 있어서 동시 요청 시 Lost Update가 발생한다. 거기에 `user_club` 테이블에 Unique Constraint가 없어서 동시에 두 요청이 들어오면 중복 가입이 가능했다.
 
-더 심각한 문제는 `leaveClub()`이었다. 탈퇴 시 `UserClub`만 삭제하고 `UserChatRoom`은 삭제하지 않아서, 탈퇴한 사용자가 채팅방에 유령 멤버로 남아 메시지를 계속 수신했다. 가입할 때는 채팅방에 넣어주고 탈퇴할 때는 빼주지 않은 것이다.
+`leaveClub()`에도 문제가 있었다. 탈퇴 시 `UserClub`만 삭제하고 `UserChatRoom`은 삭제하지 않아, 탈퇴한 사용자가 채팅방에 유령 멤버로 남아 메시지를 계속 수신했다. `joinClub()`에서 생성한 `UserChatRoom`을 `leaveClub()`에서 삭제하지 않는 비대칭 구조였다.
 
 ---
 

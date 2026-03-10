@@ -3,14 +3,14 @@ title: 채팅 도메인 리팩토링 — WebSocket 핸들러부터 커서 페이
 date: 2026-02-27
 tags: [Spring, Java, 리팩토링, WebSocket, STOMP, JPA, QueryDSL, 채팅, 설계]
 permalink: /chat-domain-deep-refactoring/
-excerpt: "ChatWebSocketController의 try-catch가 @MessageExceptionHandler와 충돌하고 있었고, 네이티브 쿼리는 MAX(sent_at) 동시 타이 문제를 안고 있었다. 30줄짜리 메서드가 13줄로, 40줄짜리 커서 페이징이 2줄로 줄어든 과정."
+excerpt: "ChatWebSocketController의 try-catch가 @MessageExceptionHandler와 충돌하고 있었고, 네이티브 쿼리는 MAX(sent_at) 동시 타이 문제를 포함하고 있었다. 30줄 메서드를 13줄로, 40줄 커서 페이징을 2줄로 축소한 리팩토링 내역."
 ---
 
 ## 개요
 
-채팅 도메인도 다른 팀원이 설계한 코드다. 성능 작업을 병행하면서 구조를 파악해나간 부분이라, 원 설계 의도를 완전히 알지 못하는 상태에서 진행한 리팩토링이다.
+채팅 도메인은 다른 팀원이 설계한 코드다. 성능 작업을 병행하며 구조를 파악한 뒤 진행한 리팩토링이다.
 
-채팅 도메인의 성능은 이미 정리했다. 이번은 코드 구조 차례였다. `ChatWebSocketController`에서 로그가 두 번 찍히고 있었고, 서비스 메서드는 검증·이미지 파싱·저장·응답 생성을 한꺼번에 처리하는 덩어리 메서드로 남아 있었다. Repository에는 동시 타이 버그를 내포한 네이티브 쿼리가 있었다.
+채팅 도메인의 성능 개선은 이미 완료했다. 이번 작업 대상은 코드 구조다. `ChatWebSocketController`에서 로그가 두 번 찍히고 있었고, 서비스 메서드는 검증·이미지 파싱·저장·응답 생성을 한꺼번에 처리하는 덩어리 메서드로 남아 있었다. Repository에는 동시 타이 버그를 내포한 네이티브 쿼리가 있었다.
 
 ---
 
@@ -37,7 +37,7 @@ public void handleCustomException(CustomException e) {
 }
 ```
 
-`try-catch`를 제거했다. `@MessageExceptionHandler`가 도메인 예외 처리와 클라이언트 응답을 담당하고, 예상치 못한 예외는 `Exception.class` catch-all이 처리한다. 비즈니스 로직만 남은 핸들러가 훨씬 읽기 쉬워졌다.
+`try-catch`를 제거했다. `@MessageExceptionHandler`가 도메인 예외 처리와 클라이언트 응답을 담당하고, 예상치 못한 예외는 `Exception.class` catch-all이 처리한다. 비즈니스 로직만 남은 핸들러의 가독성이 향상됐다.
 
 ```java
 // 수정 후 — 비즈니스 로직만
@@ -74,7 +74,7 @@ public void handleChatRoomCreated(ChatRoomCreatedEvent event) {
 }
 ```
 
-로그를 찍고 다시 `throw`하는 건 Spring이 `@TransactionalEventListener` 실패를 이미 로깅하기 때문에 의미가 없다. `try-catch` 전체를 제거했다. 124줄이 73줄로, 77줄짜리 핸들러는 52줄로 줄었다.
+로그를 기록하고 다시 `throw`하는 구조는 Spring이 `@TransactionalEventListener` 실패를 이미 로깅하므로 중복이다. `try-catch` 전체를 제거했다. 124줄이 73줄로, 77줄짜리 핸들러는 52줄로 줄었다.
 
 `findById` → `getReferenceById`로도 교체했다. 이벤트 컨텍스트에서 이미 존재가 보장된 엔티티는 실제 SELECT 없이 프록시만 가져오는 `getReferenceById`로 충분하다. `IllegalArgumentException` → `IllegalStateException`으로 타입도 수정했다. 이벤트 리스너에서 데이터 불일치는 "잘못된 인자"가 아니라 "시스템 상태 문제"다.
 
@@ -82,7 +82,7 @@ public void handleChatRoomCreated(ChatRoomCreatedEvent event) {
 
 ## 문제 3. 네이티브 쿼리 — MAX(sent_at) 동시 타이
 
-채팅방 목록의 마지막 메시지를 가져오는 쿼리는 다음과 같이 작성돼 있었다.
+채팅방 목록의 마지막 메시지를 가져오는 쿼리는 다음과 같았다.
 
 ```sql
 -- 수정 전 — 동시 타이 가능 (같은 시각 메시지가 2개면 둘 다 반환)
@@ -278,7 +278,7 @@ public ChatRoomMessageResponse getChatRoomMessages(Long roomId, Long cursorId, .
 
 ## 로그 형식 통일
 
-채팅 도메인은 다른 팀원이 작성한 코드라 로그 형식이 영어 브래킷 방식이었다. 피드·알림 도메인과 맞추는 김에 한글 서술 형식으로 통일했다.
+채팅 도메인은 다른 팀원이 작성한 코드라 로그 형식이 영어 브래킷 방식이었다. 피드·알림 도메인과 일관성을 맞추기 위해 한글 서술 형식으로 통일했다.
 
 | Before | After |
 |--------|-------|
@@ -311,9 +311,9 @@ debug 레벨이어야 할 started/completed 로그도 모두 제거했다.
 
 ## 정리하며
 
-이번 리팩토링에서 가장 자주 발견된 패턴은 "이미 있는데 안 쓰는 것"이었다. `ChatMessageResponse.from(Message)`가 있는데 9개 필드를 수동으로 조립하고, `existsByXxx`가 있는데 `findById`를 쓰고, `@MessageExceptionHandler`가 있는데 `try-catch`도 따로 두는 식이다.
+이번 리팩토링에서 반복적으로 발견된 패턴은 "이미 존재하지만 사용되지 않는 기능"이었다. `ChatMessageResponse.from(Message)`가 있는데 9개 필드를 수동으로 조립하고, `existsByXxx`가 있는데 `findById`를 쓰고, `@MessageExceptionHandler`가 있는데 `try-catch`도 따로 두는 식이다.
 
-`MAX(sent_at)` 타이 버그는 실제 운영에서 드러나기 전까지 발견하기 어려운 종류다. 초당 수십 건의 메시지가 오가는 인기 채팅방에서, 같은 밀리초에 두 메시지가 도착하는 확률은 낮지 않다. `messageId`는 auto-increment PK라 단조 증가가 보장되므로 타이가 발생할 수 없다. 시간 기반 정렬 기준에는 항상 tie-breaking 컬럼을 함께 써야 한다.
+`MAX(sent_at)` 타이 버그는 운영 환경에서 발생하기 전까지 발견이 어렵다. 초당 수십 건의 메시지가 전송되는 채팅방에서 같은 밀리초에 두 메시지가 도착할 확률은 무시할 수 없는 수준이다. `messageId`는 auto-increment PK라 단조 증가가 보장되므로 타이가 발생할 수 없다. 시간 기반 정렬 기준에는 항상 tie-breaking 컬럼을 함께 써야 한다.
 
 > **네이티브 쿼리는 편의성을 주지만, 컴파일 타임 검증과 JOIN FETCH 모두 포기해야 한다.**
 > 동등하게 표현 가능하면 JPQL을 우선으로 하되, MySQL 전용 함수(LOG, TIMESTAMPDIFF)가 필요한 경우에만 네이티브를 남긴다.
@@ -326,4 +326,4 @@ debug 레벨이어야 할 started/completed 로그도 모두 제거했다.
 [멀티 도메인 코드 정리 — 표면 정리부터 Semaphore 제거까지](/multi-domain-cleanup-surface-to-semaphore/)
 
 **▶ 다음 글**
-[피드 도메인 리팩토링 — 442줄 서비스를 4개로 쪼갠 기록](/feed-domain-442-line-service-split/)
+[피드 도메인 리팩토링 — 442줄 서비스를 4개로 분리한 과정](/feed-domain-442-line-service-split/)

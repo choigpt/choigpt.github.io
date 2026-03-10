@@ -541,18 +541,350 @@
             "id": "bf006bf394833e93",
             "type": "leaf",
             "state": {
-              "type": "split-diff-view",
+              "type": "markdown",
               "state": {
-                "aFile": "_posts/2026-02-09-network-osi-7-layers.md",
-                "bFile": "_posts/2026-02-09-network-osi-7-layers.md",
-                "aRef": ""
+                "file": "_posts/2026-01-03-python-study-notes.md",
+                "mode": "source",
+                "source": false
               },
-              "icon": "diff",
-              "title": "Diff: 2026-02-09-network-osi-7-layers  (Working Tree)"
+              "icon": "lucide-file",
+              "title": "2026-01-03-python-study-notes"
+            }
+          },
+          {
+            "id": "54b222821ebe7e3d",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "sigmoid.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "sigmoid"
+            }
+          },
+          {
+            "id": "d9528f0041c973d2",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "reis singlethread 속도.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "reis singlethread 속도"
+            }
+          },
+          {
+            "id": "a47dca42622e15a9",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "kldivergence.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "kldivergence"
+            }
+          },
+          {
+            "id": "3e1cb9a81bf0a833",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "행렬.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "행렬"
+            }
+          },
+          {
+            "id": "1d400321f541794c",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "CROSS ENTROPY.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "CROSS ENTROPY"
+            }
+          },
+          {
+            "id": "fe429ad598a9645b",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "DOCKER 와 PROCESS.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "DOCKER 와 PROCESS"
+            }
+          },
+          {
+            "id": "8f84d047b8e04997",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "엔트로피.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "엔트로피"
+            }
+          },
+          {
+            "id": "598d853504f694f4",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "채팅.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "채팅"
+            }
+          },
+          {
+            "id": "6cde596bb85ee6df",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "피드.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "피드"
+            }
+          },
+          {
+            "id": "bc8e58562c1c5456",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "CROSS ENTROPY.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "CROSS ENTROPY"
+            }
+          },
+          {
+            "id": "b1924339be1ce979",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "RAG.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "RAG"
+            }
+          },
+          {
+            "id": "9f787499aa42e142",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "VM 와 컨테이너.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "VM 와 컨테이너"
+            }
+          },
+          {
+            "id": "08a1fea2587590ef",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "ip 후로토콜.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "ip 후로토콜"
+            }
+          },
+          {
+            "id": "b96594c6c080ae2e",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Transformer.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Transformer"
+            }
+          },
+          {
+            "id": "c1bc4ac73108722d",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Transformer.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Transformer"
+            }
+          },
+          {
+            "id": "6003b2cdd1a1146f",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "프로세스.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "프로세스"
+            }
+          },
+          {
+            "id": "673763dc8b88cb5a",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "_posts/2026-01-09-Lock-And-Transaction.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "2026-01-09-Lock-And-Transaction"
+            }
+          },
+          {
+            "id": "b5b7b927e9df6171",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "코릴레이션 코.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "코릴레이션 코"
+            }
+          },
+          {
+            "id": "1e446462aa1cf319",
+            "type": "leaf",
+            "state": {
+              "type": "smart-release-notes-view",
+              "state": {},
+              "icon": "file-text",
+              "title": "Release Notes"
+            }
+          },
+          {
+            "id": "d12752d115ec2d5f",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "피드.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "피드"
+            }
+          },
+          {
+            "id": "aa1b0f8d6e19ff9a",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "피드.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "피드"
+            }
+          },
+          {
+            "id": "7ba7e17df1dc8926",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "피드2.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "피드2"
+            }
+          },
+          {
+            "id": "0fba2c9a0d7e08f0",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "피드2.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "피드2"
+            }
+          },
+          {
+            "id": "b887cbc98458d91b",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "JVM.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "JVM"
             }
           }
         ],
-        "currentTab": 38
+        "currentTab": 62
       }
     ],
     "direction": "vertical"
@@ -678,7 +1010,7 @@
                 "searchQuery": ""
               },
               "icon": "lucide-archive",
-              "title": "All properties"
+              "title": "모든 속성"
             }
           },
           {
@@ -705,6 +1037,16 @@
               "icon": "git-pull-request",
               "title": "Source Control"
             }
+          },
+          {
+            "id": "d9e074be23a0fda5",
+            "type": "leaf",
+            "state": {
+              "type": "smart-connections-view",
+              "state": {},
+              "icon": "smart-connections",
+              "title": "Connections"
+            }
           }
         ],
         "currentTab": 5
@@ -723,56 +1065,60 @@
       "command-palette:명령어 팔레트 열기": false,
       "bases:새 베이스 생성하기": false,
       "templater-obsidian:Templater": false,
-      "obsidian-git:Open Git source control": false
+      "obsidian-git:Open Git source control": false,
+      "smart-connections:Smart Connections: Open connections view": false,
+      "smart-connections:Smart Lookup: Open lookup view": false,
+      "smart-connections:Smart Connections: Open random connection": false
     }
   },
-  "active": "bf006bf394833e93",
+  "active": "86844e30a0b147b0",
   "lastOpenFiles": [
+    "_posts/2026-03-10-softmax-regression.md",
+    "_posts/2026-03-10-logistic-regression.md",
+    "_posts/2026-03-08-aws-ec2-load-test-review.md",
+    "_posts/2026-03-08-search-aws-ec2-load-test.md",
+    "_posts/2026-03-08-settlement-aws-ec2-load-test.md",
+    "_posts/2026-03-07-feed-aws-ec2-load-test.md",
+    "_posts/2026-03-07-chat-aws-ec2-load-test.md",
+    "_posts/2026-03-07-notification-aws-ec2-load-test.md",
+    "_posts/2026-03-06-react-frontend-optimization-memo-splitting.md",
+    "_posts/2026-03-06-react-deep-review-token-race-sse-leak.md",
+    "_posts/2026-03-05-react-code-quality-c-to-b-react-query.md",
+    "_posts/2026-03-05-search-load-test-not-exists-optimization.md",
+    "_posts/2026-03-05-feed-highload-force-index-caching-evolution.md",
+    "_posts/2026-03-04-club-load-test-virtual-thread-pinning.md",
+    "_posts/2026-03-04-multi-domain-refactoring-errorcode-code-quality.md",
+    "_posts/2026-03-02-notification-storage-abstraction-mysql-mongodb.md",
+    "_posts/2026-03-02-chat-storage-abstraction-websocket-extreme.md",
+    "_posts/2026-03-01-finance-settlement-batch-virtual-thread.md",
+    "_posts/2026-02-28-multi-domain-refactoring-phase1-2.md",
+    "_posts/2026-02-28-finance-domain-load-test-toss-mock.md",
+    "ip 후로토콜.md",
+    "엔트로피.md",
+    "시분할 기법 cpu.md",
+    "코릴레이션 코.md",
+    "무제.md",
+    "소프트맥스 회귀.md",
+    "_posts/2026-03-09-kl-divergence.md.tmp.104552.1773054346615",
+    "Pasted image 20260308130743.png",
+    "Pasted image 20260308132534.png",
+    "Pasted image 20260308170307.png",
+    "_posts/2026-03-09-chat-aws-ec2-load-test.md.tmp.104552.1773050209798",
+    "_posts/2026-03-09-chat-aws-ec2-load-test.md.tmp.104552.1773050197260",
+    "_posts/2026-03-09-notification-aws-ec2-load-test.md.tmp.104552.1773050101242",
+    "_posts/2026-03-09-notification-aws-ec2-load-test.md.tmp.104552.1773050086330",
+    "_posts/2026-03-09-notification-aws-ec2-load-test.md.tmp.104552.1773050015270",
+    "_posts/2026-03-09-notification-aws-ec2-load-test.md.tmp.104552.1773049995241",
+    "_posts/2026-03-09-notification-aws-ec2-load-test.md.tmp.104552.1773049980411",
+    "_posts/2026-03-09-notification-aws-ec2-load-test.md.tmp.104552.1773049973177",
+    "_posts/2026-03-09-search-aws-ec2-load-test.md.tmp.104552.1773049709483",
+    "favicon.png",
     "signal_compare_1.png",
-    "_posts/2026-02-09-network-osi-7-layers.md.tmp.16640.1772517893177",
-    "_posts/2026-02-09-network-osi-7-layers.md.tmp.16640.1772517892039",
-    "_posts/2026-02-09-network-osi-7-layers.md.tmp.16640.1772517890766",
     "signal_ideal.png",
     "assets/img/posts/signal_compare_5.png",
     "assets/img/posts/signal_wire.png",
     "assets/img/posts/signal_ideal_2.png",
     "signal_wire.png",
-    "signal_ideal_2.png",
-    "signal_compare_5.png",
-    "_posts/2026-03-03-search-engine-abstraction-es-vs-fulltext.md",
-    "검색 es fulltext 비교.md",
-    "favicon.png",
-    "검색.md",
-    "리팩토링후 결제 다양한 실험.md",
-    "디비별 ㅏㅊ이 실험시도.md",
-    "_posts/2026-03-03-search-load-test-not-exists-optimization.md",
-    "_posts/2026-03-03-multi-domain-refactoring-errorcode-code-quality.md",
-    "_posts/2026-01-30-cnn.md",
-    "_posts/2026-03-03-multi-vendor-comparison-postgresql-dynamodb-rabbitmq.md",
-    "_posts/2026-03-03-multi-vendor-comparison-postgresql-dynamodb-rabbitmq.md.tmp.16640.1772514773765",
-    "_posts/2026-03-03-feed-storage-abstraction-lua-script-backend-comparison.md",
-    "_posts/2026-03-03-notification-storage-abstraction-mysql-mongodb.md",
-    "한번더 리팩토링.md",
-    "활성화 함수.md",
-    "arp protocol.md",
-    "autoencoder.md",
-    "cbow skep gram.md",
-    "README.md",
-    "dfs.md",
-    "dto.md",
-    "finance-domain-load-test-mock-exposed-hidden-bug.md",
-    "lstm.md",
-    "notification-api-performance-improvement.md",
-    "_posts/2026-02-26-feed-performance-load-test.md",
-    "Untitled.md",
-    "_posts/2026-02-27-feed-domain-querydsl-refactoring.md",
-    "2026-02-09-network-osi-7-layers.pdf",
-    "assets/html/ip-encap-demo.html",
-    "assets/html/socket-flow2.html",
-    "assets/html/switch-animation.html",
-    "assets/html/framing-animation.html",
-    "assets/html",
-    "attachments/Pasted image 20260224161446.png",
     "Untitled.canvas"
   ]
 }

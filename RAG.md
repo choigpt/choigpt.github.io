@@ -1,0 +1,2 @@
+검증생
+retrieval augmented generation
