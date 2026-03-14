@@ -239,7 +239,7 @@ Round 5 이후 Kafka 연결 문제를 해결하고 시드 데이터에서 클럽
 | 지갑 조회 p95 | 14.95s | 1.24s |
 | 5xx | 2.74% | 0.00% |
 | Settlement COMPLETED | 0 | 400+ |
-| Lock wait timeout | 10,832 | 0 |
+| Row Lock Waits | 10,832 | 0 |
 | Thresholds PASS | 17/28 | 25/28 |
 | 총 iterations | 220K | 699K |
 

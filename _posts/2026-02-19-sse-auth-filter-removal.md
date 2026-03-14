@@ -46,7 +46,7 @@ protected boolean shouldNotFilter(HttpServletRequest request) {
 }
 ```
 
-경로 패턴이 변경될 때마다 두 필터를 동시에 수정해야 했다. [SSE 인증 실패 편](/jwt-sse-auth-filter-mismatch/)에서 이 조합이 실제로 한 번 어긋나 이중 실행이 발생했었다.
+경로 패턴이 변경될 때마다 두 필터를 동시에 수정해야 했다. 두 필터가 경로를 나눠 갖는 구조 자체가 조건이 어긋날 경우 이중 실행으로 이어질 위험을 안고 있었다.
 
 ### `@Component` 필터 이중 등록 위험 상존
 
@@ -116,7 +116,7 @@ private String extractToken(HttpServletRequest request) {
 
 ## 결과
 
-필터 체인이 단순해졌다. SSE 연결과 일반 API 요청 모두 `JwtAuthenticationFilter` 하나를 거친다. 경로별로 필터를 나눠야 하는 이유가 없었고, 그 분리가 오히려 [Spring Security·JWT 편](/spring-security-jwt-structure-bugs/)의 버그 원인 중 하나였다.
+필터 체인이 단순해졌다. SSE 연결과 일반 API 요청 모두 `JwtAuthenticationFilter` 하나를 거친다. 경로별로 필터를 나눠야 하는 이유가 없었고, 그 분리가 오히려 [SSE 인증 실패 편](/jwt-sse-auth-filter-mismatch/)의 버그 원인 중 하나였다.
 
 `SseAuthenticationFilter`가 제거되면서 [SSE 인증 실패 편](/jwt-sse-auth-filter-mismatch/)에서 언급한 `FilterRegistrationBean`도 함께 정리됐다. `@Component`를 붙인 필터가 두 곳에 자동 등록되는 문제 자체가 사라졌다.
 

@@ -51,7 +51,7 @@ public void deleteSchedule(Long clubId, Long scheduleId) {
 }
 ```
 
-`joinSchedule()`에서는 `walletRepository.holdBalanceIfEnough()`로 참여자 지갑에 예약금을 홀드한다. 그런데 `deleteSchedule()`은 `UserClub`과 채팅방만 삭제하고 지갑 홀드를 풀지 않는다.
+`joinSchedule()`에서는 `walletRepository.holdBalanceIfEnough()`로 참여자 지갑에 예약금을 홀드한다. 그런데 `deleteSchedule()`은 `Schedule`과 채팅방만 삭제하고 지갑 홀드를 풀지 않는다.
 
 스케줄이 삭제되면 해당 시점에 참여자들의 지갑에 잡혀 있던 금액이 `pending_out` 상태로 영구 잠긴다. `Settlement` 레코드도 남아 있어 `Schedule`을 참조하는 FK가 남은 상태로 의도치 않게 유지된다.
 
@@ -195,7 +195,7 @@ public void deleteSchedule(Long clubId, Long scheduleId) {
 
 `ScheduleDeletedEvent`를 수신한 `SettlementScheduleEventListener`가 `settlementRepository.deleteByScheduleId()`를 실행한다. 삭제 순서를 지갑 해제 → 스케줄 삭제 → 정산 정리로 잡았다.
 
-이벤트 리스너가 실패하는 경우(`deleteByScheduleId()` 예외)는 Settlement 레코드가 고아로 남을 수 있다. 이 케이스는 `@TransactionalEventListener(AFTER_COMMIT)` 기반이라 스케줄 삭제 자체는 이미 커밋된 상태이므로 트랜잭션 롤백으로 되돌릴 수 없다. 현재는 리스너 실패 시 에러 로그를 남기고, 주기적으로 `settlement WHERE schedule_id NOT IN (SELECT id FROM schedule)`를 스캔하는 배치로 고아 레코드를 정리하는 방식으로 수용했다.
+Settlement에서 Schedule로의 FK는 DB 레벨에서 강제되지 않으므로, `scheduleRepository.delete(schedule)`이 먼저 커밋되어도 FK 제약 위반은 발생하지 않는다. 이벤트 리스너가 실패하는 경우(`deleteByScheduleId()` 예외)는 Settlement 레코드가 고아로 남을 수 있다. 이 케이스는 `@TransactionalEventListener(AFTER_COMMIT)` 기반이라 스케줄 삭제 자체는 이미 커밋된 상태이므로 트랜잭션 롤백으로 되돌릴 수 없다. 현재는 리스너 실패 시 에러 로그를 남기고, 주기적으로 `settlement WHERE schedule_id NOT IN (SELECT id FROM schedule)`를 스캔하는 배치로 고아 레코드를 정리하는 방식으로 수용했다.
 
 ---
 
