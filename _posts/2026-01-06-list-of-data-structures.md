@@ -1,4 +1,5 @@
 ---
+layout: post
 title: 자료구조 총정리
 date: 2026-01-06
 tags: [data-structure, CS, algorithm]

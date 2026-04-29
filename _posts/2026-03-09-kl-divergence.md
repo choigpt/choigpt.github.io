@@ -1,4 +1,5 @@
 ---
+layout: post
 title: KL Divergence — 두 확률분포의 정보량 차이 측정
 date: 2026-03-09
 tags: [statistics, probability, 정보이론, 머신러닝]
@@ -30,9 +31,9 @@ $$D_{KL}(P \| Q) = \sum_{x} P(x) \log \frac{P(x)}{Q(x)}$$
 
 ---
 
-## 비대칭성
+## 비음수성과 비대칭성
 
-KL Divergence의 핵심 특성이자 한계는 **비대칭**이라는 점이다.
+KL Divergence는 항상 0 이상이고 (**Gibbs 부등식**), 등호는 정확히 $P = Q$일 때 성립한다. "두 분포가 같으면 0, 다를수록 양수"라는 거리감이 여기서 나온다. 다만 일반적인 거리(metric)와 달리 대칭은 성립하지 않는다.
 
 $$D_{KL}(P \| Q) \neq D_{KL}(Q \| P)$$
 

@@ -1,4 +1,5 @@
 ---
+layout: post
 title: 피드 도메인 — Redis를 도입했는데 조회는 여전히 JPA를 통하고 있었다
 date: 2026-02-21
 tags: [Redis, JPA, Spring, 트러블슈팅, Java, 피드]

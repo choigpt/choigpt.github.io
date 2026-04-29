@@ -1,4 +1,5 @@
 ---
+layout: post
 title: 채팅 도메인 리팩토링 — WebSocket 핸들러부터 커서 페이징 DTO까지
 date: 2026-02-27
 tags: [Spring, Java, 리팩토링, WebSocket, STOMP, JPA, QueryDSL, 채팅, 설계]

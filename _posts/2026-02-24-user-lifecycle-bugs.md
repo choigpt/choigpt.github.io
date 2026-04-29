@@ -1,4 +1,5 @@
 ---
+layout: post
 title: 유저 도메인 — 인증 이후, 사용자 생명주기에서 무너진 것들
 date: 2026-02-24
 tags: [Spring Security, JWT, 카카오로그인, 트러블슈팅, Java, 사용자관리]

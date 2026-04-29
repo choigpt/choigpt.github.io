@@ -1,4 +1,5 @@
 ---
+layout: post
 title: "역전파 공부: 연쇄 법칙에서 자동 미분, 계산 그래프까지"
 date: 2026-01-27
 tags: [deep-learning, backpropagation, gradient-descent, optimization]

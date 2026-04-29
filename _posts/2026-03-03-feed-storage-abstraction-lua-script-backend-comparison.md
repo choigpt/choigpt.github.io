@@ -1,4 +1,5 @@
 ---
+layout: post
 title: 피드 도메인 — Storage 추상화, Lua Script 분석, 3-Backend 비교 테스트
 date: 2026-03-03
 tags: [Java, Spring, MongoDB, MySQL, Redis, Lua, 부하테스트, k6, 성능최적화, Port/Adapter]
@@ -186,7 +187,7 @@ public boolean existsFeed(Long feedId) {
 }
 ```
 
-피드 삭제 시 해당 캐시를 evict한다. TTL 10분으로 설정하여 삭제 후 최대 10분간 stale 데이터가 남을 수 있지만, 삭제된 피드에 좋아요를 시도해도 Lua Script에서 무해하게 처리되므로 실질적 문제는 없다.
+피드 삭제 시 해당 캐시를 evict한다. evict가 누락되거나 다중 인스턴스 환경에서 캐시 동기화가 늦어지는 경우라도 TTL이 10분이라 최악의 경우 10분 이내에는 자연 만료된다. 이 stale 윈도우 동안 삭제된 피드에 좋아요를 시도하더라도 Lua Script가 무해하게 처리하므로 실질적 문제는 없다.
 
 ### 결과
 

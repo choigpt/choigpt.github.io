@@ -1,4 +1,5 @@
 ---
+layout: post
 title: 토비의 스프링 AOP 하편 — 트랜잭션 속성, @AspectJ, 실무 함정
 date: 2026-03-13
 tags:

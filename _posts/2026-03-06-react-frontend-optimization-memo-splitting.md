@@ -1,4 +1,5 @@
 ---
+layout: post
 title: React 프론트엔드 리팩토링 — memo 0건, 코드 스플리팅 0건에서 시작한 최적화
 date: 2026-03-06
 tags: [React, TypeScript, Vite, 성능최적화, 코드스플리팅, 리팩토링, SSE, k6]

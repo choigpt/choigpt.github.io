@@ -1,4 +1,5 @@
 ---
+layout: post
 title: "자료구조 2편: 해시와 트리 — 해시 테이블, BST, 균형 트리, B-Tree, 힙"
 date: 2026-01-06
 tags: [data-structure, CS, algorithm, hash-table, BST, AVL, red-black-tree, B-tree, heap]

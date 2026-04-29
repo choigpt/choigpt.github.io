@@ -1,4 +1,5 @@
 ---
+layout: post
 title: 1BRC Challenge — 10억 행 CSV를 Java로 얼마나 빨리 읽을 수 있을까
 date: 2026-03-18
 tags:

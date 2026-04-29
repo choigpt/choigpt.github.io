@@ -1,4 +1,5 @@
 ---
+layout: post
 title: 검색 부하 테스트 — AWS EC2에서 MySQL FULLTEXT ngram의 성능 한계
 date: 2026-03-08
 tags: [AWS, EC2, MySQL, FULLTEXT, Redis, HikariCP, k6, 성능최적화, 부하테스트, Java, 검색]

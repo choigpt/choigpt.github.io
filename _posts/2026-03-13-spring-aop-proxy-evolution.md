@@ -1,4 +1,5 @@
 ---
+layout: post
 title: 토비의 스프링 AOP — 수동 프록시에서 @Aspect까지, 프록시 진화 과정
 date: 2026-03-13
 tags:

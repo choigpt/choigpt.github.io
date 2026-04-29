@@ -1,4 +1,5 @@
 ---
+layout: post
 title: "조건부 확률 공부: 경우의 수에서 몬티 홀, 나이브 베이즈까지"
 date: 2026-01-12
 tags: [statistics, probability, bayes, machine-learning, naive-bayes]

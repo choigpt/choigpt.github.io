@@ -1,4 +1,5 @@
 ---
+layout: post
 title: 채팅 부하 테스트 — AWS EC2에서 TX 분리, Virtual Thread Pinning 분석, 4,500 VU 달성
 date: 2026-03-07
 tags: [AWS, EC2, MySQL, HikariCP, WebSocket, Redis, STOMP, ZGC, VirtualThread, k6, 성능최적화, 부하테스트, Java, 채팅]

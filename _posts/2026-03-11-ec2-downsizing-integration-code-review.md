@@ -1,4 +1,5 @@
 ---
+layout: post
 title: EC2 다운사이징 후 최적화 (하) — 전체 통합 결과와 코드 리뷰
 date: 2026-03-11
 tags: [AWS, EC2, MySQL, MongoDB, Redis, Kafka, Elasticsearch, k6, 성능최적화, 부하테스트, Java, 코드리뷰]

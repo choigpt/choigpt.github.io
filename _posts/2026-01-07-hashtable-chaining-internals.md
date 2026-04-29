@@ -1,4 +1,5 @@
 ---
+layout: post
 title: "해시 테이블 체이닝 심화: 연결 리스트에서 트리까지"
 date: 2026-01-07
 tags: [data-structure, CS, hash-table, linked-list, red-black-tree]

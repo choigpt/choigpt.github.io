@@ -1,4 +1,5 @@
 ---
+layout: post
 title: 검색 엔진 추상화 — ES vs MySQL FULLTEXT, 236배 차이의 기록
 date: 2026-03-03
 tags: [Elasticsearch, MySQL, 검색, 성능최적화, k6, 부하테스트, Port/Adapter, nori, FULLTEXT]

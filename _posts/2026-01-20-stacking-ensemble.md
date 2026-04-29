@@ -1,4 +1,5 @@
 ---
+layout: post
 title: "스태킹과 앙상블 전략 공부: 모델을 조합하는 기술"
 date: 2026-01-20
 tags: [machine-learning, stacking, ensemble, blending, model-selection]

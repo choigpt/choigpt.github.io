@@ -548,7 +548,7 @@ P(X ≥ 7) = 1 - P(X ≤ 6) = 1 - 0.8894 = 0.1106 ≈ 11.1%
 - 하루 동안의 고객 불만 접수 건수
 ```
 
-**이항분포와의 관계:** n이 크고 p가 작을 때, $$\text{Binomial}(n, p) \approx \text{Poisson}(np)$$. 앞서 해시 테이블 체이닝에서 "체인 길이가 8일 확률"을 포아송으로 계산한 것이 이 근사다.
+**이항분포와의 관계:** n이 크고 p가 작을 때, $$\text{Binomial}(n, p) \approx \text{Poisson}(np)$$. 자세한 수치 예시는 [해시 테이블 체이닝 내부](/hashtable-chaining-internals/)에서 "체인 길이가 8일 확률"을 포아송으로 계산하는 부분을 참고.
 
 ## 정규분포 (Normal Distribution)
 

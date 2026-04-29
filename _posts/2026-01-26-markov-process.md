@@ -1,4 +1,5 @@
 ---
+layout: post
 title: 마르코프 과정 — 상태 전이와 정상 분포
 date: 2026-01-26
 tags: [reinforcement-learning, markov, probability]

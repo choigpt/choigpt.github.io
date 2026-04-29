@@ -1,4 +1,5 @@
 ---
+layout: post
 title: 부하 테스트 코드 리뷰 — k6 시나리오의 10가지 함정과 수정
 date: 2026-03-09
 tags: [k6, 부하테스트, JavaScript, 테스트코드, 성능최적화, AWS, EC2]

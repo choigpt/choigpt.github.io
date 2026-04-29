@@ -1,4 +1,5 @@
 ---
+layout: post
 title: 모임 도메인 — 동시성 구멍과 유령 멤버
 date: 2026-02-22
 tags: [JPA, Spring, 동시성, 트러블슈팅, Java, 모임]
@@ -61,7 +62,7 @@ Thread A: UPDATE SET member_count=6 → 커밋
 Thread B: UPDATE SET member_count=6 → 커밋 → Lost Update
 ```
 
-실제로는 7이어야 하는데 6이 된다. `@Transactional`이 있어도 MySQL InnoDB의 기본 격리 수준(REPEATABLE READ)에서는 해결되지 않는다. 두 트랜잭션이 각자 읽은 값에서 계산하므로 서로의 변경을 덮어쓴다.
+실제로는 7이어야 하는데 6이 된다. `@Transactional`이 있어도 SELECT 후 애플리케이션 메모리에서 계산해 UPDATE하는 패턴이라면 격리수준만으로는 막히지 않는 Lost Update의 전형이다. REPEATABLE READ 스냅샷은 두 트랜잭션이 각자 같은 값을 읽도록 만들고, dirty checking은 그 값을 기준으로 UPDATE 문을 만들기 때문에 서로의 변경을 덮어쓴다. (SERIALIZABLE이면 첫 SELECT가 잠금 기반으로 직렬화되어 막히지만 비용이 크다.)
 
 ---
 

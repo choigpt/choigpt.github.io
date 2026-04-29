@@ -1,4 +1,5 @@
 ---
+layout: post
 title: 검색 도메인 부하 테스트 — teammates_clubs 쿼리 62배 개선 기록
 date: 2026-03-01
 tags: [Elasticsearch, MySQL, QueryDSL, 성능최적화, k6, 부하테스트, N+1, 인덱스, nori, Java]
@@ -253,9 +254,9 @@ List<Long> filteredClubIds = queryFactory
 
 실행 시간은 37ms에서 0.6ms로 **62배** 개선됐다. 스캔 행은 14,445에서 737로 95% 감소하고, filesort는 제거됐으며, club 테이블 접근도 14,445 loops에서 0으로 완전히 제거됐다.
 
-**DISTINCT vs GROUP BY**: MySQL에서 DISTINCT는 covering index만으로 중복 제거가 가능해 temporary table을 피한다. GROUP BY는 항상 temporary table을 생성한다. 정렬이 필요 없는 중복 제거라면 DISTINCT가 효율적이다.
+**DISTINCT vs GROUP BY (이 케이스 한정)**: 본 쿼리에서는 적절한 covering index가 있어 DISTINCT가 인덱스 정렬만으로 중복 제거되어 temporary table을 회피했다. 다만 일반 룰은 아니다 — MySQL 8 옵티마이저는 GROUP BY도 인덱스 정렬이 가능하면 temporary를 만들지 않고, DISTINCT도 적절한 인덱스가 없으면 temporary를 사용한다. 본 케이스에서 DISTINCT가 빠른 건 인덱스가 받쳐줬기 때문이다.
 
-**NOT EXISTS vs NOT IN**: NOT IN은 서브쿼리를 매 행마다 평가한다. NOT EXISTS는 MySQL이 materialized subquery로 최적화해 antijoin 처리한다.
+**NOT EXISTS vs NOT IN (이 케이스 한정)**: 본 쿼리에서 NOT EXISTS는 antijoin으로 풀려 빠르게 처리됐다. MySQL 8에서는 NOT IN도 antijoin transformation 대상이지만 NULL이 포함되면 변환을 포기한다. 또 두 표현은 NULL 처리 의미가 다르므로(NOT IN은 NULL이 있으면 결과가 비는 행이 생긴다), NULL을 다루는 안전성과 옵티마이저 친화성 양쪽에서 NOT EXISTS가 본 케이스에 더 잘 맞았다.
 
 ---
 

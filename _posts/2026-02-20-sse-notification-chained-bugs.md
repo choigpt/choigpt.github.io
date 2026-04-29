@@ -1,4 +1,5 @@
 ---
+layout: post
 title: 알림 SSE 구현 중 발견한 연쇄 버그와 구조 개선
 date: 2026-02-20
 tags: [SSE, Spring, JPA, 트러블슈팅, Java, 알림]

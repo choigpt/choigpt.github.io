@@ -1287,13 +1287,18 @@ Oracle:
 MySQL InnoDB:
   - READ UNCOMMITTED
   - READ COMMITTED
-  - REPEATABLE READ (기본) ← Gap Lock으로 Phantom Read도 방지
+  - REPEATABLE READ (기본) ← Locking Read에서 Gap Lock으로 Phantom 방지
   - SERIALIZABLE
 ```
 
 Oracle은 Undo 기반 MVCC를 사용하므로, 항상 커밋된 데이터만 읽는다. READ UNCOMMITTED 격리수준을 별도로 제공하지 않는 것은 아키텍처상 Dirty Read가 원천적으로 불가능하기 때문이다.
 
-MySQL InnoDB는 REPEATABLE READ가 기본값인데, 여기서 **Gap Lock**이라는 독특한 메커니즘을 사용한다:
+MySQL InnoDB의 REPEATABLE READ는 두 가지 메커니즘을 함께 쓴다.
+
+- 일반 SELECT(consistent nonlocking read)는 트랜잭션 시작 시점의 MVCC 스냅샷을 읽으므로 다른 트랜잭션의 변경이 보이지 않는다.
+- Locking Read(`SELECT ... FOR UPDATE`/`LOCK IN SHARE MODE`)와 DML은 **Gap Lock / Next-key Lock**으로 범위 자체를 잠가 Phantom을 방지한다.
+
+즉 Phantom 방지가 격리수준 자체에서 자동으로 보장되는 것이 아니라, 잠금 기반 읽기·쓰기 시에 Gap Lock이 같이 따라붙기 때문이다.
 
 ```
 Gap Lock이란?
@@ -1310,7 +1315,7 @@ SELECT * FROM orders WHERE price BETWEEN 100 AND 200 FOR UPDATE;
   → 이로써 REPEATABLE READ에서도 Phantom Read가 방지된다.
 ```
 
-따라서 MySQL InnoDB에서는 REPEATABLE READ만으로도 대부분의 동시성 이상현상을 방지할 수 있어, SERIALIZABLE까지 올릴 필요가 거의 없다. 반면 Oracle에서 Phantom Read를 완전히 방지하려면 SERIALIZABLE 격리수준을 사용해야 한다.
+따라서 MySQL InnoDB에서는 잠금 기반 읽기·쓰기 패턴을 사용하면 REPEATABLE READ만으로도 대부분의 동시성 이상현상을 막을 수 있어 SERIALIZABLE까지 올릴 필요가 거의 없다. 다만 일반 SELECT만으로 Phantom을 막는다고 가정하면 안 된다 — 격리수준이 아니라 Locking Read가 핵심이다. 반면 Oracle에서 Phantom Read를 완전히 방지하려면 SERIALIZABLE 격리수준을 사용해야 한다.
 
 #### 격리수준 선택 기준
 

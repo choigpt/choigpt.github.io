@@ -1,4 +1,5 @@
 ---
+layout: post
 title: 피드 부하 테스트 — AWS EC2에서 IN절 병목, covering index, X-lock 경합 해소
 date: 2026-03-07
 tags: [AWS, EC2, MySQL, Redis, HikariCP, k6, 성능최적화, 부하테스트, Java, 피드]

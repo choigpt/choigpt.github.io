@@ -1,4 +1,5 @@
 ---
+layout: post
 title: "그래디언트 부스팅과 XGBoost 공부: 잔차 학습부터 2차 근사, 정규화까지"
 date: 2026-01-19
 tags: [machine-learning, xgboost, gradient-boosting, ensemble, boosting]

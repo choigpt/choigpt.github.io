@@ -1,4 +1,5 @@
 ---
+layout: post
 title: "자료구조 3편: 그래프와 특수 구조 — 그래프, Union-Find, 트라이, 세그먼트 트리, 스킵 리스트, 블룸 필터"
 date: 2026-01-06
 tags: [data-structure, CS, algorithm, graph, union-find, trie, segment-tree, fenwick-tree, skip-list, bloom-filter]

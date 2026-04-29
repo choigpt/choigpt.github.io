@@ -1,4 +1,5 @@
 ---
+layout: post
 title: 알림 도메인 — Port/Adapter Storage 추상화, MySQL의 벽, MongoDB 1,061배 차이
 date: 2026-03-02
 tags: [Java, Spring, MongoDB, MySQL, 부하테스트, k6, 성능최적화, Port/Adapter, 헥사고날, 알림]

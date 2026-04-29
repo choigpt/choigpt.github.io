@@ -1,4 +1,5 @@
 ---
+layout: post
 title: 채팅 도메인 — Storage 추상화, WHERE IN 풀스캔, WebSocket 1,000VU 극한 테스트
 date: 2026-03-02
 tags: [Java, Spring, WebSocket, STOMP, MySQL, MongoDB, Redis, 부하테스트, k6, 성능최적화]
@@ -67,7 +68,7 @@ id  select_type  table  type     rows
 2   SUBQUERY     m2     range    333,570     ← 인덱스 탐
 ```
 
-서브쿼리는 인덱스를 타지만, **외부 쿼리에서 `message_id IN (서브쿼리결과)`를 할 때 PK 인덱스 대신 풀 테이블 스캔(3.1M rows)**을 하고 있었다. MySQL이 서브쿼리 결과를 materialized temp table로 만든 뒤 PK lookup을 못 하는 알려진 이슈다.
+서브쿼리는 인덱스를 타지만, **외부 쿼리에서 `message_id IN (서브쿼리결과)`를 할 때 PK 인덱스 대신 풀 테이블 스캔(3.1M rows)**을 하고 있었다. MySQL 옵티마이저가 IN 서브쿼리를 materialized temp table로 변환하고, 통계가 왜곡됐을 때 PK lookup이 아니라 풀스캔을 선택해버리는 케이스다 (8.0의 semi-join transformation이 항상 PK 경로로 풀어지지는 않는다).
 
 ### 수정: derived table JOIN
 

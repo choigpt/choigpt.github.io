@@ -1,4 +1,5 @@
 ---
+layout: post
 title: 정산 부하 테스트 — AWS EC2에서 시드 데이터 버그 수정과 5라운드 최적화
 date: 2026-03-08
 tags: [AWS, EC2, MySQL, Kafka, HikariCP, k6, 성능최적화, 부하테스트, Java, 정산]

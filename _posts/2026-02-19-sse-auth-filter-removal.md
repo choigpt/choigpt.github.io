@@ -1,4 +1,5 @@
 ---
+layout: post
 title: SseAuthenticationFilter 제거 — SSE 인증을 필터 하나로 단일화
 date: 2026-02-19
 tags:

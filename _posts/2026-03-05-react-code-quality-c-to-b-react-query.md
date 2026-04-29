@@ -1,4 +1,5 @@
 ---
+layout: post
 title: React 코드 품질 — C(68점)에서 B(82점)으로, React Query 도입과 컴포넌트 분리
 date: 2026-03-05
 tags: [React, ReactQuery, TypeScript, ESLint, Playwright, Sentry, 접근성, 코드품질, 테스트]

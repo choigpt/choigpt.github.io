@@ -1,4 +1,5 @@
 ---
+layout: post
 title: "랜덤 포레스트 공부: 배깅, Bias-Variance, OOB, 특성 중요도까지"
 date: 2026-01-18
 tags: [machine-learning, random-forest, ensemble, bagging]
@@ -400,7 +401,9 @@ max_features 작으면:
 
 기본값:
   분류: "sqrt" (√p)  — p가 100이면 10개씩 후보
-  회귀: "log2" 또는 p/3
+  회귀: 통상 권장값 p/3
+        ⚠ sklearn ≥1.1의 RandomForestRegressor.max_features 기본값은 1.0(전체)으로 변경.
+           예전 기본값 "auto"(=p)와 사실상 동일. 분산 감소 효과를 보려면 명시적으로 p/3 또는 "sqrt"로 설정.
 
 튜닝 범위: [sqrt(p), log2(p), 0.3p, 0.5p, p]
   → p가 아닌 값부터 시도, p는 일반 배깅과 동일

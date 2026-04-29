@@ -1,4 +1,5 @@
 ---
+layout: post
 title: "LRU 캐시: 해시 테이블 + 이중 연결 리스트의 조합"
 date: 2026-01-07
 tags: [data-structure, CS, cache, linked-list, hash-table]

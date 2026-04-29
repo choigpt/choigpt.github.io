@@ -1,4 +1,5 @@
 ---
+layout: post
 title: 멀티 도메인 리팩토링 — ErrorCode 분리부터 30파일 코드 품질 정리까지
 date: 2026-03-04
 tags: [Java, 리팩토링, Spring, 코드품질, 멀티모듈, ErrorCode, 클린코드]

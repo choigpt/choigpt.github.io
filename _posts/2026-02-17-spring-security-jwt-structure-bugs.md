@@ -1,4 +1,5 @@
 ---
+layout: post
 title: Spring Security + JWT 구조 전반에 걸친 버그 및 설계 문제
 date: 2026-02-17
 tags:

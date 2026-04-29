@@ -1,4 +1,5 @@
 ---
+layout: post
 title: 알림 부하 테스트 — AWS EC2에서 MySQL write 붕괴와 MongoDB 비교
 date: 2026-03-07
 tags: [AWS, EC2, MySQL, MongoDB, HikariCP, SSE, k6, 성능최적화, 부하테스트, Java, 알림]

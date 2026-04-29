@@ -1,4 +1,5 @@
 ---
+layout: post
 title: 가우스-마르코프 정리 — OLS가 최적인 조건
 date: 2026-01-20
 tags: [statistics, machine-learning, regression]

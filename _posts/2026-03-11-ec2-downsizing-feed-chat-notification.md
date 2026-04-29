@@ -1,4 +1,5 @@
 ---
+layout: post
 title: EC2 다운사이징 후 최적화 (상) — 피드·채팅·알림 도메인 재테스트
 date: 2026-03-11
 tags: [AWS, EC2, MySQL, MongoDB, Redis, HikariCP, k6, 성능최적화, 부하테스트, Java, ZGC, 피드, 채팅, 알림]

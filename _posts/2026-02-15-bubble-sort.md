@@ -1,4 +1,5 @@
 ---
+layout: post
 title: "버블 정렬 공부: 인접 비교의 원리부터 최적화, 복잡도 증명까지"
 date: 2026-02-15
 tags: [algorithm, CS, sorting]

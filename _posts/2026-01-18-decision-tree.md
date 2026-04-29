@@ -1,4 +1,5 @@
 ---
+layout: post
 title: "의사결정 트리 공부: 엔트로피에서 랜덤 포레스트, XGBoost까지"
 date: 2026-01-18
 tags: [machine-learning, classification, decision-tree, random-forest, xgboost, ensemble]

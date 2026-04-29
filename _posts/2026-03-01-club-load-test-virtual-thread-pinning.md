@@ -1,4 +1,5 @@
 ---
+layout: post
 title: 클럽 도메인 부하 테스트 — Virtual Thread Pinning에 의한 JVM 크래시 분석
 date: 2026-03-01
 tags: [Java, VirtualThread, k6, 부하테스트, MySQL, Spring, HikariCP, 데드락, 성능최적화, JVM]

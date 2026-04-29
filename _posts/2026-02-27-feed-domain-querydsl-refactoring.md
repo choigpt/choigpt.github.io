@@ -1,4 +1,5 @@
 ---
+layout: post
 title: 피드 도메인 리팩토링 — 서비스 책임 분리와 네이티브 쿼리 전환
 date: 2026-02-27
 tags:
@@ -74,7 +75,7 @@ flowchart LR
     K["findPersonalFeedChunked (서비스 내)"] -->|서비스 → Repository| L[QueryDSL + 이동]
 ```
 
-`LOG()`를 `QueryDSL MathExpressions`로, `GREATEST(x, 0)`을 `CASE WHEN x > 0 THEN x ELSE 0 END`로, `DATE_SUB(NOW(), INTERVAL 7 DAY)`를 Java에서 `LocalDateTime.now().minusDays(7)` 파라미터로 전달하는 방식으로 MySQL 전용 함수를 제거했다.
+`LOG()`를 `QueryDSL MathExpressions`로, `GREATEST(x, 0)`을 `CASE WHEN x > 0 THEN x ELSE 0 END`로, `DATE_SUB(NOW(), INTERVAL 7 DAY)`를 Java에서 `LocalDateTime.now().minusDays(7)` 파라미터로 전달하는 방식으로 다수의 MySQL 전용 함수를 표준 표현으로 옮겼다. 다만 `decrementCommentCount`의 `GREATEST`는 네이티브로 남겼고, `findPopularFeedIdsWithCountsByClubIds`의 `LN`/`TIMESTAMPDIFF`는 `numberTemplate`(QueryDSL이 SQL fragment를 그대로 주입하는 통로)으로 잔류한다. 따라서 "DB 독립성을 완전히 확보"한 것이 아니라 "QueryDSL 추상화로 표현을 통일하고, 잔류 부분은 한 군데로 격리했다"가 정확한 표현이다.
 
 ```java
 // 수정 후 — QueryDSL로 인기피드 스코어 계산 (LN, TIMESTAMPDIFF 잔류는 numberTemplate)

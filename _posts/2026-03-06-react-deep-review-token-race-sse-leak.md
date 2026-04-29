@@ -1,4 +1,5 @@
 ---
+layout: post
 title: React 심화 리뷰 — 토큰 레이스 컨디션, SSE 메모리 누수, isProtectedRoute 보안 버그
 date: 2026-03-06
 tags: [React, TypeScript, SSE, WebSocket, STOMP, 보안, 트러블슈팅, 테스트]

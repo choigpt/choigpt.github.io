@@ -1,4 +1,5 @@
 ---
+layout: post
 title: 표본 분산은 왜 N-1로 나누는가
 date: 2026-01-24
 tags: [statistics, variance]

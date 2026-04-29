@@ -1,4 +1,5 @@
 ---
+layout: post
 title: EC2 다운사이징 후 최적화 (중) — 정산·검색 도메인과 공통 인프라 튜닝
 date: 2026-03-11
 tags: [AWS, EC2, MySQL, Elasticsearch, Kafka, HikariCP, k6, 성능최적화, 부하테스트, Java, ZGC, VirtualThread, 정산, 검색]

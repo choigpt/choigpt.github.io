@@ -1,4 +1,5 @@
 ---
+layout: post
 title: 최적화 기초 — Convex 함수와 전역 최솟값
 date: 2026-01-22
 tags: [optimization, mathematics, machine-learning]

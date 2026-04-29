@@ -1,4 +1,5 @@
 ---
+layout: post
 title: AWS EC2 부하 테스트 중간 점검 — 5개 도메인 테스트 후 인프라 진단과 다음 계획
 date: 2026-03-08
 tags: [AWS, EC2, MySQL, Redis, HikariCP, k6, 성능최적화, 부하테스트, Java, 인프라, Wireshark, 네트워크]

@@ -1,4 +1,5 @@
 ---
+layout: post
 title: DB Deadlock — 부하 테스트에서 터지고 ORDER BY로 해결한 이야기
 date: 2026-04-10
 tags: [MySQL, JPA, 부하테스트, 데드락, 성능최적화, Java]

@@ -1,4 +1,5 @@
 ---
+layout: post
 title: SSE 알림 부하 테스트 — 7가지 시나리오로 찾은 연결 한계와 잔여 병목
 date: 2026-03-01
 tags: [SSE, MySQL, InnoDB, HikariCP, k6, 성능최적화, 트러블슈팅, Java, 알림]

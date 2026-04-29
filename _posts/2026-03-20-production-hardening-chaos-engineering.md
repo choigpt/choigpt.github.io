@@ -1,4 +1,5 @@
 ---
+layout: post
 title: "Phase 5 — 프로덕션 하드닝: 48건 수정, Chaos Monkey, A/B 테스트 인프라"
 date: 2026-03-20
 tags: [DBA, Security, Performance, DevOps, ChaosMonkey, Unleash, A/B테스트, 카오스엔지니어링, SpringBoot, Docker, Prometheus, Grafana]
@@ -41,9 +42,9 @@ Phase 1에서 발견한 ~60건의 버그와 비교하면 성격이 완전히 다
 
 ---
 
-## 3. 수정 내역 — 48건, 42 파일 수정 + 13 파일 신규
+## 3. 수정 내역 — 43건, 42 파일 수정 + 13 파일 신규
 
-> 115건 중 48건을 이 Phase에서 수정했다. 나머지 67건은 MEDIUM/LOW 심각도로, Chaos Monkey 테스트와 A/B 인프라 구축을 우선하고 후속 스프린트로 이관했다.
+> 115건 중 43건(DBA 10 + Security 9 + Performance 9 + DevOps 12 + 코드 품질 3)을 이 Phase에서 수정했다. 나머지 72건은 MEDIUM/LOW 심각도로, Chaos Monkey 테스트와 A/B 인프라 구축을 우선하고 후속 스프린트로 이관했다.
 
 ### 3.1 DBA 영역 (10건)
 

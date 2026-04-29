@@ -1,4 +1,5 @@
 ---
+layout: post
 title: 스케줄 도메인 — 권한 체크 순서 하나가 자금 동결로 이어지는 구조
 date: 2026-02-23
 tags: [JPA, Spring, 동시성, 트러블슈팅, Java, 스케줄, 정산]

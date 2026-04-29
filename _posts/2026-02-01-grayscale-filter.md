@@ -1,4 +1,5 @@
 ---
+layout: post
 title: 이미지 필터 — LPF, HPF, 오버플로우 처리
 date: 2026-02-01
 tags: [image-processing, filter, computer-vision]
