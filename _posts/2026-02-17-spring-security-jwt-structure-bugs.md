@@ -298,6 +298,6 @@ return;
 
 ## 시리즈 탐색
 
-**시리즈 첫 글** — [전체 목차](/onlyone-project/)
+**시리즈 첫 글** — [전체 목차](/buddkit-project/)
 
 **다음 글:** [JWT 인증 흐름 불일치로 인한 SSE 인증 실패 버그](/jwt-sse-auth-filter-mismatch/)

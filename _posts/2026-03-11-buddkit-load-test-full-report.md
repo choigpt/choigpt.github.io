@@ -1,18 +1,20 @@
 ---
 layout: post
-title: "OnlyOne-Back 부하 테스트 & 성능 최적화 전체 보고서"
+title: "Buddkit 백엔드 부하 테스트 & 성능 최적화 전체 보고서"
 date: 2026-03-11
-tags: [spring-boot, k6, mysql, mongodb, redis, kafka, elasticsearch, jvm, aws, 부하테스트, 성능최적화, OnlyOne]
+tags: [spring-boot, k6, mysql, mongodb, redis, kafka, elasticsearch, jvm, aws, 부하테스트, 성능최적화, Buddkit]
 category: Backend
-permalink: /onlyone-load-test-full-report/
-excerpt: "OnlyOne-Back 6개 도메인(피드, 채팅, 알림, 정산, 검색, 클럽-일정)의 부하 테스트와 성능 최적화 결과를 한 편으로 정리한 전체 보고서. 124M rows 규모의 DB, max 9,000 VU의 k6 부하, ZGC Generational 환경에서 인덱스/쿼리 최적화, 비동기 처리, 스토리지 추상화, 인프라 다운사이징(c5.xlarge → t3.medium)까지의 전 과정을 단일 글로 다룬다."
+permalink: /buddkit-load-test-full-report/
+redirect_from:
+  - /onlyone-load-test-full-report/
+excerpt: "Buddkit 백엔드 6개 도메인(피드, 채팅, 알림, 정산, 검색, 클럽-일정)의 부하 테스트와 성능 최적화 결과를 한 편으로 정리한 전체 보고서. 124M rows 규모의 DB, max 9,000 VU의 k6 부하, ZGC Generational 환경에서 인덱스/쿼리 최적화, 비동기 처리, 스토리지 추상화, 인프라 다운사이징(c5.xlarge → t3.medium)까지의 전 과정을 단일 글로 다룬다."
 ---
 
 ## 개요
 
 | 항목 | 내용 |
 |------|------|
-| 프로젝트 | OnlyOne-Back (Spring Boot) |
+| 프로젝트 | Buddkit (Spring Boot 백엔드, 레포: `OnlyOne-Back`) |
 | 대상 도메인 | 피드, 채팅, 알림, 정산, 검색 (5개 EC2 부하) + 클럽-일정 (로컬 단독, 별도 글) |
 | 테스트 도구 | k6 (Phase 기반 부하 테스트, max 9,000 VU) |
 | 테스트 기간 | 2026-03-05 ~ 2026-03-11 |
