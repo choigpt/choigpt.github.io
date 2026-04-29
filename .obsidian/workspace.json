@@ -4,81 +4,109 @@
     "type": "split",
     "children": [
       {
-        "id": "06a94da45d0792df",
+        "id": "b10a2f6ec5cdde0a",
         "type": "tabs",
         "children": [
           {
-            "id": "4ad823d96569dbd3",
+            "id": "5c100733468f8844",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "WordToVec.md",
+                "file": "_posts/2026-03-08-settlement-aws-ec2-load-test.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "WordToVec"
+              "title": "2026-03-08-settlement-aws-ec2-load-test"
             }
           },
           {
-            "id": "b02e7186be3d5bb5",
+            "id": "ad76dea4282e54b0",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "_posts/2026-01-06-list-of-data-structures.md",
+                "file": "_posts/2026-01-09-dml-tuning-lock-transaction.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "2026-01-06-list-of-data-structures"
+              "title": "2026-01-09-dml-tuning-lock-transaction"
             }
           },
           {
-            "id": "45e63553e537faf0",
+            "id": "7be2e91e56ad2ebe",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "WordToVec.md",
+                "file": "_posts/2026-02-28-finance-domain-load-test-toss-mock.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "WordToVec"
+              "title": "2026-02-28-finance-domain-load-test-toss-mock"
             }
           },
           {
-            "id": "5f001600bc3bbf63",
+            "id": "2d696044314b8a77",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "mle.md",
+                "file": "_posts/2026-04-03-bloom-filter.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "mle"
+              "title": "2026-04-03-bloom-filter"
             }
           },
           {
-            "id": "9a6ab99fda3ffd21",
+            "id": "6e5119cf887fdd48",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "_posts/2026-03-13-spring-aop-proxy-evolution.md",
+                "file": "무제.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "2026-03-13-spring-aop-proxy-evolution"
+              "title": "무제"
+            }
+          },
+          {
+            "id": "9f36f71c4a5012e5",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "_posts/2026-04-10-db-deadlock-order-by.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "2026-04-10-db-deadlock-order-by"
+            }
+          },
+          {
+            "id": "7e5b04aac7530e73",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Reactive Framework.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Reactive Framework"
             }
           }
         ],
-        "currentTab": 4
+        "currentTab": 6
       }
     ],
     "direction": "vertical"
@@ -118,7 +146,7 @@
                 "sortOrder": "alphabetical"
               },
               "icon": "lucide-search",
-              "title": "Search"
+              "title": "검색"
             }
           },
           {
@@ -135,7 +163,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 301.5
+    "width": 273.5
   },
   "right": {
     "id": "d2f8c0df3a4fad51",
@@ -228,18 +256,8 @@
             "state": {
               "type": "git-view",
               "state": {},
-              "icon": "git-pull-request",
-              "title": "Source Control"
-            }
-          },
-          {
-            "id": "d9e074be23a0fda5",
-            "type": "leaf",
-            "state": {
-              "type": "smart-connections-view",
-              "state": {},
-              "icon": "smart-connections",
-              "title": "Connections"
+              "icon": "lucide-ghost",
+              "title": "git-view"
             }
           }
         ],
@@ -259,60 +277,57 @@
       "command-palette:명령어 팔레트 열기": false,
       "bases:새 베이스 생성하기": false,
       "templater-obsidian:Templater": false,
-      "obsidian-git:Open Git source control": false,
-      "smart-connections:Smart Connections: Open connections view": false,
-      "smart-connections:Smart Lookup: Open lookup view": false,
-      "smart-connections:Smart Connections: Open random connection": false
+      "obsidian-git:Open Git source control": false
     }
   },
-  "active": "9a6ab99fda3ffd21",
+  "active": "7e5b04aac7530e73",
   "lastOpenFiles": [
-    "2026-03-13-spring-aop-proxy-evolution.pdf",
-    "_posts/2026-03-11-ec2-downsizing-settlement-search-infra.md",
-    "_posts/2026-03-13-spring-aop-proxy-evolution.md",
-    "Spring AOP.md",
-    "reis singlethread 속도.md",
-    "mle.md",
-    "WordToVec.md",
-    "gan.md",
-    "_posts/2026-01-06-list-of-data-structures.md",
+    "_posts/2026-04-10-db-deadlock-order-by.md",
+    "Reactive Framework.md",
+    "무제 1.md",
     "무제.md",
-    "_posts/2026-03-11-ec2-downsizing-integration-code-review.md",
-    "_posts/2026-03-11-ec2-downsizing-feed-chat-notification.md",
-    "_posts/2026-03-11-ec2-downsizing-optimization-part3.md",
-    "_posts/2026-03-11-ec2-downsizing-optimization-part2.md",
-    "_posts/2026-03-11-ec2-downsizing-optimization-part1.md",
-    "vae.md",
-    "코릴레이션 코.md",
-    "_posts/2026-01-09-Lock-And-Transaction.md",
-    "프로세스.md",
-    "Transformer.md",
-    "VM 와 컨테이너.md",
-    "RAG.md",
+    "_posts/2026-04-03-bloom-filter.md",
+    "_posts/2026-03-18-1brc-challenge.md",
+    "_posts/2026-03-13-spring-aop-proxy-evolution-2.md",
+    "_posts/2026-03-27-netty-eventloop.md",
+    "_posts/2026-03-27-redis.md",
+    "_posts/2026-03-27-netty-eventloop.md.tmp.3140.1775277264429",
+    "assets/img/posts/redis/write-behind.png",
+    "assets/img/posts/redis/write-around.png",
+    "assets/img/posts/redis/write-back.png",
+    "assets/img/posts/redis/write-through.png",
+    "assets/img/posts/redis/write-through-test.png",
+    "assets/img/posts/redis/master-replica.png",
+    "assets/img/posts/redis/cache-aside-pattern.png",
+    "assets/img/posts/redis/pubsub-pattern.png",
+    "assets/img/posts/netty/io-multiplexing-selector.png",
+    "assets/img/posts/dml-tuning/sync_async_commit.png",
+    "assets/img/posts/dml-tuning",
+    "assets/img/posts/bayes",
+    "assets/img/posts/redis",
+    "assets/img/posts/netty",
+    "assets/img/posts/backpropagation",
+    "WordToVec.md.tmp.3140.1775270579475",
+    "WordToVec.md.tmp.3140.1775270557851",
+    "WordToVec.md.tmp.3140.1775270439828",
+    "WordToVec.md.tmp.3140.1775270413729",
+    "WordToVec.md",
     "DOCKER 와 PROCESS.md",
-    "행렬.md",
-    "_posts/2026-01-03-python-study-notes.md",
-    "_posts/2026-03-01-sse-notification-load-test-analysis.md",
-    "_posts/2026-03-09-kl-divergence.md.tmp.104552.1773054346615",
-    "Pasted image 20260308130743.png",
-    "Pasted image 20260308132534.png",
-    "Pasted image 20260308170307.png",
-    "_posts/2026-03-09-chat-aws-ec2-load-test.md.tmp.104552.1773050209798",
-    "_posts/2026-03-09-chat-aws-ec2-load-test.md.tmp.104552.1773050197260",
-    "_posts/2026-03-09-notification-aws-ec2-load-test.md.tmp.104552.1773050101242",
-    "_posts/2026-03-09-notification-aws-ec2-load-test.md.tmp.104552.1773050086330",
-    "_posts/2026-03-09-notification-aws-ec2-load-test.md.tmp.104552.1773050015270",
-    "_posts/2026-03-09-notification-aws-ec2-load-test.md.tmp.104552.1773049995241",
-    "_posts/2026-03-09-notification-aws-ec2-load-test.md.tmp.104552.1773049980411",
-    "_posts/2026-03-09-notification-aws-ec2-load-test.md.tmp.104552.1773049973177",
-    "_posts/2026-03-09-search-aws-ec2-load-test.md.tmp.104552.1773049709483",
-    "favicon.png",
-    "signal_compare_1.png",
-    "signal_ideal.png",
-    "assets/img/posts/signal_compare_5.png",
-    "assets/img/posts/signal_wire.png",
-    "assets/img/posts/signal_ideal_2.png",
-    "signal_wire.png",
+    "bloom-filter-presentation.md",
+    "_posts/2026-01-20- Gauss-Markov-Theorem.md",
+    "RESP 프로토콜.md",
+    "_posts/2026-02-28-finance-domain-load-test-toss-mock.md",
+    "시분할 기법 cpu.md",
+    "1brc challenge.md",
+    "_posts/2026-03-11-ec2-downsizing-settlement-search-infra.md",
+    "_posts/2026-03-11-ec2-downsizing-feed-chat-notification.md",
+    "_posts/2026-03-11-ec2-downsizing-integration-code-review.md",
+    "_posts/2026-03-20-production-hardening-chaos-engineering.md",
+    "_posts/2026-02-24-user-lifecycle-bugs.md",
+    "_posts/2026-02-23-wallet-payment-toss-db-failure.md",
+    "_posts/2026-02-23-schedule-permission-fund-freeze.md",
+    "_posts/2026-02-22-club-concurrency-ghost-members.md",
+    "_posts/2026-02-21-feed-redis-like-n-plus-1.md",
     "Untitled.canvas"
   ]
 }
