@@ -18,13 +18,11 @@ LLM에 코드 리뷰를 맡긴 결과 종합 **5.6 / 10**. `React.memo()` 사용
 
 ### 잘한 점
 
-| 영역 | 설명 |
-|------|------|
-| 프로젝트 구조 | `api/`, `components/`, `contexts/`, `hooks/`, `pages/`, `services/` 분리 |
-| API 레이어 | axios 싱글턴 + 인터셉터, 토큰 자동 첨부, 401 시 refresh, 일관된 에러 매핑 |
-| SSE 서비스 | 지수 백오프 재연결, visibility change 핸들링, Last-Event-ID 추적 |
-| WebSocket (채팅) | STOMP/SockJS 기반, 재연결 + jitter, 메시지 버퍼링, 언마운트 시 정리 |
-| 기술 스택 | React 19, Vite 7, Tailwind v4, Zod |
+- **프로젝트 구조**: `api/`, `components/`, `contexts/`, `hooks/`, `pages/`, `services/` 분리
+- **API 레이어**: axios 싱글턴 + 인터셉터, 토큰 자동 첨부, 401 시 refresh, 일관된 에러 매핑
+- **SSE 서비스**: 지수 백오프 재연결, visibility change 핸들링, Last-Event-ID 추적
+- **WebSocket (채팅)**: STOMP/SockJS 기반, 재연결 + jitter, 메시지 버퍼링, 언마운트 시 정리
+- **기술 스택**: React 19, Vite 7, Tailwind v4, Zod
 
 ### 주요 문제점
 
@@ -37,12 +35,10 @@ LLM에 코드 리뷰를 맡긴 결과 종합 **5.6 / 10**. `React.memo()` 사용
 
 **2. 컴포넌트 비대화**
 
-| 파일 | 라인 수 | 심각도 |
-|------|---------|--------|
-| FeedList.tsx | 1,037줄 | CRITICAL |
-| ScheduleList.tsx | 533줄 | HIGH |
-| MeetingForm.tsx | 393줄 | HIGH |
-| ChatRoom.tsx | 390줄 | HIGH |
+- **FeedList.tsx** — 1,037줄 (CRITICAL)
+- **ScheduleList.tsx** — 533줄 (HIGH)
+- **MeetingForm.tsx** — 393줄 (HIGH)
+- **ChatRoom.tsx** — 390줄 (HIGH)
 
 **3. TypeScript 설정**
 
@@ -106,12 +102,10 @@ LLM에 코드 리뷰를 맡긴 결과 종합 **5.6 / 10**. `React.memo()` 사용
 
 `vite.config.ts`에 `manualChunks`를 추가해 vendor 코드를 분리했다.
 
-| 청크 | 라이브러리 | 크기 |
-|------|-----------|------|
-| vendor-react | react, react-dom, react-router-dom | 89KB |
-| vendor-stomp | @stomp/stompjs, sockjs-client | 69KB |
-| vendor-payment | @tosspayments/* | 3.5KB |
-| vendor-forms | react-hook-form, @hookform/resolvers, zod | 0.04KB |
+- **vendor-react** (react, react-dom, react-router-dom) — 89KB
+- **vendor-stomp** (@stomp/stompjs, sockjs-client) — 69KB
+- **vendor-payment** (@tosspayments/*) — 3.5KB
+- **vendor-forms** (react-hook-form, @hookform/resolvers, zod) — 0.04KB
 
 ### Phase 2: React 렌더링 최적화
 
@@ -155,14 +149,12 @@ const handleLikeClick = useCallback(() => {
 
 프론트엔드 최적화 후 SSE 실시간 전송을 200 receivers / 100 senders / 90초로 부하 테스트했다.
 
-| 메트릭 | 값 | Threshold | 결과 |
-|--------|-----|-----------|------|
-| 연결 성공률 | 100% (600/600) | >95% | PASS |
-| 전송 성공률 | 100% (41,180 msgs) | >90% | PASS |
-| API p95 | 18.8ms | <1000ms | PASS |
-| Latency p50 | 243ms | <500ms | PASS |
-| Latency p95 | 478ms | <2000ms | PASS |
-| Latency max | 512ms | — | — |
+- **연결 성공률**: 100% (600/600), threshold >95% — PASS
+- **전송 성공률**: 100% (41,180 msgs), threshold >90% — PASS
+- **API p95**: 18.8ms, threshold <1000ms — PASS
+- **Latency p50**: 243ms, threshold <500ms — PASS
+- **Latency p95**: 478ms, threshold <2000ms — PASS
+- **Latency max**: 512ms
 
 6/6 threshold 전부 PASS. k6 Docker(UTC)와 서버(KST+9)의 타임존 차이로 latency가 0ms로 잡히는 문제가 있었는데, `createdAt`을 epoch ms로 전환해 해결했다.
 
@@ -170,18 +162,16 @@ const handleLikeClick = useCallback(() => {
 
 ## 수정 내역 요약
 
-| # | 변경 내용 | 효과 |
-|---|----------|------|
-| 1 | 중복 의존성 제거 (stompjs, eventsource, date-fns, react-toastify) | 번들 경량화 |
-| 2 | console.log 31건 제거 (18파일) | 프로덕션 정리 |
-| 3 | tsconfig strict 활성화 | 타입 안전성 확보 |
-| 4 | ErrorBoundary 생성 + 레이아웃별 적용 | 앱 안정성 |
-| 5 | 30+ 페이지 React.lazy + Suspense | 초기 번들 분리 |
-| 6 | React.memo + useCallback 적용 | 불필요 리렌더 방지 |
-| 7 | manualChunks vendor 분리 | 캐시 효율 |
-| 8 | feedsRef 패턴으로 콜백 안정화 | FeedItem 20개 리렌더 방지 |
-| 9 | TitleLayout 240줄 switch → config + hook | 유지보수성 |
-| 10 | AbortController 4개 페이지 적용 | 언마운트 시 요청 취소 |
+1. **중복 의존성 제거** (stompjs, eventsource, date-fns, react-toastify) — 번들 경량화
+2. **console.log 31건 제거** (18파일) — 프로덕션 정리
+3. **tsconfig strict 활성화** — 타입 안전성 확보
+4. **ErrorBoundary 생성 + 레이아웃별 적용** — 앱 안정성
+5. **30+ 페이지 React.lazy + Suspense** — 초기 번들 분리
+6. **React.memo + useCallback 적용** — 불필요 리렌더 방지
+7. **manualChunks vendor 분리** — 캐시 효율
+8. **feedsRef 패턴으로 콜백 안정화** — FeedItem 20개 리렌더 방지
+9. **TitleLayout 240줄 switch → config + hook** — 유지보수성
+10. **AbortController 4개 페이지 적용** — 언마운트 시 요청 취소
 
 ---
 
@@ -198,7 +188,7 @@ const handleLikeClick = useCallback(() => {
 ## 시리즈 탐색
 
 **◀ 이전 글**
-[멀티 벤더 비교 — PostgreSQL Lock, DynamoDB 알림 어댑터, Kafka/RabbitMQ/Redis Streams 정산 MQ](/multi-vendor-comparison-postgresql-dynamodb-rabbitmq/)
+[검색 엔진 추상화 — ES vs MySQL FULLTEXT, 236배 차이의 기록](/search-engine-abstraction-es-vs-fulltext/)
 
 **▶ 다음 글**
 [React 심화 리뷰 — 토큰 레이스 컨디션, SSE 메모리 누수, isProtectedRoute 보안 버그](/react-deep-review-token-race-sse-leak/)

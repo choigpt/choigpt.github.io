@@ -6,11 +6,18 @@ permalink: /wallet-payment-toss-db-failure/
 excerpt: "토스페이먼츠 승인이 완료된 뒤 지갑 업데이트에서 예외가 발생하면, DB는 롤백되지만 이미 승인된 결제는 취소되지 않아 자금이 유실될 수 있었다."
 ---
 
-## 개요
+## 한눈에 보기
 
-결제 코드 검토에서 `confirm()` 내부의 실행 순서 문제를 확인했다. 토스페이먼츠에 결제 승인을 요청한 뒤, 지갑 잔액을 업데이트하는 코드에서 예외가 발생하면 DB는 롤백된다. 그러나 토스에서 이미 승인된 결제는 취소되지 않는다. 사용자 카드에서 금액이 차감되었으나 지갑에는 충전이 반영되지 않은 상태가 된다.
+```
+이 글에서 다루는 문제 (6건):
 
-그리고 잔액 업데이트 방식에도 문제가 있었다. 정산 프로세스는 `captureHold` native query로 DB를 직접 수정하는데, 충전 경로는 JPA 1차 캐시에서 읽은 값에 Java로 더한 뒤 `SET`으로 덮어쓴다. 두 경로가 동시에 실행되면 정산에서 차감한 금액이 충전 `SET`에 덮어써져 증발한다.
+1. 토스 승인 후 DB 실패 → 결제 완료인데 지갑 미충전    ← 핵심 버그
+2. 잔액 Race Condition → 정산 차감분이 충전으로 덮어써짐
+3. @Transactional 범위 내 외부 API 호출 → 커넥션 점유
+4. 결제 금액 서버 검증 없음 → 클라이언트가 금액 결정
+5. reportFail() self-invocation → 실패 기록이 롤백됨
+6. Wallet → User CascadeType.ALL → 지갑 삭제 시 유저까지 삭제
+```
 
 ---
 
@@ -67,9 +74,18 @@ public ConfirmTossPayResponse confirm(ConfirmTossPayRequest req) {
 }
 ```
 
-①에서 토스페이먼츠 승인이 완료된 시점에 사용자 카드에서 돈이 빠진다. ②에서 예외가 발생하면 `@Transactional`이 롤백을 시도한다. 지갑 잔액 업데이트는 롤백되지만, 이미 승인된 토스 결제는 취소 API를 별도로 호출해야만 되돌릴 수 있다. 그런데 `confirm()` 안에 결제 취소 호출 코드가 없었다. 실제로 `cancelPayment` 메서드가 주석 처리된 채로 남아 있었다.
+```
+실패 시나리오:
 
-이 상황에서 사용자는 카드 청구서에는 결제 내역이 찍히는데 지갑에는 충전이 안 되는 경험을 하게 된다.
+① tossPaymentClient.confirmPayment()  → 성공. 사용자 카드에서 돈이 빠짐.
+② wallet.updateBalance()              → DB 예외 발생!
+
+@Transactional 롤백 → 지갑 업데이트는 되돌려짐
+토스 결제는?       → 이미 승인 완료. 별도로 취소 API를 호출해야 되돌릴 수 있음.
+취소 코드가 있나?  → 없음. cancelPayment 메서드는 주석 처리된 채 남아있었음.
+
+결과: 카드 청구서에는 결제 내역이 찍히는데, 지갑에는 충전이 안 됨.
+```
 
 ---
 
@@ -86,18 +102,47 @@ public void updateBalance(Long balance) {
 }
 ```
 
-`findByUser()`로 읽은 `postedBalance`는 JPA 1차 캐시의 스냅샷이다. 이 사이에 정산 프로세스가 `captureHold` native query로 `posted_balance`를 차감하면, `confirm()`의 `wallet.getPostedBalance()`는 차감 전 값을 반환한다. 그 값에 충전액을 더해 `SET`으로 덮어쓰면 정산에서 빠진 금액이 복원된다.
+> 아래 시나리오는 두 경로가 같은 시점에 같은 행을 수정하는 것처럼 보이지만, `PESSIMISTIC_WRITE` 락 때문에 실제로 동시 실행되지는 않는다. 문제의 본질은 동시성이 아니라 **JPA 1차 캐시와 native query의 혼용**이다. 시나리오를 직렬화된 순서로 다시 보면:
 
 ```
-잔액 10,000원
-→ 정산에서 captureHold(3,000): DB → 7,000원
-→ 동시에 confirm(5,000): 1차 캐시 값 10,000 + 5,000 = 15,000으로 SET
-→ 정산 차감분 3,000원 증발
+동시 실행 시나리오:
+
+  충전 경로 (confirm)                 정산 경로 (captureHold)
+  ──────────────────                 ─────────────────────
+  findByUser() → 잔액 10,000 읽음
+  (JPA 1차 캐시에 10,000 저장)
+                                      native query:
+                                      SET posted_balance = posted_balance - 3000
+                                      → DB 잔액: 7,000
+
+  wallet.updateBalance(10,000 + 5,000)
+  → SET posted_balance = 15,000      ← 1차 캐시의 옛날 값(10,000)에 더함
+  → DB 잔액: 15,000                  ← 정산 차감분 3,000원이 증발!
+
+  기대 결과: 10,000 - 3,000 + 5,000 = 12,000
+  실제 결과: 15,000 (3,000원 어디로?)
 ```
 
-반면 정산·홀드 경로는 `SET posted_balance = posted_balance + :amount` 형태의 native query를 쓴다. DB가 현재 값을 읽고 더하는 단일 연산이라 동시성 문제가 없다. 충전 경로만 다른 방식을 쓰고 있었다.
+즉, `PESSIMISTIC_WRITE`(SELECT FOR UPDATE)가 행을 잠그므로 정산 경로의 native query는 락이 해제될 때까지 대기한다. 충전 트랜잭션이 커밋된 뒤 정산이 실행되거나 그 반대 순서로 직렬화된다. 문제는 **JPA 1차 캐시가 트랜잭션 시작 시점의 값을 기억**하고 있다는 것이다. 충전 경로가 `wallet.getPostedBalance()`로 읽은 값은 1차 캐시의 스냅샷이고, 이후 dirty checking으로 `SET posted_balance = ?`를 실행하면 DB의 현재 값이 아닌 캐시의 옛날 값 기준으로 덮어쓴다. 이것이 native query(`SET posted_balance = posted_balance + ?`)와 JPA dirty checking(`SET posted_balance = ?`)을 혼용할 때 발생하는 근본 문제다.
 
-`findByUser()`에 `PESSIMISTIC_WRITE`가 걸려 있었는데, 이것이 Race Condition을 막으려는 의도였는지 다른 이유가 있었는지 원래 코드의 의도는 파악하기 어렵다. 다만 외부 API 호출을 포함하는 `@Transactional` 메서드 안에서 행 락을 잡으면, 토스 응답을 기다리는 수 초 동안 해당 지갑 행이 잠긴 채로 유지된다. 다른 요청이 같은 지갑에 접근하면 그 시간만큼 대기하게 되므로, 잔액 업데이트를 native query로 통일하면서 락도 함께 제거했다.
+```
+원인: 잔액 변경 경로가 두 가지 방식을 섞어 씀
+
+  충전: JPA 읽기 → Java 덧셈 → SET posted_balance = 15000  ← 덮어쓰기!
+  정산: native query → SET posted_balance = posted_balance - 3000  ← 안전
+
+  정산 경로는 DB가 현재 값을 읽고 더하는 단일 연산이라 동시성에 안전.
+  충전 경로만 다른 방식을 쓰고 있었음.
+```
+
+```
+추가 문제: PESSIMISTIC_WRITE 락 + 외부 API 호출
+
+  findByUser()에 PESSIMISTIC_WRITE가 걸려 있었음.
+  → 토스 API 응답을 기다리는 수 초 동안 해당 지갑 행이 잠김
+  → 다른 요청이 같은 지갑에 접근하면 그 시간만큼 대기
+  → 잔액 업데이트를 native query로 통일하면 락 자체가 불필요해짐
+```
 
 ---
 
@@ -128,7 +173,16 @@ public void savePaymentInfo(SavePaymentRequestDto dto, HttpSession session) {
 }
 ```
 
-`/payments/save`에서 클라이언트가 전달한 `amount`를 그대로 Redis에 저장하고, `/payments/success`에서 다시 클라이언트가 전달한 값과 비교한다. 비교의 양쪽이 모두 클라이언트 입력이라 의미 있는 검증이 아니다. 서버가 "이 orderId는 얼마짜리 충전이어야 한다"를 독립적으로 결정하는 로직이 없었다.
+```
+현재 검증 흐름:
+
+  /save:    클라이언트가 보낸 amount → Redis에 저장
+  /success: 클라이언트가 보낸 amount ← Redis에서 꺼낸 amount와 비교
+
+  비교의 양쪽이 모두 클라이언트 입력!
+  → 클라이언트가 양쪽에 같은 값을 보내면 항상 통과
+  → 서버가 "이 orderId는 얼마짜리 충전이어야 한다"를 독립적으로 결정하지 않음
+```
 
 ---
 
@@ -147,7 +201,20 @@ try {
 public void reportFail(ConfirmTossPayRequest req) { ... }
 ```
 
-`reportFail()`에 `Propagation.REQUIRES_NEW`가 붙어 있지만, `confirm()` 안에서 `this.reportFail()`로 직접 호출하면 Spring AOP 프록시를 거치지 않는다. `REQUIRES_NEW`가 무시되고 `confirm()`의 트랜잭션 안에서 그냥 실행된다. 이후 `confirm()`이 예외를 던지며 롤백되면 `reportFail()`의 변경도 함께 롤백된다. 결제 실패 기록이 남지 않는다.
+```
+의도:
+  reportFail()은 REQUIRES_NEW → 별도 트랜잭션으로 실패 기록을 남기겠다
+
+실제:
+  confirm() 안에서 this.reportFail()로 직접 호출
+  → Spring AOP 프록시를 거치지 않음
+  → REQUIRES_NEW가 무시됨
+  → confirm()의 트랜잭션 안에서 그냥 실행됨
+
+결과:
+  confirm()이 예외 → 롤백 → reportFail()의 변경도 함께 롤백
+  → 결제 실패 기록이 남지 않음
+```
 
 ---
 
@@ -160,36 +227,29 @@ public void reportFail(ConfirmTossPayRequest req) { ... }
 private User user;
 ```
 
-`Wallet`이 연관관계 owner인데 `User`에 `CascadeType.ALL`이 걸려 있다. `Wallet`을 삭제하면 `User`까지 cascade 삭제된다. 의도한 방향은 `User` 삭제 시 `Wallet`을 삭제하는 것이었을 텐데, 방향이 반대로 설정됐다.
+```
+의도: User 삭제 → Wallet도 삭제
+
+실제:
+  Wallet.java:
+    @OneToOne(cascade = CascadeType.ALL)
+    private User user;
+
+  Wallet이 연관관계의 owner
+  → Wallet을 삭제하면 CascadeType.ALL로 User까지 삭제됨!
+
+  방향이 반대로 설정되어 있음
+```
 
 ---
 
 ### 그 외 문제들
 
-**`SavePaymentRequestDto.amount`가 `long` primitive + `@NotNull`**
-
-`long`은 null이 될 수 없으므로 `@NotNull`은 의미가 없다. JSON에서 `amount` 필드가 누락되면 기본값 0이 들어온다. 0원 결제가 허용된다.
-
-**`Wallet.pendingOut` 초기값 누락**
-
-`UserService`에서 지갑 생성 시 `postedBalance`는 초기값을 명시적으로 설정하지만 `pendingOut`은 설정하지 않는다. DB 레벨 default도 없으면 `null`이 들어가고, 이후 `pending_out + :amount` native query에서 `null` 연산 오류가 발생한다. [유저 도메인 편](/user-lifecycle-bugs/) 유저 도메인 작업 중에도 동일하게 발견됐으며, `@Builder.Default 0L`을 이 시점에 적용했다.
-
-**`Filter` enum `@JsonCreator` 미적용**
-
-`WalletController`에서 `@RequestParam Filter filter`로 받으면 Spring이 `Filter.valueOf()`를 사용한다. 소문자로 `?filter=charge`를 전달하면 `IllegalArgumentException`으로 500이 터진다. `from()` 메서드가 있지만 `@JsonCreator`가 붙어 있지 않아 사용되지 않는다.
-
-**`getWalletTransactionList()` N+1**
-
-정산 거래(`OUTGOING/INCOMING`) 1건을 DTO로 변환할 때 `Transfer → UserSettlement → Settlement → Schedule → Club` 순으로 최대 4번의 Lazy 로딩이 발생한다. 거래 내역 20건을 조회하면 최대 80개의 추가 쿼리가 나간다.
-
-**`TossFeignConfig` 변수명에 `test` 포함**
-
-```java
-@Value("${payment.toss.test_secret_api_key}")
-private String testSecretKey;
-```
-
-변수명과 프로퍼티 키 모두 `test`가 들어가 있다. 프로덕션 배포 시 실제 키로 교체됐는지 코드만 봐서는 알 수 없다.
+- **`long amount` + `@NotNull`**: primitive `long`은 null이 될 수 없어 `@NotNull`이 무의미. JSON에서 `amount` 누락 시 기본값 0 → 0원 결제 허용.
+- **`pendingOut`·`postedBalance` 초기값 누락**: 두 필드 모두 `Long` 타입인데 초기값 없음. `@Builder.Default`도 없어 빌더로 생성 시 null. `null + :amount` native query에서 null 연산 오류 가능.
+- **`Filter` enum `@JsonCreator` 미적용**: `?filter=charge` (소문자) → `Filter.valueOf()` 실패 → 500. `from()` 메서드 있지만 `@JsonCreator` 안 붙어서 미사용.
+- **거래 내역 N+1**: 정산 거래 1건 → `Transfer → UserSettlement → Settlement → Schedule → Club` 최대 4회 Lazy 로딩. 20건이면 80쿼리.
+- **`TossFeignConfig`에 `test`**: 변수명 `testSecretKey`, 프로퍼티 키 `test_secret_api_key`. 프로덕션 키로 교체됐는지 코드만으로는 알 수 없음.
 
 ---
 
@@ -226,7 +286,16 @@ try {
 }
 ```
 
-`cancelPayment()` 호출 자체가 실패하는 경우를 위해 `payment_compensation` 테이블에 `paymentKey`, `orderId`, 실패 사유를 기록한다. 운영 배치가 이 테이블을 주기적으로 스캔해 미처리 건을 토스 관리자 콘솔 또는 환불 API로 수동 처리할 수 있도록 했다.
+```
+보상 흐름:
+
+토스 승인 성공 → 지갑 업데이트 시도
+  ├─ 성공 → 정상 완료
+  └─ 실패 → 토스 취소 API 호출
+              ├─ 취소 성공 → 실패 기록 남기고 끝
+              └─ 취소도 실패 → payment_compensation 테이블에 기록
+                               → 배치가 주기적으로 스캔해 수동 처리
+```
 
 ---
 
@@ -260,7 +329,14 @@ public void verifyPayment(String orderId, Long clientAmount) {
 }
 ```
 
-서버가 생성한 orderId와 amount를 클라이언트에 내려주고, 클라이언트는 이 값으로 토스 SDK를 초기화한다. `/success` 단계에서 클라이언트가 보낸 amount가 서버가 저장한 값과 다르면 즉시 거부한다.
+```
+수정 전: 클라이언트가 orderId와 amount를 모두 결정
+수정 후: 서버가 orderId를 생성하고, amount도 서버가 Redis에 저장
+        → 클라이언트는 서버가 내려준 값으로 토스 SDK를 초기화
+        → /success에서 클라이언트 값과 서버 값이 다르면 즉시 거부
+```
+
+> 현재 구현에서 `requestedAmount`는 여전히 클라이언트가 전달한 값이다. 완전한 서버 검증을 위해서는 서버 측 충전 티어(예: 5,000 / 10,000 / 50,000원)를 정의하고, 클라이언트는 티어 ID만 전달하는 방식이 필요하다. 현재 구조는 orderId를 서버가 생성하고 amount 위변조를 검증하는 수준이며, 이것만으로도 기존의 "양쪽 모두 클라이언트 입력" 문제는 해결된다.
 
 ---
 
@@ -274,13 +350,25 @@ public void verifyPayment(String orderId, Long clientAmount) {
 int creditByUserId(@Param("userId") Long userId, @Param("amount") long amount);
 ```
 
-`confirm()`의 `wallet.updateBalance(wallet.getPostedBalance() + amount)` 호출을 제거하고 `creditByUserId()`로 교체했다. 정산·홀드 경로와 동일한 방식으로 통일됐다. DB가 현재 값을 읽고 더하는 단일 연산이므로 동시 실행에서도 값이 덮어써지지 않는다. `PESSIMISTIC_WRITE` 락도 함께 제거됐다.
+```
+수정 전: wallet.updateBalance(wallet.getPostedBalance() + amount)
+         → JPA 읽기 + Java 덧셈 + SET = 덮어쓰기
+
+수정 후: walletRepository.creditByUserId(userId, amount)
+         → SET posted_balance = posted_balance + :amount
+         → DB가 현재 값을 읽고 더하는 단일 연산
+         → 동시 실행에도 안전. PESSIMISTIC_WRITE 락도 불필요해져 제거.
+```
 
 ---
 
 ### `reportFail()` self-invocation 해결 — 별도 빈으로 분리
 
-`reportFail()` 로직을 `PaymentFailureRecorder`라는 별도 스프링 빈으로 추출했다. `PaymentService`가 `PaymentFailureRecorder`를 주입받아 호출하면, AOP 프록시를 통해 `REQUIRES_NEW`가 정상 적용된다. `confirm()`이 롤백되더라도 실패 기록은 독립 트랜잭션으로 보존된다.
+```
+수정 전: confirm() 안에서 this.reportFail() → 프록시 우회 → REQUIRES_NEW 무시
+수정 후: PaymentFailureRecorder (별도 빈) → 주입받아 호출 → 프록시 정상 통과
+         → confirm()이 롤백되어도 실패 기록은 별도 트랜잭션으로 보존
+```
 
 ---
 
@@ -293,34 +381,38 @@ int creditByUserId(@Param("userId") Long userId, @Param("amount") long amount);
 private User user;
 ```
 
-`Wallet`에서 `User`로의 cascade를 제거했다. `User` 삭제 시 `Wallet`을 함께 삭제하고 싶다면 `User → Wallet` 방향에 cascade를 두는 것이 올바른 방향이다.
+```
+수정: CascadeType.ALL 제거.
+User 삭제 → Wallet 삭제를 원한다면, User 쪽에 cascade를 두는 것이 올바른 방향.
+```
 
 ---
 
 ### 나머지 수정
 
-`SavePaymentRequestDto.amount`를 `Long` wrapper 타입으로 변경하고 `@NotNull @Min(1)`을 추가해 0원 결제와 null 입력을 막았다. `Wallet` 생성 시 `pendingOut`도 `@Builder.Default private Long pendingOut = 0L`로 명시했다. `Filter` enum의 `from()` 메서드에 `@JsonCreator`를 적용해 소문자 입력도 처리되도록 했다. `WalletCapture*Event` 미사용 이벤트 클래스 두 개는 제거했다.
+- **`long amount` + `@NotNull`**: `Long` wrapper로 변경 + `@NotNull @Min(1)`
+- **`pendingOut` 초기값 누락**: `@Builder.Default private Long pendingOut = 0L`
+- **`Filter` enum 소문자 → 500**: `from()` 메서드에 `@JsonCreator` 적용
+- **미사용 `WalletCapture*Event`**: 2개 제거
 
 ---
 
 ## 현재 상태
 
-| 문제 | 상태 |
-|------|------|
-| 토스 승인 후 DB 실패 시 돈 유실 | ✅ 해결 — 보상 트랜잭션 추가 |
-| 잔액 Race Condition (Java 덧셈 + SET) | ✅ 해결 — native query 통일 |
-| `PESSIMISTIC_WRITE` 행 락 + `@Transactional` 커넥션 점유 | ✅ 부분 해결 — 행 락 제거, 커넥션 점유는 HikariCP 튜닝으로 수용, 추후 트랜잭션 분리 예정 |
-| 결제 금액 서버 검증 없음 | ✅ 해결 — 서버 측 orderId·amount 생성·저장 |
-| `cancelPayment()` 자체 실패 시 처리 경로 없음 | ✅ 해결 — `payment_compensation` 테이블 기록 + 배치 처리 |
-| `reportFail()` self-invocation | ✅ 해결 — `PaymentFailureRecorder` 분리 |
-| `Wallet → User CascadeType.ALL` | ✅ 해결 — cascade 제거 |
-| `amount` 0원 허용 | ✅ 해결 — `Long` + `@Min(1)` |
-| `pendingOut` 초기값 누락 | ✅ 해결 — `@Builder.Default = 0L` |
-| `Filter` enum 소문자 500 | ✅ 해결 — `@JsonCreator` 적용 |
-| `getWalletTransactionList()` N+1 | ✅ 해결 — fetch join으로 교체 |
-| 미사용 이벤트 클래스 | ✅ 해결 — 제거 |
-| `WalletTransaction.balance` 스냅샷 부정확 | ✅ 수용 — audit 목적 스냅샷으로 설계 의도 명시 |
-| `TossFeignConfig` `test` 키 변수명 | ⚠️ 잔존 — 프로덕션 배포 시 확인 필요 |
+- **토스 승인 후 DB 실패 시 돈 유실**: ✅ 해결 — 보상 트랜잭션 추가
+- **잔액 Race Condition (Java 덧셈 + SET)**: ✅ 해결 — native query 통일
+- **`PESSIMISTIC_WRITE` 행 락 + `@Transactional` 커넥션 점유**: ✅ 부분 해결 — 행 락 제거, 커넥션 점유는 HikariCP 튜닝으로 수용, 추후 트랜잭션 분리 예정
+- **결제 금액 서버 검증 없음**: ⚠️ 부분 해결 — 서버 측 orderId 생성 + amount 위변조 검증. 금액 자체는 여전히 클라이언트 입력이며, 완전한 서버 검증은 충전 티어 방식 도입 필요
+- **`cancelPayment()` 자체 실패 시 처리 경로 없음**: ✅ 해결 — `payment_compensation` 테이블 기록 + 배치 처리
+- **`reportFail()` self-invocation**: ✅ 해결 — `PaymentFailureRecorder` 분리
+- **`Wallet → User CascadeType.ALL`**: ⚠️ 식별 — cascade 제거 방향 확인. 최종 수정은 [Phase 5 프로덕션 하드닝](/production-hardening-chaos-engineering/)에서 적용
+- **`amount` 0원 허용**: ✅ 해결 — `Long` + `@Min(1)`
+- **`pendingOut`·`postedBalance` 초기값 누락**: ✅ 해결 — 두 필드 모두 `@Builder.Default = 0L`
+- **`Filter` enum 소문자 500**: ✅ 해결 — `@JsonCreator` 적용
+- **`getWalletTransactionList()` N+1**: ✅ 해결 — fetch join으로 교체
+- **미사용 이벤트 클래스**: ✅ 해결 — 제거
+- **`WalletTransaction.balance` 스냅샷 부정확**: ✅ 수용 — audit 목적 스냅샷으로 설계 의도 명시
+- **`TossFeignConfig` `test` 키 변수명**: ⚠️ 잔존 — 프로덕션 배포 시 확인 필요
 
 ---
 

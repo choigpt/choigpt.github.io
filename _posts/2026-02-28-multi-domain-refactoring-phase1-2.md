@@ -28,39 +28,19 @@ excerpt: 성능 개선 사이클 중 가독성이 낮은 코드를 식별했다.
 
 ### Chat
 
-첫 번째 수정 대상은 예외 처리 방식이었다. `IllegalArgumentException`을 그대로 던지고 있었고, `existsByXxx` 대신 `findById` + `.isPresent()` 조합을 쓰는 곳이 여러 군데였다.
-
-```java
-// 수정 전 — 도메인 맥락 없는 런타임 예외
-if (chatRoom == null) throw new IllegalArgumentException("채팅방 없음");
-
-// 수정 후 — 도메인 에러코드 부여
-throw new CustomException(ErrorCode.CHAT_ROOM_NOT_FOUND);
-```
-
-`existsById`로 교체해 불필요한 엔티티 로딩을 제거했고, 사용하지 않는 `UserRepository` 의존성도 함께 삭제했다. Redis에 파이프 구분자(`|`)로 직렬화하던 방식은 Jackson JSON으로 통일했다. 파이프 기반 직렬화는 필드 순서가 바뀌거나 값에 구분자가 포함되면 파싱이 깨지는 문제가 있었다.
+`existsByXxx` 대신 `findById` + `.isPresent()` 조합을 쓰는 곳이 여러 군데 있었다. `existsById`로 교체해 불필요한 엔티티 로딩을 제거했고, 사용하지 않는 `UserRepository` 의존성도 함께 삭제했다.
 
 ### Feed
 
 서비스 곳곳에 흩어진 "클럽 조회 + 없으면 예외" 패턴을 `findClubOrThrow()`, "멤버십 확인 + 없으면 예외" 패턴을 `validateClubMembership()` 헬퍼로 추출했다. 같은 3줄이 4군데에 복붙돼 있었다.
 
-`@PreDestroy`가 없어서 서버 종료 시 스레드풀이 정리되지 않던 문제도 추가했다. 숫자 상수가 흩어져 있던 것도 `CHUNK_SIZE = 5`, `MAX_CACHEABLE_PAGE = 5` 같은 이름 있는 상수로 교체했다.
-
-```java
-// 수정 전
-private List<FeedRepository.FeedIdWithCounts> findPersonalFeedChunked(...) {
-    if (clubIds.size() <= 5) { ... }  // 매직넘버
-}
-
-// 수정 후
-private static final int CLUB_CHUNK_SIZE = 5;
-```
+성능 개선 과정에서 추가한 코드에 `@PreDestroy`가 없어서 서버 종료 시 스레드풀이 정리되지 않던 문제도 수정했다. 성능 개선 중 추가한 매직넘버도 `CHUNK_SIZE = 5`, `MAX_CACHEABLE_PAGE = 5` 같은 이름 있는 상수로 교체했다.
 
 `ResponseEntity<?>` 반환 타입을 구체 타입으로 교체했다. 와일드카드는 같은 코드베이스 내 호출부에서 컴파일 타임 타입 안전성을 해치고 가독성을 떨어뜨린다.
 
 ### Club
 
-`withdraw()` 메서드명이 금융 용어와 혼동될 수 있어 `leaveClub()`으로 변경했다. `Optional.get()` 직접 호출을 `Optional.map().orElse()` 패턴으로 교체했다. null을 직접 다루지 않는 방향이다. 다른 도메인에 비해 구조적 문제가 적어 변경 범위가 작았다.
+`Optional.get()` 직접 호출을 `Optional.map().orElse()` 패턴으로 교체했다. null을 직접 다루지 않는 방향이다. 다른 도메인에 비해 구조적 문제가 적어 변경 범위가 작았다.
 
 ### Notification Controller
 
@@ -74,21 +54,7 @@ private static final int CLUB_CHUNK_SIZE = 5;
 
 ### NotificationUnreadCounter 분리 (SRP)
 
-`NotificationService`가 `StringRedisTemplate`을 직접 의존하며 Redis 미읽음 카운터 로직을 인라인으로 처리하고 있었다.
-
-```java
-// 수정 전 — 서비스가 Redis 키 조합부터 카운트 증감까지 직접 관리
-@Service
-public class NotificationService {
-    private final StringRedisTemplate redisTemplate;
-
-    public void markAsRead(Long userId, Long notificationId) {
-        String key = "unread:" + userId;
-        redisTemplate.opsForValue().decrement(key);  // Redis 직접 사용
-        // DB 업데이트 로직 혼재
-    }
-}
-```
+성능 개선 과정에서 `NotificationService`에 Redis 미읽음 카운터 로직을 인라인으로 추가했다. 원본 코드에서는 `COUNT(*)` DB 쿼리로 미읽음 수를 계산했는데, [알림 API 성능 편](/notification-api-performance-improvement/)에서 Redis INCR/DECR로 교체한 것이다. 그 과정에서 서비스가 `StringRedisTemplate`을 직접 의존하게 됐다.
 
 `NotificationUnreadCounter`를 별도 Bean으로 분리했다. Redis 장애 시 DB fallback 후 캐시 갱신하는 로직도 이 Bean 안으로 응집됐다. `NotificationService`는 `NotificationUnreadCounter`에 위임만 한다.
 
@@ -152,11 +118,7 @@ if (!semaphore.tryAcquire()) {
 
 `SseConfig.java`와 `AsyncConfig.java` 두 파일에 Executor 설정이 분산돼 있었다. `sseEventExecutor` Bean을 `AsyncConfig`로 이동해 모든 Executor 설정을 한 곳에서 관리하게 됐다.
 
-| Executor | 용도 | 타입 |
-|----------|------|------|
-| getAsyncExecutor() | 기본 @Async | 플랫폼 스레드 30~80 |
-| customAsyncExecutor | DB 저장, 메일 등 | 플랫폼 스레드 32~100 |
-| sseEventExecutor | SSE 이벤트 전송 | Virtual Thread + destroyMethod |
+`AsyncConfig`에 통합된 Executor 구성은 다음과 같다. `getAsyncExecutor()`는 기본 `@Async` 용도로 플랫폼 스레드 30~80개를 사용하고, `customAsyncExecutor`는 DB 저장이나 메일 등에 플랫폼 스레드 32~100개를 사용하며, `sseEventExecutor`는 SSE 이벤트 전송 전용으로 Virtual Thread 기반에 `destroyMethod`를 설정했다.
 
 `BoundedVtExecutor` 내부 클래스도 제거했다. 37줄짜리 설정이 6줄로 줄었다. `DisposableBean` 수동 구현도 `destroyMethod = "close"`로 대체했다. `ExecutorService`는 `AutoCloseable`을 구현하고 있지만, Spring은 이를 자동으로 감지해 `close()`를 호출하지 않는다. `@Bean(destroyMethod = "close")`를 명시해야 Spring 컨텍스트 종료 시 `close()`가 호출된다.
 
@@ -164,20 +126,16 @@ if (!semaphore.tryAcquire()) {
 
 ## 수정 내역 요약
 
-| # | 도메인 | 변경 내용 |
-|---|--------|----------|
-| 1 | Chat | `IllegalArgumentException` → `CustomException` 도메인 에러코드 |
-| 2 | Chat | `existsById` 최적화, unused `UserRepository` 제거 |
-| 3 | Chat | 파이프 구분자 직렬화 → Jackson JSON |
-| 4 | Feed | `findClubOrThrow`, `validateClubMembership` 헬퍼 추출 |
-| 5 | Feed | 매직넘버 상수화, `@PreDestroy` 추가 |
-| 6 | Feed/Club/Notification | `ResponseEntity<?>` → 구체 타입 |
-| 7 | Club | `withdraw()` → `leaveClub()`, `Optional.map().orElse()` 패턴 |
-| 8 | Notification | `NotificationUnreadCounter` Bean 분리 (SRP) |
-| 9 | Notification | `NotificationBatchProcessor` `@RequiredArgsConstructor` 전환, DB 실패 로깅 추가 |
-| 10 | Notification | `SseMissedNotificationRecovery` 순차 `.join()` → `CompletableFuture.allOf()` 병렬 전송 |
-| 11 | Notification | `Semaphore(30)` 및 `BoundedVtExecutor` 제거 — 이중 제한, 복구 스킵 문제 해결 |
-| 12 | Config | `SseConfig.java` 삭제, `sseEventExecutor` → `AsyncConfig` 통합 |
+1. **Chat** — `findById + isPresent` → `existsById` 최적화, unused `UserRepository` 제거
+2. **Feed** — `findClubOrThrow`, `validateClubMembership` 헬퍼 추출
+3. **Feed** — 매직넘버 상수화, `@PreDestroy` 추가
+4. **Feed/Club/Notification** — `ResponseEntity<?>` → 구체 타입
+5. **Club** — `Optional.get()` → `Optional.map().orElse()` 패턴
+6. **Notification** — `NotificationUnreadCounter` Bean 분리 (SRP)
+7. **Notification** — `NotificationBatchProcessor` `@RequiredArgsConstructor` 전환, DB 실패 로깅 추가
+8. **Notification** — `SseMissedNotificationRecovery` 순차 `.join()` → `CompletableFuture.allOf()` 병렬 전송
+9. **Notification** — `Semaphore(30)` 및 `BoundedVtExecutor` 제거 — 이중 제한, 복구 스킵 문제 해결
+10. **Config** — `SseConfig.java` 삭제, `sseEventExecutor` → `AsyncConfig` 통합
 
 ---
 
@@ -195,7 +153,7 @@ Phase 2의 Semaphore 제거는 보호 로직이 오히려 서비스에 부정적
 ## 시리즈 탐색
 
 **◀ 이전 글**
-[피드 도메인 — 부하 테스트 9라운드, 슬로우 쿼리 29,008건에서 전 구간 통과까지](/feed-performance-load-test/)
+[피드 도메인 — 부하 테스트 9번 만에 슬로우 쿼리 29,008건에서 전 구간 통과까지](/feed-performance-load-test/)
 
 **▶ 다음 글**
 [채팅 도메인 리팩토링 — WebSocket 핸들러부터 커서 페이징 DTO까지](/chat-domain-deep-refactoring/)

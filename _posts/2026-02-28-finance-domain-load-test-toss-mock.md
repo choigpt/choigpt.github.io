@@ -27,11 +27,7 @@ Finance 도메인은 다른 팀원이 설계한 도메인이다. Payment·Settle
 
 ## 시스템 구조
 
-| 서브도메인 | 핵심 기능 | 동시성 제어 |
-|-----------|----------|------------|
-| Payment | 토스 3-Phase 결제 (선점→외부API→결과반영) | Semaphore(50) + Redis Gate + CAS |
-| Settlement | Kafka 기반 참여자별 병렬 정산 | Outbox Pattern + StructuredTaskScope + Semaphore(32) |
-| Wallet | 잔액 충전/홀드/캡처/크레딧 | Redis Lua Gate + Pessimistic Lock + Native UPDATE |
+Finance 도메인은 세 개의 서브도메인으로 구성된다. **Payment**는 토스 3-Phase 결제(선점 → 외부 API → 결과 반영)를 담당하며, Semaphore(50) + Redis Gate + CAS로 동시성을 제어한다. **Settlement**는 Kafka 기반 참여자별 병렬 정산을 처리하고, Outbox Pattern + StructuredTaskScope + Semaphore(32)를 사용한다. **Wallet**은 잔액 충전/홀드/캡처/크레딧 연산을 수행하며, Redis Lua Gate + Pessimistic Lock + Native UPDATE로 동시성을 제어한다.
 
 ---
 
@@ -41,21 +37,11 @@ Finance 도메인은 다른 팀원이 설계한 도메인이다. Payment·Settle
 
 ### 테스트 설계
 
-| Phase | 시나리오 | VU | 측정 대상 |
-|-------|----------|-----|----------|
-| P1 | Payment Redis (save→verify) | 200 | Redis SET/GET 레이턴시 |
-| P2 | Payment Confirm CAS 경합 | 300 | CAS INSERT IGNORE + Semaphore |
-| P3 | 혼합 (Payment+Settlement+Wallet) | 400 | 전체 API 조합 부하 |
+테스트는 3단계로 구성했다. P1에서는 200 VU로 Payment Redis(save → verify)를 실행하여 Redis SET/GET 레이턴시를 측정했다. P2에서는 300 VU로 Payment Confirm CAS 경합 시나리오를 실행하여 CAS INSERT IGNORE + Semaphore를 검증했다. P3에서는 400 VU로 Payment + Settlement + Wallet 혼합 시나리오를 실행하여 전체 API 조합 부하를 측정했다.
 
 ### 1차 결과
 
-| 항목 | 성공 | 실패 | 성공률 |
-|------|------|------|--------|
-| payment save | 64,363 | 5 | 99.99% |
-| payment verify | 64,363 | 0 | 100% |
-| payment confirm | 76,749 | 27 | 99.96% |
-| settlement list | 29,228 | 139 | 99.53% |
-| wallet list | 28,624 | 7,891 | **78.4%** |
+1차 결과를 보면, payment save는 64,363건 성공 / 5건 실패(99.99%), payment verify는 64,363건 전량 성공(100%), payment confirm은 76,749건 성공 / 27건 실패(99.96%), settlement list는 29,228건 성공 / 139건 실패(99.53%)로 양호했다. 그러나 **wallet list는 28,624건 성공 / 7,891건 실패(78.4%)** 로 유일하게 문제가 있었다.
 
 `wallet list` 성공률이 78.4%였다. p95는 14ms로 응답 속도는 정상이었으나 500 에러가 7,891건 발생했다. 원인을 추적했다.
 
@@ -139,7 +125,7 @@ Caused by: org.hibernate.PersistentObjectException: detached entity passed to pe
    // cascade PERSIST → detached entity 에러
 ```
 
-`creditByUserId`에 `@Modifying(clearAutomatically = true)`가 설정돼 있어서, 호출 후 영속성 컨텍스트가 클리어됐다. 이미 로드된 `payment`가 detached 상태가 되면서 `walletTransaction`에 연결할 때 오류가 발생했다.
+`creditByUserId`는 [지갑·결제 편](/wallet-payment-toss-db-failure/)에서 Java 덧셈 → native query로 전환하면서 내가 추가한 메서드다. 원본의 다른 native query(`holdBalanceIfEnough`, `captureHold` 등)에 `clearAutomatically = true`가 붙어있어서 같은 패턴으로 작성했는데, 기존 메서드들은 트랜잭션 안에서 이후에 managed 엔티티를 참조하는 경우가 없었기 때문에 문제가 없었다. `creditByUserId`는 호출 이전에 로드된 `payment`를 이후에도 사용하는 구조여서 detached entity 문제가 발생한 것이다.
 
 ### 수정
 
@@ -158,12 +144,7 @@ Caused by: org.hibernate.PersistentObjectException: detached entity passed to pe
 
 ## 수정 후 결과
 
-| 항목 | 수정 전 | 수정 후 |
-|------|---------|---------|
-| `http_req_failed` | 10.89% (75,851건) | **0.03%** (249건) |
-| `payment_confirm` p95 | 327ms (Phase 3 실패) | **187ms** (전체 성공) |
-| check 성공률 | 99.97% | 99.95% |
-| 5xx 에러율 | 0% | 0% |
+수정 후 `http_req_failed`는 10.89%(75,851건)에서 **0.03%**(249건)으로 대폭 감소했다. `payment_confirm` p95는 327ms(Phase 3 실패 상태)에서 **187ms**(전체 성공)로 개선됐다. check 성공률은 99.97%에서 99.95%로 동등 수준이며, 5xx 에러율은 수정 전후 모두 0%였다.
 
 `payment_confirm` p95가 327ms → 187ms로 감소한 것은 성능 개선이 아니다. 이전에는 Phase 3에서 즉시 실패하여 빠르게 종료됐지만, 수정 후에는 Wallet UPDATE까지 전체 파이프라인이 실행된다.
 
@@ -171,20 +152,9 @@ Caused by: org.hibernate.PersistentObjectException: detached entity passed to pe
 
 ## 데이터 스케일업 후 재검증
 
-| 테이블 | 기존 | 스케일업 | 배수 |
-|--------|------|---------|------|
-| schedule | 200 | 5,000 | 25x |
-| settlement | 200 | 15,000 | 75x |
-| user_settlement | ~2,000 | ~150,000 | 75x |
-| wallet_transaction | 600 | ~433,000 | 720x |
+데이터를 대폭 스케일업했다. schedule은 200건에서 5,000건(25배), settlement는 200건에서 15,000건(75배), user_settlement는 약 2,000건에서 약 150,000건(75배), wallet_transaction은 600건에서 약 433,000건(720배)으로 증가시켰다.
 
-| 메트릭 | 소규모 | 대규모 | 변화 |
-|--------|--------|--------|------|
-| payment_confirm p95 | 187ms | 105ms | -44% (payment 레코드 정리 효과) |
-| settlement_list p95 | 45ms | 56ms | +25% (데이터 75배) |
-| wallet_list p95 | 221ms | 278ms | +26% (데이터 720배 대비 양호) |
-| check 성공률 | 99.95% | 99.98% | 동등 |
-| Thresholds | 8/8 | 8/8 | |
+스케일업 후 결과를 보면, payment_confirm p95는 187ms에서 105ms로 44% 감소했는데 이는 payment 레코드 정리 효과다. settlement_list p95는 45ms에서 56ms로 25% 증가(데이터 75배 대비 양호)했고, wallet_list p95는 221ms에서 278ms로 26% 증가(데이터 720배 대비 양호)했다. check 성공률은 99.95%에서 99.98%로 동등 수준이며, Thresholds는 소규모/대규모 모두 8/8 통과했다.
 
 `wallet_transaction`이 720배 늘었는데 p95가 25%만 증가했다. `(user_id, created_at)` 인덱스가 잘 동작하고 있다는 신호다.
 
@@ -192,11 +162,7 @@ Caused by: org.hibernate.PersistentObjectException: detached entity passed to pe
 
 ## 발견 및 수정한 버그
 
-| # | 버그 | 원인 | 수정 |
-|---|------|------|------|
-| 1 | `WalletService.convertToDto()` NPE | `Payment` null 케이스 미처리 | null 체크 추가 |
-| 2 | `PaymentTransactionService` detached entity | `creditByUserId`의 `clearAutomatically=true`로 영속성 컨텍스트 클리어 후 payment detached | `payment` 조회를 `creditByUserId` 이후로 이동 |
-| 3 | `settlement list` 성공률 0% | k6 스크립트의 `SCHEDULE_ID_START` 범위가 실제 시드 데이터와 맞지 않아 전체 요청이 404 처리 | `SCHEDULE_ID_START` 상수를 시드 데이터 범위에 맞게 수정 |
+발견 및 수정한 버그는 세 가지다. 첫째, `WalletService.convertToDto()`에서 `Payment`가 null인 케이스를 미처리하여 NPE가 발생했으며, null 체크를 추가해 수정했다. 둘째, `PaymentTransactionService`에서 `creditByUserId`의 `clearAutomatically=true`로 영속성 컨텍스트가 클리어된 후 payment가 detached 상태가 되는 문제가 있었으며, `payment` 조회를 `creditByUserId` 이후로 이동하여 해결했다. 셋째, `settlement list` 성공률이 0%였는데, k6 스크립트의 `SCHEDULE_ID_START` 범위가 실제 시드 데이터와 맞지 않아 전체 요청이 404 처리되고 있었으며, 해당 상수를 시드 데이터 범위에 맞게 수정했다.
 
 버그 2번이 가장 심각했다. 실제 Toss API가 성공하더라도 Phase 3에서 항상 500을 반환하는 구조였다. Mock을 도입하여 전체 파이프라인을 실행하기 전까지 발견되지 않았다.
 
@@ -214,7 +180,7 @@ Caused by: org.hibernate.PersistentObjectException: detached entity passed to pe
 ## 시리즈 탐색
 
 **◀ 이전 글**
-[피드 도메인 리팩토링 — 442줄 서비스를 4개로 분리한 과정](/feed-domain-442-line-service-split/)
+[피드 도메인 리팩토링 — 서비스 책임 분리와 네이티브 쿼리 전환](/feed-domain-442-line-service-split/)
 
 **▶ 다음 글**
 [SSE 알림 부하 테스트 — 7가지 시나리오로 찾은 연결 한계와 잔여 병목](/sse-notification-load-test-analysis/)

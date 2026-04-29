@@ -5,6 +5,12 @@ date: 2026-02-05
 tags: [강화학습, ML-AI]
 category: ML-AI
 ---
+https://www.youtube.com/watch?v=2pWv7GOvuf0&list=PLqYmG7hTraZDM-OYHWgPebj2MfCFzFObQ
+
+강화학습.. 
+이세돌 알파고 다큐멘터리에 나오던 분인데..
+![Reinforcement Learning Loop](../assets/img/posts/reinforcement-learning/rl-loop.svg)
+*강화학습의 기본 루프. Agent가 Environment에서 State를 관측하고, Action을 취하고, Reward를 받는다. (이미지: Wikimedia Commons, CC BY-SA)*
 
 ## 핵심 개념
 

@@ -52,12 +52,7 @@ $$JSD(P \| Q) = \frac{1}{2} D_{KL}(P \| M) + \frac{1}{2} D_{KL}(Q \| M)$$
 
 양쪽 방향의 KL을 구해서 평균을 내는 방식이라 **대칭**이고, 값의 범위도 **0 ~ 1**(log base 2 기준)로 제한되어 더 부드럽게 분포 차이를 측정할 수 있다.
 
-| 특성 | KL Divergence | Jensen-Shannon Divergence |
-|------|--------------|--------------------------|
-| 대칭성 | 비대칭 | 대칭 |
-| 값 범위 | 0 ~ ∞ | 0 ~ 1 (log₂) |
-| 기준 분포 | 필요 | 불필요 (평균 사용) |
-| 사용처 | 크로스 엔트로피 손실, VAE, PPO | GAN(원래 논문), 분포 유사도 비교 |
+KL Divergence와 Jensen-Shannon Divergence를 비교하면 다음과 같다. 대칭성 측면에서 KL Divergence는 비대칭이고, JSD는 대칭이다. 값의 범위는 KL Divergence가 0에서 무한대인 반면, JSD는 0에서 1(log₂ 기준) 사이로 제한된다. KL Divergence는 기준 분포가 필요하지만, JSD는 두 분포의 평균을 사용하므로 기준 분포가 불필요하다. KL Divergence는 크로스 엔트로피 손실, VAE, PPO 등에서 쓰이고, JSD는 GAN(원래 논문)이나 분포 유사도 비교에 쓰인다.
 
 ---
 

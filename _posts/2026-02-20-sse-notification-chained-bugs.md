@@ -52,7 +52,7 @@ SseEventSender.sendEvent() → 실시간 전송 시도
 
 SSE 연결은 `SseConnectionManager` 내부의 `ConcurrentHashMap<Long, SseConnection>`으로 관리된다. 사용자가 오프라인이면 `sendEvent()`는 예외 없이 `false`를 반환한다. 재연결 시에는 `sendMissedMessages()`가 `sseSent=false` 기준으로 DB를 조회해 놓친 알림을 재전송한다.
 
-큐는 in-memory `LinkedBlockingQueue`를 사용한다. Redis 큐로 전환하면 서버 재시작 시 큐 유실 문제를 방지할 수 있지만, 현재 단일 서버 환경에서는 in-memory로 수용했다. 서버 스케일 아웃 시에는 Kafka pub/sub으로 전환 예정이다.
+큐는 in-memory `LinkedBlockingQueue`를 사용한다.
 
 ---
 
@@ -115,7 +115,21 @@ connection.getEmitter().send(SseEmitter.event()
     .data(notification));  // ← Notification 엔티티 그대로 직렬화
 ```
 
-`Notification` 엔티티에는 `User user` 필드가 LAZY로 연관되어 있고, `User`에는 `kakaoAccessToken`, `kakaoId` 같은 민감한 필드가 있다. `@Async` + `AFTER_COMMIT` 시점은 영속성 컨텍스트가 이미 닫혀 있으므로, Jackson이 `user` getter를 호출하는 순간 `LazyInitializationException`이 터진다. 반대로 만약 직렬화가 성공하면 `kakaoAccessToken`이 SSE 스트림에 그대로 실려 나간다.
+문제가 두 가지다:
+
+```
+경로 1: LazyInitializationException
+  @Async + AFTER_COMMIT 시점 → 영속성 컨텍스트 이미 닫힘
+  → Jackson이 notification.getUser()를 호출
+  → LAZY 프록시 초기화 시도 → 세션 없음 → 예외!
+
+경로 2: 민감 정보 노출
+  만약 영속성 컨텍스트가 살아있어서 직렬화가 성공하면?
+  → User 엔티티 전체가 JSON으로 변환
+  → kakaoAccessToken, kakaoId가 SSE 스트림에 그대로 노출!
+```
+
+어느 쪽이든 문제다. 엔티티를 직접 직렬화하면 안 된다.
 
 ---
 
@@ -130,7 +144,22 @@ public void handleNotificationCreated(NotificationCreatedEvent event) { ... }
 public Executor customAsyncExecutor() { ... }
 ```
 
-`@Async`에 qualifier를 지정하지 않으면 Spring은 `taskExecutor`라는 이름의 빈을 찾고, 없으면 `SimpleAsyncTaskExecutor`로 폴백한다. `SimpleAsyncTaskExecutor`는 스레드풀 없이 요청마다 새 스레드를 생성해 알림 폭발 시 무제한 스레드 생성으로 이어질 수 있었다.
+```
+@Async의 executor 결정 로직:
+
+1. @Async("이름") → 해당 이름의 빈 사용
+2. @Async (이름 없음) → "taskExecutor" 이름의 빈을 찾음
+3. "taskExecutor"도 없으면 → SimpleAsyncTaskExecutor로 폴백
+
+이 프로젝트:
+  @Async                           ← 이름 없음
+  @Bean(name = "customAsyncExecutor")  ← 이름이 "taskExecutor"가 아님
+  → 매칭 실패 → SimpleAsyncTaskExecutor 폴백!
+
+SimpleAsyncTaskExecutor의 문제:
+  스레드풀이 없다. 요청마다 새 스레드를 생성한다.
+  알림 1000건 동시 발생 → 스레드 1000개 생성 → OOM 위험
+```
 
 ---
 
@@ -145,17 +174,29 @@ private String generateHeartbeatEventId() {
 // lastEventTime은 UTC 기준 파싱, createdAt은 KST 기준 저장
 ```
 
-한국 서버(KST = UTC+9) 환경에서 두 값 사이에 9시간 차이가 발생한다. SSE 재연결 시 `Last-Event-ID` 헤더로 마지막 수신 시각을 복구하는 로직이 이 불일치로 인해 9시간치 알림을 중복 전송하거나 누락시킬 수 있었다.
+```
+Event ID 생성: LocalDateTime.now() → KST 기준 (예: 2026-02-20 14:30:00)
+Last-Event-ID 파싱: UTC 기준으로 해석 (예: 2026-02-20 05:30:00으로 인식)
+
+차이: 9시간
+
+재연결 시:
+  "05:30:00 이후의 알림을 보내줘" (UTC로 해석)
+  → 실제로는 14:30:00(KST) 이후를 원하는 것
+  → 05:30:00~14:30:00 사이의 알림을 중복 전송!
+
+또는 반대 방향이면 9시간치 알림이 누락.
+```
 
 ---
 
 ### 기타 문제들
 
-`IOException`만 catch하는 `SseEmitter.send()`는 `IllegalStateException` 발생 시 `cleanupConnection()`이 호출되지 않아 `activeConnections`에 죽은 연결이 남는다. `updateSseSentStatus()`는 트랜잭션 컨텍스트 없이 실행되며 내부의 `entityManager.clear()`가 1차 캐시 사이드이펙트를 유발했다. 놓친 메시지는 DB에서 전부 가져온 후 자바 코드에서 시간 조건으로 필터링하는 전체 스캔 구조였다.
-
-**FCM 미사용 의존성**: 초기에 FCM으로 알림을 구현하다가 SSE로 방향을 바꿨는데, `firebase-admin:9.5.0` 의존성이 `build.gradle`에 제거되지 않은 채 남아 있었다.
-
-**FCM 연동 + 알림 타입 미연동**: SSE로 전환하면서 FCM 연동이 빠진 상태다. 알림 타입 3(정산 완료)과 5(모임 해산)도 이벤트 발행 코드가 없어 해당 상황에서 알림이 생성되지 않는다.
+- **`IOException`만 catch**: 좀비 연결이 `activeConnections`에 남음. `IllegalStateException`을 안 잡아서 `cleanupConnection()` 미호출.
+- **트랜잭션 없는 상태 업데이트**: 1차 캐시 사이드이펙트. `entityManager.clear()`를 트랜잭션 밖에서 호출.
+- **놓친 메시지 전체 스캔**: 재연결 시 불필요한 DB 부하. 전부 가져온 후 자바에서 시간 필터링.
+- **FCM 미사용 의존성**: 빌드 크기 불필요 증가. SSE로 전환 후 `firebase-admin:9.5.0` 미제거.
+- **알림 타입 3, 5 미연동**: 정산 완료/모임 해산 시 알림 미생성. 이벤트 발행 코드 없음.
 
 ---
 
@@ -163,7 +204,16 @@ private String generateHeartbeatEventId() {
 
 ### 클래스 분리 및 구조 재정비
 
-기존 `SseEmittersService`를 세 클래스로 분리했다. `SseConnectionManager`는 `ConcurrentHashMap<Long, SseConnection>` 관리만 담당하고, `SseEventSender`는 실제 전송 로직을 맡는다. `NotificationBatchProcessor`는 큐에서 꺼낸 알림을 배치로 처리하고, 전송 성공한 id에 한해 `markSseSentByIds()`를 호출한다.
+기존 `SseEmittersService` 하나에 몰려있던 책임을 분리:
+
+```
+수정 전: SseEmittersService (연결 관리 + 전송 + 상태 업데이트 전부)
+
+수정 후:
+  SseConnectionManager  — ConcurrentHashMap<Long, SseConnection> 관리만
+  SseEventSender        — 실제 SSE 전송 로직
+  NotificationBatchProcessor — 큐에서 알림을 꺼내 배치 전송 + 성공 id만 DB 반영
+```
 
 ### `NotificationSseDto` 도입
 
@@ -209,30 +259,46 @@ notificationRepository.markSseSentByIds(successIds);
 
 ### `@Async` 제거 + 배치 처리 전환
 
-`@Async` 핸들러 자체를 제거했다. `@TransactionalEventListener(AFTER_COMMIT)`에서 in-memory `LinkedBlockingQueue`에 적재하고, `@Scheduled(fixedDelay = 100)` 배치가 큐를 드레인한다. SSE 전송 스레드는 `@Qualifier("sseEventExecutor")`로 명시된 Virtual Thread executor를 사용한다.
+```
+@Async 제거 → 배치 처리로 전환:
 
-Event ID는 `Last-Event-ID` 헤더 기반 시각 비교를 제거하고, `sseSent=false` DB 조회로만 재연결 복구를 처리해 타임존 불일치 문제의 근원 자체를 없앴다. Event ID 형식은 `"evt_" + millis + "_" + counter`로 단순화했다.
+수정 전: @Async 핸들러가 알림마다 스레드 생성
+수정 후:
+  1. @TransactionalEventListener(AFTER_COMMIT) → LinkedBlockingQueue에 적재
+  2. @Scheduled(fixedDelay=100ms) 배치가 큐를 drain
+  3. SSE 전송은 @Qualifier("sseEventExecutor") Virtual Thread executor 사용
+```
 
-예외 처리는 `IOException`, `IllegalStateException`, `Exception` 세 가지를 모두 catch하도록 확장했다. 상태 업데이트는 `TransactionTemplate`으로 명확한 트랜잭션 컨텍스트 안에서 실행하고 `entityManager.clear()`는 제거했다. `firebase-admin:9.5.0` 미사용 의존성도 함께 제거했다.
+```
+타임존 문제 해결:
+  수정 전: Last-Event-ID 헤더로 시각 비교 → KST/UTC 불일치
+  수정 후: Last-Event-ID 비교 자체를 제거. sseSent=false DB 조회만으로 복구.
+          Event ID 형식: "evt_" + millis + "_" + counter (단순화)
+```
+
+```
+기타 수정:
+  - 예외: IOException만 → IOException + IllegalStateException + Exception 전부 catch
+  - 상태 업데이트: TransactionTemplate으로 명시적 트랜잭션. entityManager.clear() 제거.
+  - 미사용 의존성: firebase-admin:9.5.0 제거
+```
 
 ---
 
 ## 현재 상태
 
-| 문제 | 상태 |
-|------|------|
-| `sendEvent()` 반환값 무시 → `sseSent` 항상 true | ✅ 해결 — 반환값 체크 후 성공 id만 일괄 갱신 |
-| 놓친 메시지 복구 쿼리 `isRead` 기준 | ✅ 해결 — `sseSent=false` 기준으로 변경 |
-| JPA 엔티티 직렬화 → LazyInit + 민감정보 노출 | ✅ 해결 — `NotificationSseDto` 도입 |
-| `@Async` executor 미지정 → `SimpleAsyncTaskExecutor` | ✅ 해결 — `@Scheduled` 배치 처리로 전환 |
-| Event ID 타임존 불일치 → 누락/중복 전송 | ✅ 해결 — Last-Event-ID 비교 제거, sseSent 기준으로 통일 |
-| `IOException`만 catch → 좀비 연결 | ✅ 해결 — `IllegalStateException` 포함 전체 catch |
-| 트랜잭션 없는 상태 업데이트 + `entityManager.clear()` | ✅ 해결 — `TransactionTemplate` 적용, `clear()` 제거 |
-| 놓친 메시지 전체 스캔 + 메모리 필터링 | ✅ 해결 — `sseSent` 인덱스 활용 + `limit` 적용 |
-| FCM 미사용 의존성 | ✅ 해결 — `firebase-admin` 제거 |
-| SSE 단일 서버 한정 — 스케일 아웃 불가 | ⏸️ 잔존 — Kafka pub/sub 전환 예정 |
-| FCM 연동 + 알림 타입 3/5 미연동 | ⏸️ 잔존 — 기능 구현 필요 |
-| 다중 기기 동시 접속 연결 충돌 | ⏸️ 잔존 — `userId → List<SseConnection>` 구조 변경 필요 |
+- **`sendEvent()` 반환값 무시 → `sseSent` 항상 true**: ✅ 해결 — 반환값 체크 후 성공 id만 일괄 갱신
+- **놓친 메시지 복구 쿼리 `isRead` 기준**: ✅ 해결 — `sseSent=false` 기준으로 변경
+- **JPA 엔티티 직렬화 → LazyInit + 민감정보 노출**: ✅ 해결 — `NotificationSseDto` 도입
+- **`@Async` executor 미지정 → `SimpleAsyncTaskExecutor`**: ✅ 해결 — `@Scheduled` 배치 처리로 전환
+- **Event ID 타임존 불일치 → 누락/중복 전송**: ✅ 해결 — Last-Event-ID 비교 제거, sseSent 기준으로 통일
+- **`IOException`만 catch → 좀비 연결**: ✅ 해결 — `IllegalStateException` 포함 전체 catch
+- **트랜잭션 없는 상태 업데이트 + `entityManager.clear()`**: ✅ 해결 — `TransactionTemplate` 적용, `clear()` 제거
+- **놓친 메시지 전체 스캔 + 메모리 필터링**: ✅ 해결 — `sseSent` 인덱스 활용 + `limit` 적용
+- **FCM 미사용 의존성**: ✅ 해결 — `firebase-admin` 제거
+- **SSE 단일 서버 한정 — 스케일 아웃 불가**: ⏸️ 잔존
+- **FCM 연동 + 알림 타입 3/5 미연동**: ⏸️ 잔존 — 기능 구현 필요
+- **다중 기기 동시 접속 연결 충돌**: ⏸️ 잔존 — `userId → List<SseConnection>` 구조 변경 필요
 
 ---
 
@@ -242,6 +308,8 @@ Event ID는 `Last-Event-ID` 헤더 기반 시각 비교를 제거하고, `sseSen
 
 > **인프라를 만들었다면 실제로 연결하자.**
 > 필드, 인덱스, 의존성을 선언해두고 로직을 연결하지 않으면 없는 것과 다름없다.
+
+이 구조의 성능은 [알림 API 성능 편](/notification-api-performance-improvement/)에서 부하 테스트로 검증한다.
 
 ---
 

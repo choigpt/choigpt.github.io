@@ -82,12 +82,7 @@ $$
 
 BLUE의 각 요소를 분해하면 다음과 같다.
 
-| 약자 | 의미 | 설명 |
-|------|------|------|
-| **B** — Best | 최적 | 분산이 가장 작다 |
-| **L** — Linear | 선형 | $$\hat{\boldsymbol{\beta}}$$가 $$\mathbf{y}$$의 선형 함수이다 |
-| **U** — Unbiased | 비편향 | $$E[\hat{\boldsymbol{\beta}}] = \boldsymbol{\beta}$$ |
-| **E** — Estimator | 추정량 | 데이터로부터 파라미터를 추정한다 |
+BLUE의 각 요소는 다음과 같다. B(Best)는 최적이라는 뜻으로, 분산이 가장 작다는 의미다. L(Linear)은 선형이라는 뜻으로, $$\hat{\boldsymbol{\beta}}$$가 $$\mathbf{y}$$의 선형 함수임을 의미한다. U(Unbiased)는 비편향이라는 뜻으로, $$E[\hat{\boldsymbol{\beta}}] = \boldsymbol{\beta}$$가 성립한다. E(Estimator)는 추정량이라는 뜻으로, 데이터로부터 파라미터를 추정한다는 의미다.
 
 핵심은 "Best"의 의미다. 선형이면서 비편향인 추정량의 집합 안에서, OLS 추정량의 분산이 가장 작다. 임의의 선형 비편향 추정량 $$\tilde{\boldsymbol{\beta}}$$에 대해
 

@@ -59,8 +59,8 @@ w* = w - α · ∂L₁/∂w
 `|w|`를 미분하면 **부호 함수(sign)** 가 나온다.
 
 ```
-d|w|/dw = +λ  (w ≥ 0)
-d|w|/dw = -λ  (w < 0)
+d|w|/dw = +1  (w ≥ 0)
+d|w|/dw = -1  (w < 0)
 ```
 
 따라서 업데이트는 다음과 같다.
@@ -129,15 +129,18 @@ L_elastic = MSE + λ₁·Σ|wᵢ| + λ₂·Σwᵢ²
 
 ## 다른 Regularization 기법들과 비교
 
-| 기법 | 아이디어 | 특징 |
-|---|---|---|
-| **L1 (Lasso)** | 가중치 절대값에 페널티 | 희소 모델, 특성 선택 |
-| **L2 (Ridge)** | 가중치 제곱에 페널티 | 부드럽고 안정적 |
-| **Elastic Net** | L1 + L2 혼합 | 두 장점 결합 |
-| **Dropout** | 학습 중 뉴런 랜덤 비활성화 | 앙상블 효과, 딥러닝에 적합 |
-| **Batch Normalization** | 레이어 출력 정규화 | 학습 안정화, 간접 정규화 |
-| **Early Stopping** | 검증 손실 상승 시 학습 중단 | 가장 단순, 추가 비용 없음 |
-| **Data Augmentation** | 학습 데이터 인위적 증강 | 근본적 해결, 비용 큼 |
+| 분류 | 기법 | 핵심 원리 | 효과 |
+|------|------|----------|------|
+| **가중치 페널티 기반** | L1 (Lasso) | 가중치 절대값에 페널티 | 희소 모델, 특성 선택 |
+| | L2 (Ridge) | 가중치 제곱에 페널티 | 부드럽고 안정적 |
+| | Elastic Net | L1 + L2 혼합 | 두 장점 결합 |
+| **구조적 기법** | Dropout | 학습 중 뉴런 랜덤 비활성화 | 앙상블 효과, 딥러닝에 적합 |
+| | Batch Normalization | 레이어 출력 정규화 | 학습 안정화, 간접 정규화 |
+| **학습 프로세스 기반** | Early Stopping | 검증 손실 상승 시 학습 중단 | 가장 단순, 추가 비용 없음 |
+| | Data Augmentation | 학습 데이터 인위적 증강 | 근본적 해결, 비용 큼 |
+
+![L1과 L2 정규화 비교](/assets/img/posts/regularization/regularization_l1_l2.jpg)
+*L1(Lasso)과 L2(Ridge) 정규화의 기하학적 비교 — L1은 마름모 제약, L2는 원형 제약으로 해를 제한한다 (출처: [Wikipedia](https://commons.wikimedia.org/wiki/File:Regularization.jpg))*
 
 **딥러닝에서는** L2보다 Dropout을 더 많이 쓰는 편이고, 둘을 같이 쓰기도 한다. 선형 모델에서는 L1/L2가 기본이다.
 

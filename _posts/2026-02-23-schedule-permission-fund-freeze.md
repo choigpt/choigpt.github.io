@@ -6,13 +6,20 @@ permalink: /schedule-permission-fund-freeze/
 excerpt: "스케줄 삭제 시 참여자 지갑 홀드금을 해제하는 코드가 없어, 삭제된 스케줄의 예약금이 영구적으로 동결될 수 있는 구조였다."
 ---
 
-## 개요
+## 한눈에 보기
 
-스케줄(일정) 코드를 재검토하는 과정에서 `createSchedule()`의 실행 순서 문제를 확인했다. DB에 먼저 저장하고, 그 다음에 권한을 확인하고 있었다. `@Transactional`로 롤백되므로 기능상 문제는 없지만, 권한이 없는 사용자의 요청마다 불필요한 INSERT가 발생한다.
+참고: 이 프로젝트의 정산/지갑 시스템은 실제 결제가 아니라 **가입 시 가상 포인트(가짜 돈)를 지급**하는 방식으로 테스트용으로 운영되었다. 그래서인지 지갑 홀드/해제 같은 자금 관련 로직의 검증이 다소 느슨하게 남아있었던 것으로 보인다.
 
-`deleteSchedule()`에는 더 심각한 결함이 있었다. 스케줄을 삭제할 때 참여자들의 지갑 홀드금을 해제하는 코드가 없었다. 스케줄이 삭제되면 그 시점에 지갑에 잡혀 있던 예약금이 영구적으로 동결된다.
+```
+이 글에서 다루는 문제 (6건):
 
-여기에 `joinSchedule()`의 동시성 구멍까지 있었다. 정원 체크와 중복 참여 체크 사이에 시간 갭이 있고, `user_schedule` 테이블에 Unique Constraint가 없어서 동시에 두 요청이 들어오면 같은 사용자가 2번 참여하고 예약금도 2배 빠져나간다.
+1. deleteSchedule() — 지갑 홀드 해제 없음 → 예약금 영구 동결  ← 핵심 버그
+2. joinSchedule() — Unique 제약 없음 → 중복 참여 + 2배 과금
+3. createSchedule() — 권한 체크 전에 DB 저장
+4. updateSchedule() — Long != 참조 비교 → 비용 미변경인데 지갑 업데이트
+5. clubId ↔ scheduleId 소속 관계 미검증 → 다른 모임 스케줄 조작 가능
+6. @Scheduled — 자정 1회, 다중 서버 중복 실행
+```
 
 ---
 
@@ -28,7 +35,7 @@ joinSchedule()    → 정원/중복 체크 → 지갑 홀드 → UserSchedule + 
 @Scheduled(자정)  → 지난 스케줄 READY → ENDED 상태 변경
     ↓
 deleteSchedule()  → Schedule 삭제 + ChatRoom 삭제
-                  (❌ 지갑 홀드 해제 없음, ❌ Settlement 정리 없음)
+                  (❌ 지갑 홀드 해제 없음)
 ```
 
 `joinSchedule()`이 지갑에 홀드를 걸고, `deleteSchedule()`이 이를 해제해야 하지만 해제하지 않았다. 생성과 해제가 비대칭 구조였다.
@@ -43,17 +50,25 @@ deleteSchedule()  → Schedule 삭제 + ChatRoom 삭제
 // ScheduleService.java
 public void deleteSchedule(Long clubId, Long scheduleId) {
     // ...
-    club.getSchedules().remove(schedule);   // Schedule 삭제
+    club.getSchedules().remove(schedule);   // Schedule 삭제 (cascade로 UserSchedule, Settlement, UserSettlement도 삭제됨)
     chatRoomRepository.delete(chatRoom);    // ChatRoom 삭제
-    // ❌ walletHoldService.release() 없음
-    // ❌ Settlement 삭제 없음
-    // ❌ UserSettlement 삭제 없음
+    // ❌ walletHoldService.release() 없음 — 지갑 홀드가 해제되지 않는다!
 }
 ```
 
-`joinSchedule()`에서는 `walletRepository.holdBalanceIfEnough()`로 참여자 지갑에 예약금을 홀드한다. 그런데 `deleteSchedule()`은 `Schedule`과 채팅방만 삭제하고 지갑 홀드를 풀지 않는다.
+```
+비대칭 구조:
 
-스케줄이 삭제되면 해당 시점에 참여자들의 지갑에 잡혀 있던 금액이 `pending_out` 상태로 영구 잠긴다. `Settlement` 레코드도 남아 있어 `Schedule`을 참조하는 FK가 남은 상태로 의도치 않게 유지된다.
+joinSchedule()   → walletRepository.holdBalanceIfEnough()  ← 홀드를 건다
+leaveSchedule()  → walletRepository.releaseHoldBalance()   ← 홀드를 푼다 ✓
+deleteSchedule() → ❌ 해제 코드 없음!                       ← 홀드가 풀리지 않는다
+
+결과:
+  참여자 3명이 각각 5,000원 홀드된 상태에서 스케줄 삭제
+  → Schedule, Settlement, UserSettlement 레코드는 JPA cascade로 삭제됨
+  → 하지만 지갑의 pending_out은 별도 테이블이므로 cascade 대상이 아님
+  → 15,000원이 pending_out 상태로 영구 잠김
+```
 
 ---
 
@@ -69,9 +84,28 @@ int flag = walletRepository.holdBalanceIfEnough(userId, schedule.getCost());  //
 userScheduleRepository.save(userSchedule);  // ④ INSERT
 ```
 
-`user_schedule` 테이블에 `(user_id, schedule_id)` Unique Constraint가 없다. 같은 사용자가 동시에 두 번 요청을 보내면 둘 다 `findByUserAndSchedule()`에서 `Optional.empty()`를 받고 `save()`까지 진행한다. 중복 `UserSchedule`이 생기고 지갑에서 예약금이 2배 빠져나간다.
+```
+동시 요청 시나리오 (중복 참여):
 
-정원 초과도 마찬가지다. 정원 5명인 스케줄에 마지막 자리를 두고 두 요청이 동시에 들어오면 둘 다 `countBySchedule()=4`를 읽고 체크를 통과해 6명이 참여하게 된다.
+  요청 A                              요청 B
+  ─────                              ─────
+  countBySchedule() = 4  ← OK        countBySchedule() = 4  ← OK
+  findByUser() = empty   ← OK        findByUser() = empty   ← OK
+  holdBalance(5000)      ← 5000원 홀드 holdBalance(5000)     ← 또 5000원 홀드!
+  save(UserSchedule)     ← INSERT    save(UserSchedule)     ← 또 INSERT!
+
+  결과: 같은 사용자가 2번 참여, 예약금 10,000원 빠져나감
+  원인: user_schedule에 (user_id, schedule_id) Unique 제약이 없음
+```
+
+정원 초과도 같은 구조로 발생할 수 있다:
+
+```
+  정원 5명, 현재 4명
+  요청 A: countBySchedule() = 4 → OK
+  요청 B: countBySchedule() = 4 → OK (아직 A가 INSERT 전)
+  둘 다 통과 → 6명이 참여하게 됨
+```
 
 ---
 
@@ -91,7 +125,17 @@ public ScheduleCreateResponseDto createSchedule(Long clubId, ScheduleRequestDto 
 }
 ```
 
-`GenerationType.IDENTITY`를 쓰면 `save()` 시점에 즉시 INSERT가 나간다. `@Transactional`로 롤백되더라도 auto_increment 값은 소모된다. 권한 없는 사용자가 반복해서 요청을 보내면 불필요한 DB I/O와 시퀀스 낭비가 쌓인다. 체크 순서를 바꾸면 간단히 해결된다.
+```
+실행 순서:
+  ① scheduleRepository.save(schedule)   ← INSERT 실행 (IDENTITY라 즉시)
+  ② if (role != LEADER) throw ...        ← 권한 체크
+
+  권한 없으면 → 예외 → @Transactional 롤백
+  하지만 auto_increment 값은 이미 소모됨
+  → 불필요한 DB I/O + 시퀀스 낭비
+
+  해결: ①과 ②의 순서만 바꾸면 됨
+```
 
 ---
 
@@ -104,24 +148,63 @@ if (schedule.getCost() != requestDto.getCost()) {  // Long 객체 참조 비교
 }
 ```
 
-`Long`은 `-128~127` 범위만 캐싱한다. 비용이 1000원이면 두 `Long` 객체의 주소가 달라 `!=`가 `true`를 반환하고, 비용 변경이 없는데도 참여자 전원의 지갑 업데이트 로직으로 진입한다. `equals()`로 바꿔야 한다.
+**문제 1: `Long !=` 참조 비교**
 
-비용 변경 자체도 문제였다. 참여자 N명의 지갑을 순차적으로 홀드하다가 중간에 한 명이 잔액 부족이면 예외를 던져 롤백을 시도한다. 하지만 이미 업데이트된 앞선 참여자들의 지갑 상태와 DB 트랜잭션 롤백 사이에 정합성 문제가 생길 수 있는 구조였다. `holdBalanceIfEnough`가 native query(`UPDATE ... WHERE ...`)로 실행되는 경우, 롤백이 되더라도 그 사이 다른 트랜잭션이 해당 지갑 잔액을 읽었다면 일시적으로 틀린 잔액을 보게 된다. 이 문제는 비용 변경 기능 자체를 설계 레벨에서 재검토해야 하는 성격이라 이번 화에서 완전히 해결하지 못했다. 현재 상태로는 비용 변경 기능을 운영 환경에서 활성화하지 않는 것으로 수용했다.
+```
+Long a = 1000L;
+Long b = 1000L;
+a != b  →  true!  (객체 주소가 다르니까)
+
+Long은 -128~127 범위만 같은 객체를 재사용한다.
+1000은 범위 밖이라 매번 새 객체가 만들어짐
+→ 비용이 변경되지 않았는데도 != 가 true를 반환
+→ 참여자 전원의 지갑 업데이트 로직에 진입
+
+해결: .equals()로 변경
+```
+
+**문제 2: 비용 변경 시 중간 실패**
+
+```
+참여자 5명의 지갑을 순차적으로 홀드 업데이트:
+  1번 → 성공 (지갑 업데이트됨)
+  2번 → 성공
+  3번 → 잔액 부족! → 예외 → 롤백 시도
+
+  하지만 1번, 2번의 지갑은 이미 UPDATE됨
+  → 단일 @Transactional 안이라면 롤백 시 모든 변경이 취소되며,
+    REPEATABLE READ에서는 커밋 전 변경이 다른 트랜잭션에 보이지 않는다 (dirty read 불가).
+  → 실제 위험은 지갑 업데이트가 별도 트랜잭션이나 native query로 개별 커밋되는 경우다.
+    이 경우 1번·2번은 커밋되고 3번에서 실패하면, 이미 커밋된 변경은 롤백되지 않는다.
+
+  → 비용 변경 기능 자체를 설계 레벨에서 재검토해야 하는 문제
+  → 현재는 운영 환경에서 비활성화로 수용
+```
 
 ---
 
-### IDOR — URL의 `clubId`와 `scheduleId` 소속 관계 미검증
+### URL 파라미터 조작으로 다른 모임 스케줄 조작 가능
 
 ```java
 // ScheduleService.java
 public void deleteSchedule(Long clubId, Long scheduleId) {
     Club club = clubRepository.findById(clubId).orElseThrow(...);
     Schedule schedule = scheduleRepository.findById(scheduleId).orElseThrow(...);
-    // ❌ schedule.getClub().getClubId().equals(clubId) 체크 없음
+    // ❌ schedule이 정말 이 club에 속하는지 확인하지 않음
 }
 ```
 
-`clubId=1`, `scheduleId=99`로 요청을 보낼 때, `schedule 99`가 실제로 `club 2`에 속하더라도 삭제가 실행된다. `updateSchedule`, `joinSchedule`, `deleteSchedule` 세 곳 모두 `clubId`로 클럽을 조회하지만 해당 스케줄이 그 클럽 소속인지는 확인하지 않는다. URL 파라미터 조작으로 다른 모임의 스케줄을 조작할 수 있는 IDOR 취약점이었다.
+```
+요청: DELETE /api/clubs/1/schedules/99
+
+schedule 99는 실제로 club 2에 속하는 스케줄.
+하지만 코드는 clubId=1, scheduleId=99를 각각 따로 조회할 뿐
+"schedule 99가 club 1 소속인가?"를 확인하지 않음
+
+→ club 1의 리더가 club 2의 스케줄을 삭제할 수 있음!
+
+영향 범위: updateSchedule, joinSchedule, deleteSchedule 세 곳 모두 동일한 구멍
+```
 
 ---
 
@@ -138,37 +221,30 @@ public void updateScheduleStatus() {
 }
 ```
 
-오후 2시에 종료된 스케줄이 다음날 자정까지 `READY` 상태로 남는다. `joinSchedule()`에 `scheduleTime.isBefore(now)` 방어 로직이 있기는 하지만, 체크와 홀드 사이의 시간 갭은 여전히 존재한다.
+```
+문제 1: 상태 변경이 자정까지 지연됨
+  오후 2시에 끝난 스케줄 → 다음날 0시까지 READY 상태로 남음
+  joinSchedule()에 scheduleTime.isBefore(now) 방어가 있지만
+  체크와 홀드 사이의 시간 갭은 여전히 존재
 
-`@SchedulerLock`을 사용하지 않아 서버가 2대 이상이면 모든 인스턴스가 동시에 같은 `UPDATE`를 실행한다. 비즈니스 서비스 클래스 안에 배치 로직이 있는 구조도 관심사 분리 원칙에 맞지 않는다.
+문제 2: 다중 서버에서 중복 실행
+  @SchedulerLock 미사용
+  → 서버 2대면 자정에 같은 UPDATE가 2번 실행됨
+
+문제 3: 관심사 혼재
+  비즈니스 서비스(ScheduleService) 안에 배치 로직(@Scheduled)이 섞여 있음
+```
 
 ---
 
 ### 그 외 문제들
 
-**`getScheduleList()` N+1**
-
-스케줄 목록 조회 시 각 스케줄마다 `countBySchedule`과 `findByUserAndSchedule`을 따로 호출해 `1 + 2N` 쿼리가 나간다. 페이지네이션도 없이 모임의 모든 스케줄을 전체 조회한다.
-
-**`leaveSchedule()` 멱등 처리의 부작용**
-
-`SettlementStatus`가 `HOLD_ACTIVE`나 `FAILED`가 아니면 아무것도 하지 않고 `return`한다. 그런데 이 경우 `userScheduleRepository.delete()`와 `userChatRoomRepository.delete()`가 실행되지 않은 채 HTTP 200을 반환한다. 탈퇴가 된 것처럼 보이지만 실제로는 참여자로 남아 있는 유령 상태가 된다.
-
-**`club.getSchedules().remove(schedule)` — 전체 컬렉션 로딩**
-
-`Club.schedules` 컬렉션에서 `remove()`를 호출하려면 JPA가 먼저 전체 `schedules`를 로딩해야 한다. 모임에 스케줄이 100개면 100개를 전부 SELECT한 뒤 1개를 제거한다.
-
-**`UserSettlementRepository` 메서드명 불일치**
-
-`findAllUserSettlementIdsBySettlementIdAndStatus`라는 이름인데 실제로는 `userId`를 반환한다. 이름이 암시하는 반환 타입과 실제가 다르다. 완전히 동일한 쿼리를 가진 `findActiveParticipantIds`도 중복 선언되어 있었다.
-
-**`Schedule` 엔티티 `@Builder.Default` 누락**
-
-`Schedule` 엔티티의 컬렉션 필드에 `@Builder.Default`가 없어 빌더로 생성 시 `null`이 들어간다. 이후 컬렉션을 순회하는 로직에서 NPE가 발생할 수 있다. `= new ArrayList<>()`로 초기화를 추가했다.
-
-**`ScheduleDetailResponseDto` status 필드 누락**
-
-상세 조회 응답 DTO에 `scheduleStatus` 필드가 없어 클라이언트가 스케줄 상태(`READY`/`ENDED` 등)를 알 수 없었다. 필드를 추가하고 매핑 로직에 포함했다.
+- **`getScheduleList()` N+1**: 스케줄마다 `countBySchedule` + `findByUserAndSchedule` 따로 호출 → `1+2N` 쿼리. 페이지네이션도 없음.
+- **`leaveSchedule()` 유령 참여자**: status가 HOLD_ACTIVE/FAILED가 아니면 early return → delete 안 되는데 200 반환 → 탈퇴된 줄 알지만 참여자로 남음.
+- **`club.getSchedules().remove()`**: 1개 제거하려고 전체 컬렉션 로딩. 스케줄 100개면 100개 SELECT 후 1개 제거.
+- **메서드명 불일치**: `findAllUserSettlementIds...`인데 실제로 userId 반환. 동일 쿼리의 `findActiveParticipantIds`도 중복 존재.
+- **`@Builder.Default` 누락**: 컬렉션 필드가 null 초기화 → 빌더 생성 시 NPE 가능.
+- **DTO status 필드 누락**: `ScheduleDetailResponseDto`에 `scheduleStatus`가 없어 클라이언트가 상태를 알 수 없었음.
 
 ---
 
@@ -193,9 +269,19 @@ public void deleteSchedule(Long clubId, Long scheduleId) {
 }
 ```
 
-`ScheduleDeletedEvent`를 수신한 `SettlementScheduleEventListener`가 `settlementRepository.deleteByScheduleId()`를 실행한다. 삭제 순서를 지갑 해제 → 스케줄 삭제 → 정산 정리로 잡았다.
+```
+삭제 순서:
+  1. 참여자 지갑 홀드 일괄 해제 (batchRelease)
+  2. Schedule + UserSchedule 삭제 (Cascade)
+  3. Settlement + UserSettlement 삭제 (이벤트로 분리)
 
-Settlement에서 Schedule로의 FK는 DB 레벨에서 강제되지 않으므로, `scheduleRepository.delete(schedule)`이 먼저 커밋되어도 FK 제약 위반은 발생하지 않는다. 이벤트 리스너가 실패하는 경우(`deleteByScheduleId()` 예외)는 Settlement 레코드가 고아로 남을 수 있다. 이 케이스는 `@TransactionalEventListener(AFTER_COMMIT)` 기반이라 스케줄 삭제 자체는 이미 커밋된 상태이므로 트랜잭션 롤백으로 되돌릴 수 없다. 현재는 리스너 실패 시 에러 로그를 남기고, 주기적으로 `settlement WHERE schedule_id NOT IN (SELECT id FROM schedule)`를 스캔하는 배치로 고아 레코드를 정리하는 방식으로 수용했다.
+이벤트 리스너 실패 시:
+  → 스케줄 삭제는 이미 커밋됨 (AFTER_COMMIT 기반)
+  → Settlement 레코드가 고아로 남을 수 있음
+  → 에러 로그 + 배치 스캔으로 정리하는 방식으로 수용
+```
+
+> 참고: Schedule 삭제가 먼저 커밋되고 Settlement 삭제가 이벤트로 후처리되므로, Settlement → Schedule FK 제약이 있다면 순서를 조정하거나 FK를 제거해야 한다.
 
 ---
 
@@ -218,7 +304,12 @@ Schedule schedule = scheduleRepository.findByIdWithLock(scheduleId);
 }
 ```
 
-비관적 락으로 같은 스케줄에 대한 동시 요청을 직렬화하고, Unique Constraint로 DB 레벨에서 중복을 차단한다. 락을 뚫고 중복 INSERT가 발생하더라도 `DataIntegrityViolationException`을 잡아 지갑 홀드를 즉시 해제한다.
+```
+방어 순서:
+  1차: 비관적 락 → 같은 스케줄에 대한 동시 요청을 직렬화
+  2차: Unique 제약 → 락을 뚫더라도 DB 레벨에서 중복 차단
+  3차: 예외 복구 → 중복 INSERT 발생 시 지갑 홀드를 즉시 해제
+```
 
 ---
 
@@ -261,36 +352,45 @@ private void validateScheduleBelongsToClub(Schedule schedule, Long clubId) {
 
 ### N+1 제거 + `leaveSchedule()` 재구성
 
-`getScheduleList()`는 `ScheduleQueryService`로 분리하고, `COUNT`와 `scheduleRole`을 서브쿼리로 포함한 단일 JPQL로 교체해 `1 + 2N` 쿼리를 1개로 줄였다.
+```
+수정 사항:
 
-`leaveSchedule()`은 early return 로직을 제거하고 정상 검증 흐름으로 재구성했다. `UserSchedule` 없으면 예외 → LEADER 탈퇴 차단 → 지갑 해제 → 삭제 → `ScheduleLeftEvent` 발행 순서로 흘러가며, HTTP 200을 받았는데 실제로는 탈퇴가 안 된 유령 상태가 발생하지 않는다.
+getScheduleList():
+  1+2N 쿼리 → COUNT + scheduleRole을 서브쿼리로 포함한 단일 JPQL로 교체
 
-`club.getSchedules().remove(schedule)`는 `scheduleRepository.delete(schedule)` 직접 삭제로 교체해 불필요한 컬렉션 전체 로딩을 없앴다.
+leaveSchedule():
+  early return 제거 → 정상 검증 흐름으로 재구성
+  UserSchedule 없으면 예외 → LEADER 차단 → 지갑 해제 → 삭제
+  → "200인데 실제로는 안 된" 유령 상태 방지
 
-`@Scheduled` 배치는 `ScheduleBatchService`로 분리해 비즈니스 서비스에서 꺼냈다.
+deleteSchedule():
+  club.getSchedules().remove() → scheduleRepository.delete() 직접 삭제
+  → 전체 컬렉션 로딩 제거
+
+@Scheduled 배치:
+  ScheduleService → ScheduleBatchService로 분리
+```
 
 ---
 
 ## 현재 상태
 
-| 문제 | 상태 |
-|------|------|
-| `deleteSchedule()` 지갑/정산 미처리 | ✅ 해결 — 3단계 정리 추가 |
-| `joinSchedule()` Race Condition | ✅ 해결 — 비관적 락 + Unique Constraint + 예외 복구 |
-| 권한 체크 전 DB 저장 | ✅ 해결 — 체크 순서 반전 |
-| `Long !=` 참조 비교 | ✅ 해결 — `.equals()`로 변경 |
-| IDOR — 소속 검증 없음 | ✅ 해결 — 6개 메서드 전부 검증 추가 |
-| `getScheduleList()` N+1 | ✅ 해결 — 단일 JPQL로 교체 |
-| `leaveSchedule()` 유령 참여자 | ✅ 해결 — early return 제거 + 흐름 재구성 |
-| 배치 로직 비즈니스 서비스 안에 혼재 | ✅ 해결 — `ScheduleBatchService` 분리 |
-| 전체 컬렉션 로딩 삭제 | ✅ 해결 — 직접 삭제로 교체 |
-| 메서드명 불일치 + 중복 | ✅ 해결 — 이름 수정 + 중복 제거 |
-| `@Builder.Default` 누락 | ✅ 해결 — 컬렉션 필드 초기화 추가 |
-| `ScheduleDetailResponseDto` status 누락 | ✅ 해결 — 필드 추가 및 매핑 |
-| `updateSchedule()` 비용 변경 부분 실패 정합성 | ⚠️ 잔존 — 비용 변경 기능 운영 환경 비활성화로 수용 |
-| `ScheduleDeletedEvent` 리스너 실패 시 고아 Settlement | ⚠️ 잔존 — 배치 스캔으로 정리 예정 |
-| `@Scheduled` 다중 서버 중복 실행 | ⚠️ 잔존 — `@SchedulerLock` 미적용 |
-| 목록 조회 페이지네이션 없음 | ⚠️ 잔존 — 비즈니스 정책 결정 필요 |
+- **`deleteSchedule()` 지갑/정산 미처리**: ✅ 해결 — 3단계 정리 추가
+- **`joinSchedule()` Race Condition**: ✅ 해결 — 비관적 락 + Unique Constraint + 예외 복구
+- **권한 체크 전 DB 저장**: ✅ 해결 — 체크 순서 반전
+- **`Long !=` 참조 비교**: ✅ 해결 — `.equals()`로 변경
+- **IDOR — 소속 검증 없음**: ✅ 해결 — 6개 메서드 전부 검증 추가
+- **`getScheduleList()` N+1**: ✅ 해결 — 단일 JPQL로 교체
+- **`leaveSchedule()` 유령 참여자**: ✅ 해결 — early return 제거 + 흐름 재구성
+- **배치 로직 비즈니스 서비스 안에 혼재**: ✅ 해결 — `ScheduleBatchService` 분리
+- **전체 컬렉션 로딩 삭제**: ✅ 해결 — 직접 삭제로 교체
+- **메서드명 불일치 + 중복**: ✅ 해결 — 이름 수정 + 중복 제거
+- **`@Builder.Default` 누락**: ✅ 해결 — 컬렉션 필드 초기화 추가
+- **`ScheduleDetailResponseDto` status 누락**: ✅ 해결 — 필드 추가 및 매핑
+- **`updateSchedule()` 비용 변경 부분 실패 정합성**: ⚠️ 잔존 — 비용 변경 기능 운영 환경 비활성화로 수용
+- **`ScheduleDeletedEvent` 리스너 실패 시 고아 Settlement**: ⚠️ 잔존 — 배치 스캔으로 정리 예정
+- **`@Scheduled` 다중 서버 중복 실행**: ⚠️ 잔존 — `@SchedulerLock` 미적용
+- **목록 조회 페이지네이션 없음**: ⚠️ 잔존 — 비즈니스 정책 결정 필요
 
 ---
 
@@ -302,6 +402,8 @@ private void validateScheduleBelongsToClub(Schedule schedule, Long clubId) {
 
 > **생성과 해제는 항상 짝을 이뤄야 한다.**
 > 지갑에 홀드를 걸었다면 해제하는 경로가 반드시 존재해야 한다. 정상 흐름뿐 아니라 삭제, 취소, 예외 상황에서도 빠짐없이.
+
+지갑 잔액 업데이트의 native query 통일은 [지갑·결제 편](/wallet-payment-toss-db-failure/)에서 더 자세히 다룬다.
 
 ---
 

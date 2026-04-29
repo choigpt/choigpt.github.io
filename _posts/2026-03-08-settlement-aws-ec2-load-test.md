@@ -20,11 +20,9 @@ EC2에 배포 후 이 파이프라인의 문제들이 드러났다.
 
 ### EC2 인프라 구성
 
-| 역할 | 인스턴스 타입 | 사양 |
-|------|-------------|------|
-| Load Generator (k6) | c5.xlarge | 4 vCPU, 8GB |
-| App Server | c5.xlarge | 4 vCPU, 8GB |
-| Infra (MySQL, Redis) | c5.2xlarge | 8 vCPU, 16GB |
+- **Load Generator (k6)**: c5.xlarge, 4 vCPU, 8GB
+- **App Server**: c5.xlarge, 4 vCPU, 8GB
+- **Infra (MySQL, Redis)**: c5.2xlarge, 8 vCPU, 16GB
 
 ---
 
@@ -62,25 +60,17 @@ k6 테스트에서 receiverId가 잘못된 범위로 생성되어 `MEMBER_CANNOT
 
 ### API 응답 시간
 
-| API | p95 | avg | max |
-|-----|-----|-----|-----|
-| 결제 플로우 | 1.94s | 522ms | 6.71s |
-| 결제 Confirm | 3.20s | 721ms | 6.38s |
-| 정산 요청 | 18.64s | 10.52s | 22.69s |
-| 정산 조회 | 21.77s | 11.83s | 25.66s |
-| 지갑 조회 | 14.95s | 5.05s | 18.29s |
+- **결제 플로우**: p95 1.94s, avg 522ms, max 6.71s
+- **결제 Confirm**: p95 3.20s, avg 721ms, max 6.38s
+- **정산 요청**: p95 18.64s, avg 10.52s, max 22.69s
+- **정산 조회**: p95 21.77s, avg 11.83s, max 25.66s
+- **지갑 조회**: p95 14.95s, avg 5.05s, max 18.29s
 
 성공률: 전 Phase threshold 통과. 다만 Stress 구간에서 5xx 2.74%, Spike 구간에서 5xx 1.55% 발생.
 
 ### 인프라 지표
 
-| 지표 | 값 |
-|------|-----|
-| HikariCP Active | 300 (풀 MAX), Pending 최대 131 |
-| MySQL Slow Queries | 333건 |
-| MySQL Row Lock Waits | 10,832건, 총 2,565초 |
-| Kafka consumer lag 피크 | 1,147 |
-| Settlement COMPLETED | 0건 (전부 IN_PROGRESS) |
+HikariCP Active는 300(풀 MAX)이고 Pending 최대 131이었다. MySQL Slow Queries 333건, Row Lock Waits 10,832건(총 2,565초), Kafka consumer lag 피크 1,147이었다. Settlement COMPLETED는 0건으로 전부 IN_PROGRESS 상태였다.
 
 ### 병목 5가지
 
@@ -104,11 +94,7 @@ k6 테스트에서 receiverId가 잘못된 범위로 생성되어 `MEMBER_CANNOT
 
 ### 결과
 
-| 지표 | Round 1 | Round 2 |
-|------|---------|---------|
-| COMPLETED | 0 | 277 |
-| read-pool 타임아웃 | 5,805건 | 932건 |
-| TransactionRequiredException | 있음 | 2,106건 |
+Round 1에서 Round 2로 COMPLETED는 0건에서 277건으로, read-pool 타임아웃은 5,805건에서 932건으로 개선되었다. TransactionRequiredException은 2,106건이 발생했다.
 
 ### 새로 발견된 문제 3가지
 
@@ -129,17 +115,7 @@ k6 테스트에서 receiverId가 잘못된 범위로 생성되어 `MEMBER_CANNOT
 
 ### 결과
 
-| 지표 | Round 1 | Round 2 | Round 3 |
-|------|---------|---------|---------|
-| COMPLETED | 0 | 277 | 47 |
-| read-pool 타임아웃 | 5,805 | 932 | 0건 |
-| write-pool 타임아웃 | — | — | 48건 |
-| 정산 조회 성공률 | 97.09% | 96.42% | 99.93% |
-| 지갑 조회 성공률 | 97.49% | 96.58% | 99.92% |
-| 정산 요청 p95 | 18.64s | — | 12.41s |
-| 지갑 조회 p95 | 14.95s | — | 6.41s |
-| 5xx Stress | 2.74% | 1.58% | 0.41% |
-| 5xx Spike | 1.55% | 1.90% | 0.05% |
+Round 1에서 Round 3까지의 변화를 보면, COMPLETED는 0 → 277 → 47건이다. read-pool 타임아웃은 5,805 → 932 → 0건, write-pool 타임아웃은 Round 3에서 48건이 발생했다. 정산 조회 성공률은 97.09% → 96.42% → 99.93%, 지갑 조회 성공률은 97.49% → 96.58% → 99.92%로 개선되었다. 정산 요청 p95는 18.64s → 12.41s, 지갑 조회 p95는 14.95s → 6.41s로 감소했다. 5xx Stress는 2.74% → 1.58% → 0.41%, 5xx Spike는 1.55% → 1.90% → 0.05%였다.
 
 COMPLETED가 277→47로 감소한 이유: Lock wait timeout 175건으로 `completeSettlement`의 `markCompleted` 실패. 10명 고정 유저에 대한 row lock 경합이 원인이다.
 
@@ -149,23 +125,11 @@ COMPLETED가 277→47로 감소한 이유: Lock wait timeout 175건으로 `compl
 
 ### 시드 데이터 변경
 
-| | 이전 | 현재 |
-|---|------|------|
-| 참가자 풀 | 10명 (userId 2~11) | 10,000명 (userId 2~10,001) |
-| 정산당 참가자 | 10명 (항상 동일) | 8명 (정산마다 다른 조합) |
-| 가장 많이 참여한 유저 | 100,000건 | 80건 |
-| 동시 750건 경합 확률 | 100% | ~0.06% |
+참가자 풀을 10명(userId 2~11)에서 10,000명(userId 2~10,001)으로 확대했다. 정산당 참가자는 10명 고정에서 8명(정산마다 다른 조합)으로, 가장 많이 참여한 유저는 100,000건에서 80건으로, 동시 750건 경합 확률은 100%에서 약 0.06%로 감소했다.
 
 ### 결과
 
-| 지표 | Round 3 | Round 4 |
-|------|---------|---------|
-| COMPLETED | 47 | 2,086 (44배) |
-| FAILED | 다수 | 0 |
-| Lock wait timeout | 175 | 73 (58% 감소) |
-| 5xx Stress | 0.41% | 0.13% |
-| 정산 요청 p95 | 12.41s | 14.73s |
-| 지갑 조회 p95 | 6.41s | 16.02s |
+Round 3에서 Round 4로 COMPLETED는 47건에서 2,086건(44배)으로 증가했고, FAILED는 0건이 되었다. Lock wait timeout은 175건에서 73건(58% 감소), 5xx Stress는 0.41%에서 0.13%로 개선되었다. 다만 정산 요청 p95는 12.41s에서 14.73s로, 지갑 조회 p95는 6.41s에서 16.02s로 증가했다.
 
 p95가 증가한 이유: 10,000명으로 분산되면서 시스템 전체에 갱신해야 할 wallet 행이 늘어나고, 보다 현실적인 경합 패턴이 측정되기 때문이다. 이는 COMPLETED 건수가 47→2,086으로 44배 증가한 것과의 트레이드오프다.
 
@@ -189,17 +153,20 @@ settlement_mass: 750 VU 중 213건이 2분 내 완료 (나머지 타임아웃).
 
 ### 결과
 
-| 지표 | Round 4 | Round 5 | 변화 |
-|------|---------|---------|------|
-| 전 Phase 성공률 | 71~100% | 전부 100% | — |
-| 5xx | 0.10~0.13% | 0.00% | 제거 |
-| settlement_mass | 213/750 (2분) | 750/750 (31.7초) | 3.8배 |
-| 정산 요청 p95 | 14.73s | 1.50s | 90% 감소 |
-| 정산 조회 p95 | 19.77s | 5.64s | 71% 감소 |
-| 지갑 조회 p95 | 16.02s | 1.24s | 92% 감소 |
-| Lock wait timeout | 73 | 0 | 제거 |
-| 총 iterations | 198K | 699K | 3.5배 |
-| Thresholds | 17/28 PASS | 25/28 PASS | — |
+```mermaid
+graph LR
+    subgraph "Round 4 → Round 5"
+        A["전 Phase 성공률: 71~100% → 전부 100%"]
+        B["5xx: 0.10~0.13% → 0.00%"]
+        C["settlement_mass: 213/750(2분) → 750/750(31.7초), 3.8배"]
+        D["정산 요청 p95: 14.73s → 1.50s (90% 감소)"]
+        E["정산 조회 p95: 19.77s → 5.64s (71% 감소)"]
+        F["지갑 조회 p95: 16.02s → 1.24s (92% 감소)"]
+        G["Lock wait timeout: 73 → 0"]
+        H["총 iterations: 198K → 699K (3.5배)"]
+        I["Thresholds: 17/28 → 25/28 PASS"]
+    end
+```
 
 남은 3 FAIL: `settle_query_duration` p95 5.64s (threshold 3s), `settle_query_duration`/`wallet_query_duration` p50 > 500ms.
 
@@ -213,14 +180,12 @@ Round 5 이후 Kafka 연결 문제를 해결하고 시드 데이터에서 클럽
 
 17분 10초, 840,974 iterations, 최대 1,500 VU, 26 PASS / 2 FAIL.
 
-| API | p95 | avg |
-|-----|-----|-----|
-| 결제 플로우 | 1.11s | 559ms |
-| 결제 Confirm | 1.01s | 421ms |
-| 정산 요청 | 1.25s | 874ms |
-| 정산 조회 | 1.82s | 464ms |
-| 지갑 조회 | 1.87s | 476ms |
-| 스파이크 1,500 VU | 2.65s | 1.11s |
+- **결제 플로우**: p95 1.11s, avg 559ms
+- **결제 Confirm**: p95 1.01s, avg 421ms
+- **정산 요청**: p95 1.25s, avg 874ms
+- **정산 조회**: p95 1.82s, avg 464ms
+- **지갑 조회**: p95 1.87s, avg 476ms
+- **스파이크 1,500 VU**: p95 2.65s, avg 1.11s
 
 결제 100% 성공, 멱등성 100%, Phase 4 정산 대량 100% (Round 1에서 0%였던 것이 해결). 스파이크 1,500 VU에서 95.65% 성공률, 최종 검증 100%.
 
@@ -232,16 +197,7 @@ Round 5 이후 Kafka 연결 문제를 해결하고 시드 데이터에서 클럽
 
 ### 5라운드 비교
 
-| 항목 | Round 1 | Round 5 |
-|------|---------|---------|
-| 정산 요청 p95 | 18.64s | 1.50s |
-| 정산 조회 p95 | 21.77s | 5.64s |
-| 지갑 조회 p95 | 14.95s | 1.24s |
-| 5xx | 2.74% | 0.00% |
-| Settlement COMPLETED | 0 | 400+ |
-| Row Lock Waits | 10,832 | 0 |
-| Thresholds PASS | 17/28 | 25/28 |
-| 총 iterations | 220K | 699K |
+Round 1에서 Round 5까지의 최종 비교 결과, 정산 요청 p95는 18.64s에서 1.50s로, 정산 조회 p95는 21.77s에서 5.64s로, 지갑 조회 p95는 14.95s에서 1.24s로 개선되었다. 5xx는 2.74%에서 0.00%로, Settlement COMPLETED는 0건에서 400+건으로, Row Lock Waits는 10,832건에서 0건으로, Thresholds PASS는 17/28에서 25/28로, 총 iterations는 220K에서 699K로 향상되었다.
 
 > **정산 도메인의 병목은 시드 데이터 품질, 트랜잭션 범위, 인덱스 부재가 복합적으로 작용한 결과다.** @Version NULL, pending_out=0 같은 시드 데이터 문제를 수정하고, 참가자별 독립 TX를 정산당 단일 TX로 전환하고, 누락된 인덱스 3개를 추가하면 p95 18.64s를 1.50s로 줄일 수 있다.
 

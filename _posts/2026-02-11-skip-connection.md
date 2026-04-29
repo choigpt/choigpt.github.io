@@ -8,6 +8,11 @@ category: ML-AI
 
 Skip Connection(잔차 연결)은 딥러닝 네트워크에서 **입력을 레이어를 건너뛰어 출력에 직접 더하는 구조**다. ResNet에서 처음 제안되어 현대 딥러닝의 핵심 기법이 되었다.
 
+> He et al., "Deep Residual Learning for Image Recognition", CVPR, 2016
+
+![ResNet Residual Block](../assets/img/posts/skip-connection/resnet-block.png)
+*ResNet의 Residual Block. 입력 x가 레이어를 건너뛰어(skip) 출력에 직접 더해진다. 네트워크는 F(x) = H(x) - x, 즉 "잔차"만 학습하면 된다. (이미지: Wikimedia Commons, CC BY-SA)*
+
 ## 기본 구조
 
 일반 레이어가 `F(x)`를 학습한다면, Skip Connection이 있는 블록은 다음을 학습한다.

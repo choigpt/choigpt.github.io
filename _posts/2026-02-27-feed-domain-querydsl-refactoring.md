@@ -1,5 +1,5 @@
 ---
-title: 피드 도메인 리팩토링 — 442줄 서비스를 4개로 분리한 과정
+title: 피드 도메인 리팩토링 — 서비스 책임 분리와 네이티브 쿼리 전환
 date: 2026-02-27
 tags:
   - Spring
@@ -11,34 +11,51 @@ tags:
   - 설계
   - 캐시
 permalink: /feed-domain-442-line-service-split/
-excerpt: FeedQueryService 442줄에 SQL, 캐시, 렌더링 로직이 혼재했다. 네이티브 쿼리 6개를
+excerpt: FeedMainService에 조회, 캐시, 렌더링 로직이 혼재했다. 네이티브 쿼리를
   JPQL/QueryDSL로 전환하고, 서비스를
   FeedCacheService·FeedRenderService·FeedLikeWarmupService로 분리한 과정.
 ---
 
 ## 개요
 
-피드 도메인은 다른 팀원이 설계한 코드다. 성능 개선 작업을 병행하며 구조를 파악한 뒤 진행한 리팩토링이다.
+피드 도메인은 다른 팀원이 설계한 코드다. [부하 테스트를 통한 성능 개선](/feed-performance-load-test/)을 마친 뒤 코드 구조를 점검하면서 진행한 리팩토링이다.
 
-부하 테스트를 통해 성능을 개선한 뒤 코드를 재검토했다. `FeedQueryService`가 442줄이었고, 한 클래스 안에 클럽 피드 조회·전체 피드 조회·Redis 캐시·인메모리 캐시·렌더링·UNION ALL 동적 SQL이 혼재했다.
+원본 코드에서 확인된 주요 구조 문제:
 
-문제는 코드 길이가 아니라 레이어 침범이었다. 서비스가 SQL을 직접 조합하고 있었고, Redis 직렬화 로직이 서비스에 인라인으로 있었다. 네이티브 쿼리는 컴파일 타임 검증이 없어서 리팩토링 중 실수를 잡기 어려웠다.
+```
+1. FeedMainService(288줄)에 조회/렌더링/bulk 로딩이 혼재
+2. FeedRepository에 네이티브 쿼리(findPopularByClubIds 등) — 컴파일 타임 검증 없음
+3. getCurrentUser().getUserId()가 8곳 — 매번 DB 조회
+4. getFeedLikes().size()로 카운트 — 컬렉션 전체 로딩
+5. likedFeedIds가 항상 빈 Set — 좋아요 여부 표시 안 됨
+```
+
+네이티브 쿼리를 QueryDSL/JPQL로 전환하고, 서비스의 책임을 분리하는 것이 목표였다.
 
 ---
 
-## 구조 분석 — 한 클래스에 4가지 책임
+## 구조 분석 — 원본 코드의 구조
 
 ```
-FeedQueryService (442줄)
-├── 모임 피드 조회 (getFeedList, getFeedDetail)
-├── 전체 피드 조회 (getPersonalFeed, getPopularFeed)
-├── 캐시 레이어 (Redis pass1, ConcurrentHashMap result/detail cache)
-│   └── ConcurrentHashMap static 2개, record 3개 인라인 정의
-└── 렌더링 로직 (buildOverviewList, toOverviewDto, resolveImages)
-    └── UNION ALL 동적 SQL (findPersonalFeedChunked)  ← 레이어 위반
+FeedMainService (288줄) — 전체 피드 조회 + 렌더링
+├── getPersonalFeed / getPopularFeed
+├── getFeedsCommon → FeedRepository 호출
+├── bulkLoadParents / bulkLoadRoots → 동일 로직이 2개
+├── toOverviewDto → 렌더링 (DTO 변환 + 이미지 처리)
+├── resolveAccessibleClubIds → "친구의 친구" 범위 계산
+└── countDirectReposts
+
+FeedService (별도) — 모임 피드 CRUD + 좋아요 + 댓글
+├── getCurrentUser().getUserId() 7곳
+└── getFeedLikes().size() → 컬렉션 전체 로딩
+
+FeedRepository — 네이티브 쿼리
+├── findPopularByClubIds → LOG(), TIMESTAMPDIFF() MySQL 전용 함수
+├── countDirectRepostsIn → 네이티브
+└── findByClubIds → JPQL
 ```
 
-서비스에서 `EntityManager`를 직접 받아 네이티브 SQL 문자열을 StringBuilder로 조합하고 있었다. SQL을 서비스에서 조합하는 건 Repository 레이어의 책임이다.
+네이티브 쿼리가 Repository에 있는 것 자체는 레이어상 맞지만, MySQL 전용 함수를 쓰고 있어 DB 독립성이 없고 컴파일 타임 검증도 되지 않는다는 점이 문제였다.
 
 ---
 
@@ -46,15 +63,16 @@ FeedQueryService (442줄)
 
 ### 전환 판단 기준
 
-| 쿼리 | 전환 방향 | 이유 |
-|------|-----------|------|
-| `findFeedSummaryProjectionsByClubId` | QueryDSL | 서브쿼리 + Projection |
-| `findFeedIdsWithCountsByClubIds` | QueryDSL | 커버링 인덱스 유지 가능 |
-| `findPopularFeedIdsWithCountsByClubIds` | 네이티브 유지 | `LOG()`, `TIMESTAMPDIFF()` — MySQL 전용 함수 |
-| `countDirectRepostsIn` | JPQL | 단순 GROUP BY |
-| `incrementCommentCount` | JPQL (CASE WHEN 대체) | `GREATEST()` → `CASE WHEN` 표준 SQL |
-| `decrementCommentCount` | 네이티브 유지 | `GREATEST()` 언더플로 방지가 MySQL 전용 |
-| `findPersonalFeedChunked` (서비스 내) | QueryDSL + 이동 | 서비스 → Repository |
+```mermaid
+flowchart LR
+    A[findFeedSummaryProjectionsByClubId] -->|서브쿼리 + Projection| B[QueryDSL]
+    C[findFeedIdsWithCountsByClubIds] -->|커버링 인덱스 유지 가능| B
+    D[findPopularFeedIdsWithCountsByClubIds] -->|"LOG(), TIMESTAMPDIFF() — MySQL 전용 함수"| E[네이티브 유지]
+    F[countDirectRepostsIn] -->|단순 GROUP BY| G[JPQL]
+    H["incrementCommentCount"] -->|"GREATEST() → CASE WHEN 표준 SQL"| I["JPQL (CASE WHEN 대체)"]
+    J[decrementCommentCount] -->|"GREATEST() 언더플로 방지가 MySQL 전용"| E
+    K["findPersonalFeedChunked (서비스 내)"] -->|서비스 → Repository| L[QueryDSL + 이동]
+```
 
 `LOG()`를 `QueryDSL MathExpressions`로, `GREATEST(x, 0)`을 `CASE WHEN x > 0 THEN x ELSE 0 END`로, `DATE_SUB(NOW(), INTERVAL 7 DAY)`를 Java에서 `LocalDateTime.now().minusDays(7)` 파라미터로 전달하는 방식으로 MySQL 전용 함수를 제거했다.
 
@@ -101,42 +119,19 @@ public class FeedRepositoryCustomImpl implements FeedRepositoryCustom {
 
 피드 서비스 전반에 `getCurrentUser().getUserId()`가 8곳 있었다.
 
-| 서비스 | 호출 수 | User 엔티티 실제 필요 | ID만 필요 |
-|--------|---------|---------------------|----------|
-| FeedQueryService | 3 | 0 | 3 |
-| FeedLikeService | 1 | 0 | 1 |
-| FeedCommentService | 3 | 1 (createComment) | 2 |
-| FeedCommandService | 4 | 3 (create/update/refeed) | 1 |
+원본 코드의 `getCurrentUser().getUserId()` 사용 현황:
 
-`User` 엔티티가 필요한 5곳은 유지, 나머지 `userId`만 쓰는 3곳은 `getCurrentUserId()`로 교체했다. 요청당 최대 3회의 불필요한 SELECT가 제거됐다.
+`FeedMainService`에서는 3회 호출 중 1회만 User 엔티티가 실제로 필요했고(createRefeed에서 User 전달), 나머지 2회는 userId만으로 충분했다. `FeedService`에서는 7회 호출 중 3회가 User 엔티티 필요(create/update/refeed), 4회는 userId만으로 충분했다.
+
+User 엔티티가 필요한 곳은 유지, userId만 쓰는 곳은 `getCurrentUserId()`로 교체. [유저 도메인 편](/user-lifecycle-bugs/)에서 `UserPrincipal` 방식으로 바꾼 뒤에는 DB 조회 자체가 사라진다.
 
 ---
 
-## FeedCacheService 분리 — static 캐시를 서비스에서 제거
+## FeedCacheService 분리 — 캐시 로직을 서비스에서 제거
 
-서비스에 `static ConcurrentHashMap` 2개와 record 3개가 인라인으로 정의돼 있었다.
+[부하 테스트 성능 개선](/feed-performance-load-test/) 과정에서 Redis 캐시와 인메모리 캐시를 도입했는데, 그때 캐시 로직을 `FeedQueryService` 안에 인라인으로 작성했다. 리팩토링에서 이를 별도 서비스로 분리한다.
 
-```java
-// 수정 전 — 서비스에 static 캐시 하드코딩
-@Service
-public class FeedQueryService {
-    private record CachedResult(List<FeedOverviewDto> data, long expiresAt) { ... }
-    private record DetailCacheEntry(Feed feed, ..., long expiresAt) { ... }
-
-    private static final ConcurrentHashMap<String, CachedResult> resultCache = new ConcurrentHashMap<>();
-    private static final ConcurrentHashMap<Long, DetailCacheEntry> detailCache = new ConcurrentHashMap<>();
-
-    // Redis pass1 직렬화/역직렬화도 인라인
-    private void cachePass1(String key, List<FeedIdWithCounts> data) {
-        String value = data.stream()
-                .map(f -> f.feedId() + ":" + f.likeCount() + ":" + f.commentCount())
-                .collect(Collectors.joining(","));
-        redisTemplate.opsForValue().set(key, value, PASS1_TTL_SECONDS, TimeUnit.SECONDS);
-    }
-}
-```
-
-서비스에 `static` 캐시가 있으면 테스트 격리가 어렵고, Spring 컨텍스트 외부에서 캐시 생명주기를 제어할 수 없다. `FeedCacheService`를 별도 Bean으로 분리했다.
+캐시 로직이 서비스에 섞여 있으면 테스트 격리가 어렵고, Spring 컨텍스트 외부에서 캐시 생명주기를 제어할 수 없다. `FeedCacheService`를 별도 Bean으로 분리:
 
 ```java
 // FeedCacheService.java (신규)
@@ -233,7 +228,7 @@ private List<FeedOverviewDto> loadFeed(
 
 ## FeedLikeWarmupService 분리 — 서비스에서 스레드풀 제거
 
-`FeedLikeService`가 138줄이었고, `static ExecutorService`와 `static Set<Long>`을 직접 관리하고 있었다. `@PreDestroy`로 스레드풀 종료도 서비스에서 처리했다. 서비스가 인프라 생명주기까지 관리하는 구조였다.
+[피드 좋아요 개선](/feed-redis-like-n-plus-1/) 과정에서 Redis 워밍업 로직을 `FeedLikeService`에 추가했는데, 스레드풀과 워밍업 중복 방지용 Set도 함께 서비스에 넣었다. 비즈니스 로직과 인프라 생명주기가 한 클래스에 섞인 상태였다.
 
 ```java
 // 수정 전 — 서비스에 스레드풀 하드코딩
@@ -360,27 +355,49 @@ public Feed createRefeed(String content, Club targetClub, User user) {
 
 ## 최종 구조 변화
 
-| 클래스 | Before | After |
-|--------|--------|-------|
-| `FeedQueryService` | 442줄, 4가지 책임 | ~120줄, 조회 흐름 제어만 |
-| `FeedCacheService` | 없음 | 신규 — Redis + 인메모리 캐시 통합 |
-| `FeedRenderService` | 없음 | 신규 — DTO 변환 + bulk 로딩 |
-| `FeedLikeService` | 138줄, static 스레드풀 | 67줄, 비즈니스 로직만 |
-| `FeedLikeWarmupService` | 없음 | 신규 — 워밍업 스레드풀 관리 |
-| `FeedCommentService` | 108줄 | 88줄 |
-| `FeedCommandService` | 126줄 | ~100줄 |
-| `FeedRepositoryCustomImpl` | 없음 | 신규 — QueryDSL 5개 메서드 |
-| `FeedRepository` | 네이티브 6개 | JPQL 5개 + Custom 위임 |
+```mermaid
+flowchart TD
+    subgraph Before
+        A1["FeedQueryService (기존 FeedMainService 288줄 + 성능 개선 중 추가 코드)<br/>조회/캐시/렌더링 혼재"]
+        A2["FeedLikeService — 138줄, static 스레드풀"]
+        A3["FeedCommentService — 108줄"]
+        A4["FeedCommandService — 126줄"]
+        A5["FeedRepository — 네이티브 6개"]
+    end
+    subgraph After
+        B1["FeedQueryService — ~120줄, 조회 흐름 제어만"]
+        B2["FeedCacheService — 신규, Redis + 인메모리 캐시 통합"]
+        B3["FeedRenderService — 신규, DTO 변환 + bulk 로딩"]
+        B4["FeedLikeService — 67줄, 비즈니스 로직만"]
+        B5["FeedLikeWarmupService — 신규, 워밍업 스레드풀 관리"]
+        B6["FeedCommentService — 88줄"]
+        B7["FeedCommandService — ~100줄"]
+        B8["FeedRepositoryCustomImpl — 신규, QueryDSL 5개 메서드"]
+        B9["FeedRepository — JPQL 5개 + Custom 위임"]
+    end
+```
 
 ---
 
 ## 정리하며
 
-주요 문제는 SQL이 서비스 레이어에 위치했다는 점이다. `EntityManager`를 직접 받아 `StringBuilder`로 문자열 조합하는 코드가 `FeedQueryService`에 있었다. 레이어 침범이고, 컴파일 타임 검증도 없다. QueryDSL로 옮기면서 문자열 SQL이 타입 안전 코드로 바뀌었고, IDE가 오류를 잡을 수 있게 됐다.
+```
+이번 리팩토링의 핵심:
 
-`static ConcurrentHashMap`이 서비스에 위치할 때의 문제는 테스트에서 확인됐다. 테스트 케이스 간 캐시 상태가 공유돼 순서에 따라 통과/실패가 달라지는 flaky test가 생겼다. Bean으로 분리하고 `@BeforeEach`에서 mock을 주입하면 격리가 보장된다.
+1. 네이티브 쿼리 → QueryDSL/JPQL
+   MySQL 전용 함수(LOG, TIMESTAMPDIFF)를 쓰는 쿼리를 표준으로 전환
+   → 컴파일 타임 검증 + JOIN FETCH 사용 가능
 
-`FeedLikeService`의 `static ExecutorService`는 단위 테스트에서 실제 스레드가 실행돼 비동기 워밍업 로직이 테스트 도중 DB를 치는 문제를 만들었다. 인프라 생명주기(스레드풀 시작/종료)는 Spring Bean의 `@PostConstruct`/`DisposableBean`이 관리하는 게 맞다.
+2. 서비스 책임 분리
+   FeedMainService의 조회/렌더링/bulk 로딩을
+   FeedRenderService, FeedCacheService로 분리
+   → 각 클래스가 하나의 역할만 담당
+
+3. 성능 개선 과정에서 추가한 인프라 코드를 서비스에서 분리
+   캐시 로직 → FeedCacheService
+   워밍업 스레드풀 → FeedLikeWarmupService
+   → 비즈니스 로직과 인프라 생명주기가 섞이지 않음
+```
 
 > **도메인 규칙은 엔티티 안에 있어야 한다.**
 > `rootId = parent.getRootFeedId() != null ? parent.getRootFeedId() : parent.getFeedId()`는 리피드 체인의 루트를 결정하는 도메인 규칙이다. 서비스가 이 계산을 직접 하면 같은 규칙이 여러 곳에 복붙될 수 있다.

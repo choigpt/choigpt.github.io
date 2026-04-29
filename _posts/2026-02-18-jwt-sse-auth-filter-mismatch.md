@@ -82,10 +82,7 @@ Optional<User> userOpt = userRepository.findByKakaoId(kakaoId);  // userId를 ka
 
 ### 실제 데이터 예시
 
-| 필드 | 값 |
-|------|-----|
-| userId (DB PK) | 1 |
-| kakaoId | 3847561234 |
+실제 데이터에서 userId(DB PK)는 1이고, kakaoId는 3847561234이다. 이 두 값은 완전히 다르다.
 
 ```
 SseAuthenticationFilter:
@@ -122,9 +119,15 @@ List<Long> joinedClubIds = userClubRepository.findByClubIdsByUserId(userId);  //
 
 ## 왜 테스트에서 검출되지 않았는가
 
-1. **단위/통합 테스트**: `@Profile("!test")`로 SecurityConfig가 미로드되어 필터 체인 자체가 실행되지 않음
-2. **테스트 토큰 구조**: `subject`와 `kakaoId` claim이 동일한 값으로 생성되어 버그 숨김
-3. **k6 부하 테스트**: 토큰 수동 생성 시 subject에 kakaoId를 넣었거나 두 값이 우연히 일치
+**단위/통합 테스트:** `@Profile("!test")`로 SecurityConfig가 미로드되어 필터 체인 자체가 실행되지 않았다. 인증 로직이 통째로 빠진 상태에서 테스트한 셈이다.
+
+**테스트 토큰 구조:** 테스트용 토큰에서 `subject`와 `kakaoId` claim에 동일한 값을 넣었거나 우연히 일치하는 값을 사용해서 버그가 숨겨졌다.
+
+**k6 부하 테스트:** 이 버그는 기능 정확성 문제이지 성능 문제가 아니다. k6는 응답 시간과 처리량을 측정하는 도구이므로, "401이 돌아오는데 빠르게 돌아온다"면 k6 관점에서는 이상 없다. 상태 코드 검증 assertion을 넣지 않는 한 이런 류의 버그는 부하 테스트에서 보이지 않는다.
+
+다만 이 버그에는 기능 문제와 별개로 **설계 문제**도 있었다. Spring Security + JWT 구조에서 인증 필터가 기대하는 흐름은 "토큰 파싱 → claims에서 사용자 정보 추출 → `SecurityContext`에 `Authentication` 설정"이다. JWT에 필요한 정보가 이미 들어있으므로 DB를 칠 이유가 없다. 그런데 `SseAuthenticationFilter`는 매 요청마다 `userRepository.findByKakaoId()`를 호출하고 있었다. 인증은 모든 요청이 통과하는 경로이므로, 동시 접속이 늘어나면 DB 커넥션 풀이 인증 조회만으로 소진되어 비즈니스 쿼리가 커넥션을 잡지 못하게 된다. 이 경우에는 부하 테스트에서 시스템이 멈추는 것으로 드러난다. 테스트 환경의 동시 접속 수가 적었기 때문에 표면화되지 않았을 뿐이다.
+
+정리하면, **부하 테스트는 기능 테스트를 대체하지 않는다.** 하지만 인증 필터에서 매 요청마다 DB를 조회하는 것 자체가 설계 오류이고, 이런 류의 설계 오류는 동시 접속이 늘어나면 커넥션 풀 고갈로 부하 테스트에서 잡힌다.
 
 ---
 

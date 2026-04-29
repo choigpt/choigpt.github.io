@@ -6,6 +6,11 @@ permalink: /club-concurrency-ghost-members/
 excerpt: "memberCount++ 를 JPA dirty checking으로 처리해 동시 요청 시 Lost Update가 발생했고, 탈퇴 시 UserChatRoom을 삭제하지 않아 탈퇴한 사용자가 채팅방에 유령 멤버로 남았다."
 ---
 
+> **대칭을 지켜라.**
+> 생성과 삭제, 가입과 탈퇴, 열기와 닫기는 항상 쌍으로 존재해야 한다. 한쪽만 구현하면 반드시 유령이 남는다.
+
+---
+
 ## 개요
 
 모임(Club) 코드를 점검한 결과, 멤버 수를 관리하는 방식에 동시성 문제가 존재했다. `memberCount++`를 JPA dirty checking으로 처리하고 있어서 동시 요청 시 Lost Update가 발생한다. 거기에 `user_club` 테이블에 Unique Constraint가 없어서 동시에 두 요청이 들어오면 중복 가입이 가능했다.
@@ -140,7 +145,7 @@ public void joinClub(Long clubId) {
 
 ---
 
-### LEADER 이전 불가 + 모임 삭제 불가 — 구조적 막힘
+### LEADER 탈퇴 제한 — 의도된 설계
 
 ```java
 // ClubService.java
@@ -149,7 +154,7 @@ if (userClub.getClubRole() == ClubRole.LEADER) {
 }
 ```
 
-LEADER는 탈퇴할 수 없다. 그런데 LEADER를 다른 사람에게 이전하는 기능도 없고, 모임을 삭제하거나 해산하는 기능도 없다. 모임을 한 번 만들면 LEADER는 영구적으로 해당 모임에 묶인다.
+LEADER는 멤버가 있는 상태에서 멋대로 모임을 나가거나 삭제할 수 없도록 의도된 설계다. 멤버가 남아있는 모임을 리더 혼자 판단으로 해산하는 것을 방지하기 위한 것이므로, 버그가 아니라 정책적 제약이다.
 
 ---
 
@@ -303,20 +308,18 @@ record ClubWithMemberCount(Club club, Long memberCount) {}
 
 ## 현재 상태
 
-| 문제 | 상태 |
-|------|------|
-| `memberCount` Race Condition | ✅ 해결 — 원자적 UPDATE 쿼리로 교체 |
-| `user_club` Unique Constraint 없음 | ✅ 해결 — DB 레벨 제약 추가 |
-| `leaveClub()` `UserChatRoom` 미삭제 | ✅ 해결 — 삭제 코드 추가 |
-| `@Async` Lazy Proxy | ✅ 해결 — DTO 변환 후 전달 |
-| `memberCount` 초기값 null | ✅ 해결 — `@Builder.Default` 추가 |
-| `getCurrentUserId()` → `kakaoId` 반환 | ✅ 해결 — `UserPrincipal.getUserId()`로 수정 |
-| `findMyClubs` 상관 서브쿼리 | ✅ 해결 — `memberCount` 컬럼 직접 사용 |
-| `Object[]` 반환 + 구조 불일치 | ✅ 해결 — `ClubWithMemberCount` record 통일 |
-| 잘못된 ErrorCode | ✅ 해결 — `CLUB_MODIFY_FORBIDDEN`으로 변경 |
-| 정원 체크 Race Condition | ⚠️ 잔존 — SELECT + INSERT 원자성 보장 필요 |
-| LEADER 이전 / 모임 삭제 불가 | ⚠️ 잔존 — 기능 미구현 |
-| `ClubLike` 미사용 엔티티 | ⚠️ 잔존 — 구현 또는 제거 결정 필요 |
+- **`memberCount` Race Condition**: ✅ 해결 — 원자적 UPDATE 쿼리로 교체
+- **`user_club` Unique Constraint 없음**: ✅ 해결 — DB 레벨 제약 추가
+- **`leaveClub()` `UserChatRoom` 미삭제**: ✅ 해결 — 삭제 코드 추가
+- **`@Async` Lazy Proxy**: ✅ 해결 — DTO 변환 후 전달
+- **`memberCount` 초기값 null**: ✅ 해결 — `@Builder.Default` 추가
+- **`getCurrentUserId()` → `kakaoId` 반환**: ✅ 해결 — `UserPrincipal.getUserId()`로 수정
+- **`findMyClubs` 상관 서브쿼리**: ✅ 해결 — `memberCount` 컬럼 직접 사용
+- **`Object[]` 반환 + 구조 불일치**: ✅ 해결 — `ClubWithMemberCount` record 통일
+- **잘못된 ErrorCode**: ✅ 해결 — `CLUB_MODIFY_FORBIDDEN`으로 변경
+- **정원 체크 Race Condition**: ⚠️ 잔존 — [Phase 5 프로덕션 하드닝](/production-hardening-chaos-engineering/)에서 pessimistic lock으로 해결
+- **LEADER 탈퇴 제한**: 의도된 설계 — 멤버 보호를 위한 정책적 제약
+- **`ClubLike` 미사용 엔티티**: ⚠️ 잔존 — 구현 또는 제거 결정 필요
 
 ---
 
@@ -328,6 +331,8 @@ record ClubWithMemberCount(Club club, Long memberCount) {}
 
 > **대칭을 지켜라.**
 > 생성과 삭제, 가입과 탈퇴, 열기와 닫기는 항상 쌍으로 존재해야 한다. 한쪽만 구현하면 반드시 유령이 남는다.
+
+이 동일한 패턴(check-then-act + Unique Constraint 부재)은 [스케줄 도메인 편](/schedule-permission-fund-freeze/)에서도 반복된다.
 
 ---
 
