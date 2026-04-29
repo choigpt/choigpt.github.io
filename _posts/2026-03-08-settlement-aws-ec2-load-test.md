@@ -59,6 +59,8 @@ k6 테스트에서 receiverId가 잘못된 범위로 생성되어 `MEMBER_CANNOT
 
 총 시간: 17분 10초, 220,263 iterations, VU 50~1,500. Thresholds: 17 PASS / 11 FAIL.
 
+> VU 표기에 대한 보정: 일부 Phase의 VU 라벨은 k6 시나리오 옵션의 `VU_SCALE` 적용 후 실제 동시 사용자 수와 차이가 있었다. 자세한 내용은 [k6 부하 테스트 코드 리뷰](/k6-load-test-code-review/)에서 정리했다. 본 글의 "1,500 VU"는 라벨 기준이며, 실제 동시 사용자 수는 시점에 따라 그 절반 수준일 수도 있다.
+
 ### API 응답 시간
 
 - **결제 플로우**: p95 1.94s, avg 522ms, max 6.71s

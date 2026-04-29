@@ -122,9 +122,11 @@ EC2:  pool 300으로 확대해도 write p95 > 1초
 CPU 평균 35.3% / 최대 98.2%, JVM Heap 평균 1,047MB / 최대 2,048MB, HikariCP Active 평균 25.9 / 최대 365, HikariCP Pending 최대 275, Threads 평균 621 / 최대 899, GC 횟수 최대 1,755였다.
 
 ```
-HikariCP Active 최대 365: pool size 300을 초과 (확장 과정에서 일시적 초과)
+HikariCP Active 최대 365: pool size 300 표기와 충돌
 Pending 최대 275: Extreme/Spike 구간에서 커넥션 대기 대량 발생
 ```
+
+> HikariCP의 `active` 메트릭은 정의상 `maximumPoolSize`(=300)를 초과할 수 없다. "365"는 측정 시점의 race(메트릭 집계 timing) 또는 pool 재구성 직후 transient 상태로 보이는 것이 가장 가능성 높은 해석이다. 실제로 pool이 365개로 확장된 것은 아니라고 보는 게 안전하며, 본 글의 결론(Extreme/Spike 구간에서 커넥션 풀이 포화 상태)은 Pending 275라는 더 신뢰할 수 있는 지표가 충분히 뒷받침한다.
 
 ---
 
@@ -223,9 +225,10 @@ MongoDB:
   mark-all p95 10.9s는 해당 유저의 전체 미읽음 갱신 비용
 
 주의: 이 배수(952배, 3,588배)는
-  MySQL이 붕괴한 6,000 VU vs MongoDB 정상 작동을 비교한 수치.
-  둘 다 정상인 1,500 VU에서는 MySQL mark p95 1,210ms vs MongoDB ~30ms → 약 40배.
-  핵심은 배수가 아니라 MySQL이 특정 부하에서 구조적으로 붕괴한다는 것.
+  MySQL이 붕괴한 6,000 VU vs MongoDB 정상 작동을 비교한 수치다.
+  산술적으로도 29,000ms / 30ms = 약 967배에 가깝지만, 실제 측정 원본의 미세한 차이로 952배로 표기됐다.
+  중요한 것은 정확한 배수가 아니라 — 둘 다 정상인 1,500 VU에서는 MySQL mark p95 1,210ms vs MongoDB ~30ms로 약 40배 차이고,
+  특정 부하 임계값을 넘기면 MySQL 쪽이 구조적으로 붕괴한다는 점이다.
 ```
 
 ### 핵심 비교

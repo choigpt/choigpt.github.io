@@ -710,7 +710,7 @@ Long userId = userService.getCurrentUserId();
 
 ### 적용 기술 스택
 
-- **JVM**: ZGC Generational (G1GC 대비 CPU 70%p 절감)
+- **JVM**: ZGC Generational (본 환경 — t3.medium, Heap 2~4GB, write-heavy 시나리오에서 G1GC 대비 CPU 70%p 절감 측정. 일반 룰이 아니며 워크로드/할당률에 따라 차이가 작거나 역전될 수 있다.)
 - **DB 인덱스**: 복합 인덱스 10종+ 추가
 - **캐시**: Redis 캐시 14종 + 커스텀 캐시 3종
 - **비동기**: Redis Streams, Kafka, @Async 이벤트

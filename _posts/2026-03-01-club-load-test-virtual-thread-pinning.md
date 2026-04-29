@@ -85,7 +85,10 @@ Tomcat의 모든 요청이 Virtual Thread로 처리되고 있었다. Virtual Thr
 ```
 Virtual Thread → JDBC 호출 → synchronized 블록 진입 → carrier thread에 pin
 → pinned virtual thread는 carrier thread를 놓지 않음
-→ carrier thread pool(ForkJoinPool)은 bounded (기본 parallelism = availableProcessors(), 상한 256)
+→ carrier thread pool(ForkJoinPool)은 bounded
+   - parallelism: 기본 availableProcessors() — 동시에 일을 처리할 carrier 슬롯 수
+   - maxPoolSize: 기본 256 (`jdk.virtualThreadScheduler.maxPoolSize`) — pinning 대비 일시 확장 한계
+→ parallelism은 평소 carrier 동시 실행 수, maxPoolSize는 피닝/블로킹으로 carrier가 잠겼을 때 늘어날 수 있는 상한
 → 모든 carrier가 pinned → 새 virtual thread는 실행 대기
 → 그러나 Tomcat은 요청마다 새 virtual thread를 계속 생성 (backpressure 없음)
 → 실행되지 못하는 virtual thread가 무한 축적 → 각각 스택 메모리 점유
