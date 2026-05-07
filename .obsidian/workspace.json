@@ -97,12 +97,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Reactive Framework.md",
+                "file": "_posts/2026-02-17-spring-security-jwt-structure-bugs.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Reactive Framework"
+              "title": "2026-02-17-spring-security-jwt-structure-bugs"
             }
           }
         ],
@@ -256,16 +256,16 @@
             "state": {
               "type": "git-view",
               "state": {},
-              "icon": "lucide-ghost",
-              "title": "git-view"
+              "icon": "git-pull-request",
+              "title": "Source Control"
             }
           }
         ],
-        "currentTab": 3
+        "currentTab": 5
       }
     ],
     "direction": "horizontal",
-    "width": 284.5
+    "width": 496.5
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -280,10 +280,11 @@
       "obsidian-git:Open Git source control": false
     }
   },
-  "active": "7e5b04aac7530e73",
+  "active": "1e2063326d99c846",
   "lastOpenFiles": [
-    "_posts/2026-04-10-db-deadlock-order-by.md",
+    "_posts/2026-03-11-ec2-downsizing-integration-code-review.zip",
     "Reactive Framework.md",
+    "_posts/2026-04-10-db-deadlock-order-by.md",
     "무제 1.md",
     "무제.md",
     "_posts/2026-04-03-bloom-filter.md",
@@ -327,7 +328,6 @@
     "_posts/2026-02-23-wallet-payment-toss-db-failure.md",
     "_posts/2026-02-23-schedule-permission-fund-freeze.md",
     "_posts/2026-02-22-club-concurrency-ghost-members.md",
-    "_posts/2026-02-21-feed-redis-like-n-plus-1.md",
     "Untitled.canvas"
   ]
 }
