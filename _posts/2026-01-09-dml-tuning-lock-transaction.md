@@ -2,7 +2,7 @@
 layout: post
 title: "DML 튜닝: INSERT 채번부터 Lock, 트랜잭션 동시성 제어까지"
 date: 2026-01-09
-categories: [Database]
+categories: [Backend]
 tags: [lock, transaction, concurrency, database, dml-tuning, partition, mvcc]
 last_modified_at: 2026-03-15
 ---

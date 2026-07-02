@@ -2,6 +2,7 @@
 layout: post
 title: "랜덤 포레스트 공부: 배깅, Bias-Variance, OOB, 특성 중요도까지"
 date: 2026-01-18
+categories: [AI-ML]
 tags: [machine-learning, random-forest, ensemble, bagging]
 permalink: /random-forest/
 excerpt: "랜덤 포레스트는 부트스트랩으로 다양한 트리를 만들고 다수결로 예측한다. Bias-Variance 분해, OOB 검증, 특성 중요도를 깊이 다룬다."

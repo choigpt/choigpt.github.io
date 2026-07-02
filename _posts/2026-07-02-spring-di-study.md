@@ -2,8 +2,8 @@
 layout: post
 title: "Spring DI 공부: 직접 생성에서 Component Scan과 자동 주입까지"
 date: 2026-07-02
+categories: [Backend]
 tags: [Spring, DI, IoC, Bean, ComponentScan, Autowired, Backend]
-category: Backend
 permalink: /spring-di-study/
 excerpt: "Spring DI를 직접 객체 생성, 설정 파일과 Reflection, AppContext와 Bean, XML 기반 DI, Component Scan, @Autowired 흐름으로 정리한다."
 ---

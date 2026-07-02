@@ -2,6 +2,7 @@
 layout: post
 title: React 프론트엔드 리팩토링 — memo 0건, 코드 스플리팅 0건에서 시작한 최적화
 date: 2026-03-06
+categories: [Project]
 tags: [React, TypeScript, Vite, 성능최적화, 코드스플리팅, 리팩토링, SSE, k6]
 permalink: /react-frontend-optimization-memo-splitting/
 excerpt: "백엔드 최적화 시리즈를 마치고 같은 프로젝트의 React 프론트엔드를 점검했다. React.memo 0건, useMemo 0건, 코드 스플리팅 0건, FeedList 1,037줄. 종합 5.6/10에서 시작해 4단계 1차 최적화와 4단계 2차 최적화를 거치고, SSE delivery 부하 테스트까지 통과시킨 기록."

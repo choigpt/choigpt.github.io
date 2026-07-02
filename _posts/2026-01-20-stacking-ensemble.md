@@ -2,6 +2,7 @@
 layout: post
 title: "스태킹과 앙상블 전략 공부: 모델을 조합하는 기술"
 date: 2026-01-20
+categories: [AI-ML]
 tags: [machine-learning, stacking, ensemble, blending, model-selection]
 permalink: /stacking-ensemble/
 excerpt: "스태킹은 서로 다른 모델의 예측을 메타 모델이 조합한다. 배깅, 부스팅, 스태킹의 차이와 실전 파이프라인을 다룬다."

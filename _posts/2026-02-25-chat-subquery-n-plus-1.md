@@ -2,6 +2,7 @@
 layout: post
 title: 채팅 도메인 — 상관 서브쿼리·N+1이 만든 성능 저하
 date: 2026-02-25
+categories: [Project]
 tags: [MySQL, Redis, JPA, WebSocket, STOMP, 성능최적화, 트러블슈팅, Java, 채팅, k6]
 permalink: /chat-subquery-redis-listener/
 excerpt: "채팅방 목록 조회의 상관 서브쿼리와 메시지 조회의 N+1이 부하 테스트에서 병목으로 드러났다."

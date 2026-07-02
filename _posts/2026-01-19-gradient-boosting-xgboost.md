@@ -2,6 +2,7 @@
 layout: post
 title: "그래디언트 부스팅과 XGBoost 공부: 잔차 학습부터 2차 근사, 정규화까지"
 date: 2026-01-19
+categories: [AI-ML]
 tags: [machine-learning, xgboost, gradient-boosting, ensemble, boosting]
 permalink: /gradient-boosting-xgboost/
 excerpt: "그래디언트 부스팅은 이전 모델의 잔차를 다음 모델이 학습하여 Bias를 줄인다. XGBoost는 2차 근사와 정규화로 이를 최적화한다."

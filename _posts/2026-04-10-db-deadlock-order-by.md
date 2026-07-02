@@ -2,6 +2,7 @@
 layout: post
 title: DB Deadlock — 부하 테스트에서 터지고 ORDER BY로 해결한 이야기
 date: 2026-04-10
+categories: [Backend]
 tags: [MySQL, JPA, 부하테스트, 데드락, 성능최적화, Java]
 permalink: /db-deadlock-order-by/
 excerpt: "로컬에서는 멀쩡하던 코드가 부하 테스트에서 갑자기 멈췄다. 원인은 JPA가 아니라 같은 두 row를 서로 다른 순서로 잠그는 락 순서 충돌이었다. ORDER BY로 잠금 순서를 통일하자 Deadlock이 사라졌다."

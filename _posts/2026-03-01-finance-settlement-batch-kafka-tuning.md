@@ -2,6 +2,7 @@
 layout: post
 title: Finance 도메인 — 정산 p95 19.5초를 2.46초로, 배치 UPDATE와 Kafka 비재시도 예외 등록
 date: 2026-03-01
+categories: [Project]
 tags: [Java, Spring, JPA, k6, Kafka, 성능최적화, 트러블슈팅, 결제, 정산, 동시성, 부하테스트]
 permalink: /finance-settlement-batch-kafka-tuning/
 excerpt: "정산 p95가 19.5초였다. 배치 UPDATE all-or-nothing 실패 시 순차 fallback, Kafka 불필요 재시도가 복합적으로 작용했다. 배치 UPDATE 도입과 Kafka 비재시도 예외 등록으로 2.46초로 떨어졌다."

@@ -2,6 +2,7 @@
 layout: post
 title: EC2 다운사이징 후 최적화 (중) — 정산·검색 도메인과 공통 인프라 튜닝
 date: 2026-03-11
+categories: [Project]
 tags: [AWS, EC2, MySQL, Elasticsearch, Kafka, HikariCP, k6, 성능최적화, 부하테스트, Java, ZGC, VirtualThread, 정산, 검색]
 permalink: /ec2-downsizing-optimization-part2/
 excerpt: "정산 도메인에서 R/W 풀 분리가 단일 MySQL에서 역효과를 일으킨 원인을 분석하고, 검색 도메인에서 ES vs MySQL FULLTEXT 830배 차이를 확인했다. JWT Parser ClassLoader lock(BLOCKED 388→0), 커널 TCP 튜닝(SSE p95 708→90ms), EC2 컨테이너 메모리 할당까지 공통 인프라 튜닝을 정리한다."

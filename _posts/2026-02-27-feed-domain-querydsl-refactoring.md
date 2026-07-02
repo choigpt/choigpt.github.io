@@ -2,6 +2,7 @@
 layout: post
 title: 피드 도메인 리팩토링 — 서비스 책임 분리와 네이티브 쿼리 전환
 date: 2026-02-27
+categories: [Project]
 tags:
   - Spring
   - Java

@@ -2,6 +2,7 @@
 layout: post
 title: React 심화 리뷰 — 토큰 레이스 컨디션, SSE 메모리 누수, isProtectedRoute 보안 버그
 date: 2026-03-06
+categories: [Project]
 tags: [React, TypeScript, SSE, WebSocket, STOMP, 보안, 트러블슈팅, 테스트]
 permalink: /react-deep-review-token-race-sse-leak/
 excerpt: "1·2차 최적화 후 심화 리뷰에서 종합 6.8/10. 동시 401 시 refresh 중복 호출, SSE 이벤트 리스너 메모리 누수, Auth 초기화 레이스, 채팅 구독 누수 등 Critical 4건을 포함해 12건을 수정하고 테스트를 80 → 149건으로 확대했다. isProtectedRoute에서 '/'의 startsWith가 모든 라우트를 public으로 만드는 보안 버그도 발견했다."

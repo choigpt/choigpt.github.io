@@ -2,8 +2,8 @@
 layout: post
 title: "강화학습 기초"
 date: 2026-02-05
+categories: [AI-ML]
 tags: [강화학습, ML-AI]
-category: ML-AI
 ---
 https://www.youtube.com/watch?v=2pWv7GOvuf0&list=PLqYmG7hTraZDM-OYHWgPebj2MfCFzFObQ
 

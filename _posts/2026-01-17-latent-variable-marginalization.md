@@ -2,6 +2,7 @@
 layout: post
 title: "잠재 변수와 주변화 공부: 보이지 않는 것을 다루는 수학"
 date: 2026-01-17
+categories: [Statistics]
 tags: [statistics, probability, latent-variable, marginalization, machine-learning, VAE, EM]
 permalink: /latent-variable-marginalization/
 excerpt: "잠재 변수는 관측되지 않지만 데이터를 설명하는 숨은 원인이다. 주변화는 이 보이지 않는 변수를 합산하여 제거하는 연산이다. 이 두 개념이 EM 알고리즘, GMM, VAE의 기반이다."

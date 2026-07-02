@@ -2,6 +2,7 @@
 layout: post
 title: 멀티 도메인 리팩토링 — ErrorCode 분리부터 30파일 코드 품질 정리까지
 date: 2026-03-04
+categories: [Project]
 tags: [Java, 리팩토링, Spring, 코드품질, 멀티모듈, ErrorCode, 클린코드]
 permalink: /multi-domain-refactoring-errorcode-code-quality/
 excerpt: "150줄짜리 단일 ErrorCode enum을 인터페이스 + 10개 도메인별 enum으로 분리했다. 이어서 성능 테스트 과정에서 쌓인 기술 부채를 정리했다. 5개 도메인, 30개 파일. 용어 불일치, 사일런트 예외, 매직넘버, 레거시 주석 70줄, 중복 record — 두 라운드에 걸쳐 정리한 기록."

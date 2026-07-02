@@ -2,6 +2,7 @@
 layout: post
 title: React 코드 품질 — C(68점)에서 B(82점)으로, React Query 도입과 컴포넌트 분리
 date: 2026-03-05
+categories: [Project]
 tags: [React, ReactQuery, TypeScript, ESLint, Playwright, Sentry, 접근성, 코드품질, 테스트]
 permalink: /react-code-quality-c-to-b-react-query/
 excerpt: "6개 영역 100점 만점으로 정량 평가한 결과 C등급 68점. 서버 상태 관리 2/5, 코드 중복 3/5, 미사용 코드 3/5이 주요 감점. ESLint 111 errors → 0, React Query 도입, 대형 컴포넌트 분리를 거쳐 B등급 82점. 최종 177 tests, 25 suites."

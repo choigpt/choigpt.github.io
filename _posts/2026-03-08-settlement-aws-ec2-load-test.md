@@ -2,6 +2,7 @@
 layout: post
 title: 정산 부하 테스트 — AWS EC2에서 시드 데이터 버그 수정과 5라운드 최적화
 date: 2026-03-08
+categories: [Project]
 tags: [AWS, EC2, MySQL, Kafka, HikariCP, k6, 성능최적화, 부하테스트, Java, 정산]
 permalink: /settlement-aws-ec2-load-test/
 excerpt: "EC2에 배포한 정산 도메인에서 COMPLETED 0건, 정산 요청 p95 18.64s가 발생했다. @Version NULL, pending_out=0 시드 데이터, self-invocation @Transactional 누락 등 4가지 버그를 수정하고, 배치 TX 전환과 인덱스 3개 추가로 정산 요청 p95를 1.50s까지 개선했다. 5라운드에 걸친 최적화 과정을 정리한다."

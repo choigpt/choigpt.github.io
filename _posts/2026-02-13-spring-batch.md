@@ -2,6 +2,7 @@
 layout: post
 title: Spring Batch 기초
 date: 2026-02-13
+categories: [Backend]
 tags: [java, spring, batch, backend]
 ---
 

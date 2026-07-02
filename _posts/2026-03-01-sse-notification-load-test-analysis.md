@@ -2,6 +2,7 @@
 layout: post
 title: SSE 알림 부하 테스트 — 7가지 시나리오로 찾은 연결 한계와 잔여 병목
 date: 2026-03-01
+categories: [Project]
 tags: [SSE, MySQL, InnoDB, HikariCP, k6, 성능최적화, 트러블슈팅, Java, 알림]
 permalink: /sse-notification-load-test-analysis/
 excerpt: "SSE 연결은 7,500 VU까지 429 없이 안정적이었다. 7가지 시나리오를 분리해 테스트한 결과, REST와 혼합할 때만 성공률이 16%로 떨어졌고, markSseSentByIds flush/clear 누락 등 기존 개선에서 빠진 3가지 문제를 추가로 발견했다."

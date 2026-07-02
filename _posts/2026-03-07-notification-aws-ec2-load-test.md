@@ -2,6 +2,7 @@
 layout: post
 title: 알림 부하 테스트 — AWS EC2에서 MySQL write 붕괴와 MongoDB 비교
 date: 2026-03-07
+categories: [Project]
 tags: [AWS, EC2, MySQL, MongoDB, HikariCP, SSE, k6, 성능최적화, 부하테스트, Java, 알림]
 permalink: /notification-aws-ec2-load-test/
 excerpt: "EC2에 배포한 알림 API에서 MySQL write p95 1.2초, SSE 전달률 63.2%가 관측됐다. 2x VU(6,000 VU)로 스케일하면 MySQL write는 완전히 붕괴한다 — mark p50 29초, delete p50 59초. Port/Adapter 추상화로 MongoDB로 전환하여 비교하면 mark p50 30ms(952배), 총 iterations 10.5배, 6,000 VU Double Spike 100% 통과. document-level lock vs row lock의 구조적 차이를 확인했다."

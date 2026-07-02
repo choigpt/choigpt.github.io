@@ -2,6 +2,7 @@
 layout: post
 title: 선택 정렬 — 최솟값을 찾아 앞으로 보내기
 date: 2026-02-16
+categories: [Algorithm]
 tags: [algorithm, CS, sorting]
 permalink: /selection-sort/
 excerpt: "선택 정렬은 정렬되지 않은 부분에서 최솟값을 찾아 앞으로 보내는 정렬이다. 항상 O(n^2)이지만 교환 횟수가 최대 n-1로 적어, 쓰기 비용이 큰 환경에서 유리하다."

@@ -2,6 +2,7 @@
 layout: post
 title: "버블 정렬 공부: 인접 비교의 원리부터 최적화, 복잡도 증명까지"
 date: 2026-02-15
+categories: [Algorithm]
 tags: [algorithm, CS, sorting]
 permalink: /bubble-sort/
 excerpt: "버블 정렬은 인접한 두 원소를 비교하여 큰 값을 뒤로 보내는 정렬이다. 단순하지만 그 안에 정렬 알고리즘의 핵심 개념이 모두 들어있다."

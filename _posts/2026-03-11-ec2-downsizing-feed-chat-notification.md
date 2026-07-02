@@ -2,6 +2,7 @@
 layout: post
 title: EC2 다운사이징 후 최적화 (상) — 피드·채팅·알림 도메인 재테스트
 date: 2026-03-11
+categories: [Project]
 tags: [AWS, EC2, MySQL, MongoDB, Redis, HikariCP, k6, 성능최적화, 부하테스트, Java, ZGC, 피드, 채팅, 알림]
 permalink: /ec2-downsizing-optimization-part1/
 excerpt: "c5.xlarge에서 t3.medium으로 다운사이징한 뒤 피드·채팅·알림 3개 도메인을 재테스트했다. 피드는 댓글 비동기 카운터로 p95 5.75s→260ms, 채팅은 Redis Streams로 DB 커넥션 99.7% 감소, 알림은 워터마크+LEFT JOIN 제거로 500 에러를 97% 감소시켰다."

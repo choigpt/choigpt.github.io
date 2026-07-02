@@ -2,8 +2,8 @@
 layout: post
 title: "벨만 방정식 공부: 왜 현재 가치 = 즉각 보상 + 미래 가치인가"
 date: 2026-02-07
+categories: [AI-ML]
 tags: [강화학습, ML-AI, 벨만방정식, dynamic-programming]
-category: ML-AI
 permalink: /bellman-equation/
 excerpt: "벨만 방정식은 가치를 '지금 받는 보상 + 미래의 가치'로 분해한다. 이 분해가 왜 성립하는지를 구체적인 예시로 따라간다."
 ---

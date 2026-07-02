@@ -2,6 +2,7 @@
 layout: post
 title: 검색 엔진 추상화 — ES vs MySQL FULLTEXT, 236배 차이의 기록
 date: 2026-03-03
+categories: [Project]
 tags: [Elasticsearch, MySQL, 검색, 성능최적화, k6, 부하테스트, Port/Adapter, nori, FULLTEXT]
 permalink: /search-engine-abstraction-es-vs-fulltext/
 excerpt: "검색 쿼리 최적화 이후 다음 과제는 검색 엔진 교체 가능한 구조를 만드는 것이었다. SearchPort 인터페이스로 ES와 MySQL FULLTEXT를 추상화하고, 동일 조건에서 부하 테스트를 돌렸다. 단일 키워드는 5.7배, 복합 키워드+필터 조합은 236배 차이. ES는 29/29 PASS, MySQL FULLTEXT는 23/29에 6 FAIL. Port/Adapter 덕분에 ES 장애 시 MySQL FULLTEXT로 자동 전환되는 fallback 구조까지 확보했다."

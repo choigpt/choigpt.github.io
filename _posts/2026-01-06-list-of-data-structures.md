@@ -2,6 +2,7 @@
 layout: post
 title: 자료구조 총정리
 date: 2026-01-06
+categories: [Algorithm]
 tags: [data-structure, CS, algorithm]
 permalink: /list-of-data-structures/
 excerpt: "배열부터 블룸 필터까지. 각 자료구조가 왜 존재하는지, 내부에서 무슨 일이 벌어지는지, 언제 어떤 구조를 골라야 하는지를 3편으로 나누어 다룬다."

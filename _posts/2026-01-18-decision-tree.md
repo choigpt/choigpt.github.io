@@ -2,6 +2,7 @@
 layout: post
 title: "의사결정 트리 공부: 엔트로피에서 랜덤 포레스트, XGBoost까지"
 date: 2026-01-18
+categories: [AI-ML]
 tags: [machine-learning, classification, decision-tree, random-forest, xgboost, ensemble]
 permalink: /decision-tree/
 excerpt: "의사결정 트리를 엔트로피 계산부터 직접 따라가며 구축하고, 과적합 문제를 해결하는 앙상블(랜덤 포레스트, 부스팅)까지 단계적으로 깊어진다."

@@ -2,6 +2,7 @@
 layout: post
 title: "Phase 5 — 프로덕션 하드닝: 48건 수정, Chaos Monkey, A/B 테스트 인프라"
 date: 2026-03-20
+categories: [Project]
 tags: [DBA, Security, Performance, DevOps, ChaosMonkey, Unleash, A/B테스트, 카오스엔지니어링, SpringBoot, Docker, Prometheus, Grafana]
 permalink: /production-hardening-chaos-engineering/
 excerpt: "DBA·백엔드·성능·DevOps 4개 관점에서 코드 전수 분석 → 48건 수정, Chaos Monkey로 장애 주입 테스트, Unleash A/B 테스트 프레임워크 통합까지. '잘 설계된 프로토타입'에서 '프로덕션 배포 직전'으로."

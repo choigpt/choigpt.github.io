@@ -2,6 +2,7 @@
 layout: post
 title: 피드 부하 테스트 — AWS EC2에서 IN절 병목, covering index, X-lock 경합 해소
 date: 2026-03-07
+categories: [Project]
 tags: [AWS, EC2, MySQL, Redis, HikariCP, k6, 성능최적화, 부하테스트, Java, 피드]
 permalink: /feed-aws-ec2-load-test/
 excerpt: "로컬에서 최적화를 마친 피드 도메인을 AWS EC2에 배포하고 3,000 VU까지 부하를 올렸다. 개인 피드 IN절 병목(p95 9.55s)을 covering index와 전 페이지 캐싱으로 2.00s까지 개선하고, comment_count 배치 버퍼링과 중복 인덱스 제거로 피드 생성 p95 14.21s → 2.88s를 달성했다."

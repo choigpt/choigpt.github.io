@@ -2,8 +2,8 @@
 layout: post
 title: "Buddkit 백엔드 부하 테스트 & 성능 최적화 전체 보고서"
 date: 2026-03-11
+categories: [Project]
 tags: [spring-boot, k6, mysql, mongodb, redis, kafka, elasticsearch, jvm, aws, 부하테스트, 성능최적화, Buddkit]
-category: Backend
 permalink: /buddkit-load-test-full-report/
 redirect_from:
   - /onlyone-load-test-full-report/

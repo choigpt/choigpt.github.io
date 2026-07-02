@@ -2,6 +2,7 @@
 layout: post
 title: 알림 도메인 — Port/Adapter Storage 추상화, MySQL의 벽, MongoDB 1,061배 차이
 date: 2026-03-02
+categories: [Project]
 tags: [Java, Spring, MongoDB, MySQL, 부하테스트, k6, 성능최적화, Port/Adapter, 헥사고날, 알림]
 permalink: /notification-storage-abstraction-mysql-mongodb/
 excerpt: "알림 도메인의 Storage/Delivery 계층을 Port/Adapter 패턴으로 추상화했다. property 한 줄로 MySQL↔MongoDB, SSE↔WebSocket↔FCM 전환이 가능하다. 단계별 스트레스 테스트로 MySQL의 성능 한계를 찾았고, 14M 데이터 Write Storm 시나리오에서 MongoDB가 p95 1,061배, 처리량 21배 차이를 보였다."

@@ -2,6 +2,7 @@
 layout: post
 title: 피드 도메인 — Storage 추상화, Lua Script 분석, 3-Backend 비교 테스트
 date: 2026-03-03
+categories: [Project]
 tags: [Java, Spring, MongoDB, MySQL, Redis, Lua, 부하테스트, k6, 성능최적화, Port/Adapter]
 permalink: /feed-storage-abstraction-lua-script-backend-comparison/
 excerpt: "피드 도메인의 쿼리 최적화와 고부하 테스트를 마친 뒤, 다음 단계로 Storage를 교체 가능하게 만들었다. FeedStoragePort 인터페이스(11개 메서드 + 3개 DTO)를 설계하고 MySQL/MongoDB 어댑터를 구현했다. Lua Script 좋아요 토글은 conflict 0이라 손댈 필요가 없었지만, existsById MySQL 쿼리가 숨은 병목이었다. Redis 캐싱으로 throughput +82%. 3-Backend 비교에서 진짜 개선은 Storage 교체가 아니라 existsById 캐싱이었다."

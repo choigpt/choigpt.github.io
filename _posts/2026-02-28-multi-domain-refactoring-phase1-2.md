@@ -2,6 +2,7 @@
 layout: post
 title: 멀티 도메인 코드 정리 — 표면 정리부터 Semaphore 제거까지
 date: 2026-02-28
+categories: [Project]
 tags:
   - Spring
   - Java

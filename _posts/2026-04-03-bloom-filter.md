@@ -2,8 +2,8 @@
 layout: post
 title: "Bloom Filter: 확률적 자료구조의 정수 — 원리, 수학, 변형, 실전 적용까지"
 date: 2026-04-03
+categories: [Algorithm]
 tags: [data-structure, CS, algorithm, bloom-filter, probabilistic, 확률적자료구조, 캐시, Redis, Guava]
-category: CS
 permalink: /bloom-filter/
 excerpt: "Bloom Filter는 '이 원소가 집합에 있는가?'라는 질문에 O(1)로 답하되, 거짓 양성(false positive)을 허용하는 대신 거짓 음성(false negative)은 절대 발생하지 않는 확률적 자료구조다. 비트 배열과 해시 함수만으로 수백만 원소의 멤버십을 수 KB에 판정하는 원리, 오탐률 수학, Counting·Cuckoo·Scalable 변형, 그리고 Redis·Guava·DB 쿼리 최적화 실전까지 정리한다."
 ---

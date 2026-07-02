@@ -2,6 +2,7 @@
 layout: post
 title: 검색 부하 테스트 — AWS EC2에서 MySQL FULLTEXT ngram의 성능 한계
 date: 2026-03-08
+categories: [Project]
 tags: [AWS, EC2, MySQL, FULLTEXT, Redis, HikariCP, k6, 성능최적화, 부하테스트, Java, 검색]
 permalink: /search-aws-ec2-load-test/
 excerpt: "EC2에 배포한 검색 API에서 시드 데이터 이중 인코딩 문제를 발견하고 수정했다. MySQL FULLTEXT(ngram) 검색은 단일 키워드 p95 24.11s, 스파이크 p95 45.40s로, 600+ 동시 사용자에서 HikariCP 300 풀이 포화된다. 필터 전용 쿼리(인덱스 스캔)는 13ms로 빠르며, FULLTEXT 쿼리 자체의 비용이 병목이다."

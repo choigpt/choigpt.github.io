@@ -2,6 +2,7 @@
 layout: post
 title: 이미지 필터 — LPF, HPF, 오버플로우 처리
 date: 2026-02-01
+categories: [AI-ML]
 tags: [image-processing, filter, computer-vision]
 permalink: /grayscale-filter/
 excerpt: "이미지 필터링은 커널을 픽셀에 적용하는 연산이다. LPF는 블러(평활화), HPF는 엣지 검출에 사용한다. 픽셀 연산 시 오버플로우를 방지하려면 더하고 나누지 말고 나누고 더해야 한다."

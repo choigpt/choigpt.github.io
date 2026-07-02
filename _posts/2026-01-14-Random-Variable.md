@@ -2,7 +2,7 @@
 layout: post
 title: "확률 변수 공부: 함수의 정체부터 기댓값, 분산, 확률분포까지"
 date: 2026-01-14
-categories: [Statistics, Probability]
+categories: [Statistics]
 tags: [random-variable, probability, statistics, distribution, expected-value, variance]
 permalink: /random-variable/
 last_modified_at: 2026-03-15

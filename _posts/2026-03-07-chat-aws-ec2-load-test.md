@@ -2,6 +2,7 @@
 layout: post
 title: 채팅 부하 테스트 — AWS EC2에서 TX 분리, Virtual Thread Pinning 분석, 4,500 VU 달성
 date: 2026-03-07
+categories: [Project]
 tags: [AWS, EC2, MySQL, HikariCP, WebSocket, Redis, STOMP, ZGC, VirtualThread, k6, 성능최적화, 부하테스트, Java, 채팅]
 permalink: /chat-aws-ec2-load-test/
 excerpt: "EC2에 배포한 채팅 도메인에서 HikariCP Pending 173, write-pool 24.7초 점유가 발생했다. 풀 확대, 커널/JVM 튜닝, TX 분리(Redis publish 커넥션 점유 제거)를 적용하고 4,500 VU까지 확장했다. 전 Phase 100%, 에러 1건, write-pool acquire 95% 개선. Virtual Thread Pinning 분석에서 SseEmitter.send()와 MongoDB synchronized의 pinning 경로를 확인했다."

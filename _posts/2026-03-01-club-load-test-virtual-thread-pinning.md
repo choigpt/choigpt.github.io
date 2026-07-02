@@ -2,6 +2,7 @@
 layout: post
 title: 클럽 도메인 부하 테스트 — Virtual Thread Pinning에 의한 JVM 크래시 분석
 date: 2026-03-01
+categories: [Project]
 tags: [Java, VirtualThread, k6, 부하테스트, MySQL, Spring, HikariCP, 데드락, 성능최적화, JVM]
 permalink: /club-load-test-virtual-thread-pinning/
 excerpt: "클럽 도메인 부하 테스트에서 100VU만으로 JVM이 크래시했다. 원인은 Virtual Thread + JDBC synchronized 조합의 carrier thread pinning. 피드 테스트(읽기 위주)에서는 발생하지 않았지만, 클럽 테스트(100% 쓰기)에서 발생했다. Pinning 제거 후 처리량 48배 증가, 데드락 수정, 이벤트 리스너 비동기화를 거쳐 400VU에서 전 구간 통과까지의 과정을 정리한다."

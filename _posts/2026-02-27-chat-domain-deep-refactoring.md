@@ -2,6 +2,7 @@
 layout: post
 title: 채팅 도메인 리팩토링 — WebSocket 핸들러부터 커서 페이징 DTO까지
 date: 2026-02-27
+categories: [Project]
 tags: [Spring, Java, 리팩토링, WebSocket, STOMP, JPA, QueryDSL, 채팅, 설계]
 permalink: /chat-domain-deep-refactoring/
 excerpt: "ChatWebSocketController의 try-catch가 @MessageExceptionHandler와 충돌하고 있었고, 네이티브 쿼리는 MAX(sent_at)로 같은 시각 메시지가 겹치는 문제를 포함하고 있었다."

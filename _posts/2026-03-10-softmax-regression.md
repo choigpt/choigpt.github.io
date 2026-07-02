@@ -2,6 +2,7 @@
 layout: post
 title: 소프트맥스 회귀 — 다중 클래스 분류와 시그모이드의 한계
 date: 2026-03-10
+categories: [Statistics]
 tags: [statistics, 머신러닝, 분류, 딥러닝]
 permalink: /softmax-regression/
 excerpt: "시그모이드를 다중 클래스에 적용하면 클래스 간 상대 비교가 안 되고 saturation 문제가 있다. 소프트맥스는 지수 함수로 차이를 부각시키고, 합이 1이 되어 상대 평가가 가능하다. 손실 함수는 동일하게 크로스 엔트로피를 쓴다."

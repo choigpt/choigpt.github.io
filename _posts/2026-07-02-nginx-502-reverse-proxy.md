@@ -2,8 +2,8 @@
 layout: post
 title: "Nginx 공부: 502와 Reverse Proxy를 장애 분석 관점에서 이해하기"
 date: 2026-07-02
+categories: [Backend]
 tags: [Nginx, Reverse Proxy, Backend, Infra, 502, 장애분석]
-category: Backend
 permalink: /nginx-502-reverse-proxy/
 excerpt: "ADsP 앱에서 본 Ubuntu nginx 502 오류를 계기로 Nginx의 위치, Reverse Proxy의 역할, 500/502/504 차이, access log와 error log에서 확인해야 할 지표를 정리한다."
 ---

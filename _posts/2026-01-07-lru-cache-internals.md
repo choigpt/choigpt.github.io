@@ -2,6 +2,7 @@
 layout: post
 title: "LRU 캐시: 해시 테이블 + 이중 연결 리스트의 조합"
 date: 2026-01-07
+categories: [Algorithm]
 tags: [data-structure, CS, cache, linked-list, hash-table]
 permalink: /lru-cache-internals/
 excerpt: "LRU 캐시는 왜 해시 테이블과 이중 연결 리스트를 동시에 쓰는가? O(1) get/put을 달성하는 내부 구조를 C 코드로 파헤친다."

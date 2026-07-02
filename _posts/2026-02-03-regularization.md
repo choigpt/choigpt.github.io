@@ -2,8 +2,8 @@
 layout: post
 title: Regularization
 date: 2026-02-03
+categories: [AI-ML]
 tags: [deep-learning, regularization, machine-learning]
-category: Deep Learning
 ---
 
 딥러닝 모델이 **과적합(Overfitting)을 피하도록** 제어하는 기법들의 총칭이다.

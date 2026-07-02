@@ -2,6 +2,7 @@
 layout: post
 title: 검색 도메인 부하 테스트 — teammates_clubs 쿼리 62배 개선 기록
 date: 2026-03-01
+categories: [Project]
 tags: [Elasticsearch, MySQL, QueryDSL, 성능최적화, k6, 부하테스트, N+1, 인덱스, nori, Java]
 permalink: /search-load-test-not-exists-optimization/
 excerpt: "ES + MySQL을 함께 쓰는 검색 도메인에 부하를 걸었다. 500VU 스트레스에서 teammates_clubs p95가 11초까지 치솟았다. 불필요한 club JOIN 제거, 서브쿼리 구조 개선, user_settlement 인덱스 추가를 거쳐 62배 개선. 18/18 전 구간 통과까지의 기록."

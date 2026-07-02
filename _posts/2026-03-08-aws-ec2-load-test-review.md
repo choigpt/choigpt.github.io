@@ -2,6 +2,7 @@
 layout: post
 title: AWS EC2 부하 테스트 중간 점검 — 5개 도메인 테스트 후 인프라 진단과 다음 계획
 date: 2026-03-08
+categories: [Project]
 tags: [AWS, EC2, MySQL, Redis, HikariCP, k6, 성능최적화, 부하테스트, Java, 인프라, Wireshark, 네트워크]
 permalink: /aws-ec2-load-test-midpoint/
 excerpt: "알림, 채팅, 피드, 정산, 검색 5개 도메인의 EC2 부하 테스트를 마쳤다. 로컬과 EC2의 병목은 본질적으로 다르다. 로컬은 쿼리·코드 레벨, EC2는 커넥션 풀·네트워크·OS 레벨이다. 알림·채팅에서 커널 튜닝을 적용하고, Buffer Pool 9.4%, redo log 48MB 등 인프라 설정 문제를 확인했다. 다음 단계로 수평 확장, Wireshark 패킷 분석, OS 네트워크 수치 측정을 진행한다."

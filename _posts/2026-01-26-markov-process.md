@@ -2,6 +2,7 @@
 layout: post
 title: 마르코프 과정 — 상태 전이와 정상 분포
 date: 2026-01-26
+categories: [Statistics]
 tags: [reinforcement-learning, markov, probability]
 permalink: /markov-process/
 excerpt: "마르코프 과정은 현재 상태만으로 미래가 결정되는 확률 과정이다. 상태 S와 전이 확률 P만 있으면 되고, 충분히 많이 전이하면 정상 분포에 수렴한다."

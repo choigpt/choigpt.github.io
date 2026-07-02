@@ -2,6 +2,7 @@
 layout: post
 title: JWT 인증 흐름 불일치로 인한 SSE 인증 실패 버그
 date: 2026-02-18
+categories: [Project]
 tags:
   - JWT
   - SSE

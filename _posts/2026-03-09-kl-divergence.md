@@ -2,6 +2,7 @@
 layout: post
 title: KL Divergence — 두 확률분포의 정보량 차이 측정
 date: 2026-03-09
+categories: [Statistics]
 tags: [statistics, probability, 정보이론, 머신러닝]
 permalink: /kl-divergence/
 excerpt: "KL Divergence는 두 확률분포가 얼마나 다른 정보를 담고 있는지를 측정한다. 크로스 엔트로피에서 엔트로피를 빼면 된다. 비대칭이라는 한계가 있고, 이를 보완하는 Jensen-Shannon Divergence도 정리한다."

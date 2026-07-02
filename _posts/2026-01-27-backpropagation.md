@@ -2,6 +2,7 @@
 layout: post
 title: "역전파 공부: 연쇄 법칙에서 자동 미분, 계산 그래프까지"
 date: 2026-01-27
+categories: [AI-ML]
 tags: [deep-learning, backpropagation, gradient-descent, optimization]
 permalink: /backpropagation/
 excerpt: "역전파는 연쇄 법칙(chain rule)을 계산 그래프 위에서 효율적으로 적용하는 알고리즘이다. 순전파로 값을 구하고, 역전파로 기울기를 구하고, 기울기 방향으로 파라미터를 업데이트한다."

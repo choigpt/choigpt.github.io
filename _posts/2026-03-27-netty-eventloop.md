@@ -2,8 +2,8 @@
 layout: post
 title: "Netty 공부: Blocking I/O에서 EventLoop까지, 비동기 서버의 구조"
 date: 2026-03-27
+categories: [Backend]
 tags: [네트워크, Java, Netty, NIO, EventLoop, 비동기]
-category: Backend
 permalink: /netty-eventloop/
 excerpt: "Netty는 EventLoop를 통해 하나의 스레드로 수천 개의 연결을 비동기 처리한다. Blocking I/O → Java NIO → Netty로 진화하는 과정을 코드로 따라가며, EventLoop·Channel·Pipeline·Handler가 어떻게 맞물려 동작하는지 정리한다."
 ---

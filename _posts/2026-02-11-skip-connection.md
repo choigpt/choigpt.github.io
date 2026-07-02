@@ -2,8 +2,8 @@
 layout: post
 title: "Skip Connection (잔차 연결)"
 date: 2026-02-11
+categories: [AI-ML]
 tags: [딥러닝, ML-AI, ResNet]
-category: ML-AI
 ---
 
 Skip Connection(잔차 연결)은 딥러닝 네트워크에서 **입력을 레이어를 건너뛰어 출력에 직접 더하는 구조**다. ResNet에서 처음 제안되어 현대 딥러닝의 핵심 기법이 되었다.

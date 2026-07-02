@@ -2,6 +2,7 @@
 layout: post
 title: "조건부 확률 공부: 경우의 수에서 몬티 홀, 나이브 베이즈까지"
 date: 2026-01-12
+categories: [Statistics]
 tags: [statistics, probability, bayes, machine-learning, naive-bayes]
 permalink: /conditional-probability/
 excerpt: "조건부 확률을 경우의 수 세기에서 출발하여 곱셈 규칙, 독립, 전확률 정리를 거쳐 몬티 홀 문제, 심슨의 역설, 나이브 베이즈 스팸 필터까지 단계적으로 깊어진다."

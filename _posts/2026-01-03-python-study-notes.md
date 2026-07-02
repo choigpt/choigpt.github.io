@@ -2,6 +2,7 @@
 layout: post
 title: 파이썬 학습 노트
 date: 2026-02-08 11:45:00
+categories: [CS]
 tags: [python, programming, study]
 ---
 

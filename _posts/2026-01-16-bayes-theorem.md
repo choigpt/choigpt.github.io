@@ -2,6 +2,7 @@
 layout: post
 title: "베이즈 정리 공부: 사전확률에서 사후확률로, 그리고 베이지안 사고"
 date: 2026-01-16
+categories: [Statistics]
 tags: [statistics, probability, bayes, machine-learning, bayesian]
 permalink: /bayes-theorem/
 excerpt: "베이즈 정리는 조건부 확률의 곱셈 규칙 두 가지를 등호로 연결한 것이다. 사전확률을 데이터로 업데이트하여 사후확률을 구하고, 이 과정을 반복하면 점점 정확해진다."

@@ -2,8 +2,8 @@
 layout: post
 title: "네트워크 기초 공부: 물리 계층부터 응용 계층까지, 각 계층이 해결하는 문제"
 date: 2026-02-09
+categories: [CS]
 tags: [네트워크, CS, OSI, TCP-IP]
-category: CS
 permalink: /network-osi-7-layers/
 excerpt: "OSI 7계층은 통신 과정의 문제를 단계별로 분리한 논리적 구조다. 각 계층이 이전 계층만으로 해결 못 하는 어떤 문제를 해결하는지를 중심으로 정리한다."
 ---

@@ -2,6 +2,7 @@
 layout: post
 title: 채팅 도메인 — Storage 추상화, WHERE IN 풀스캔, WebSocket 1,000VU 극한 테스트
 date: 2026-03-02
+categories: [Project]
 tags: [Java, Spring, WebSocket, STOMP, MySQL, MongoDB, Redis, 부하테스트, k6, 성능최적화]
 permalink: /chat-storage-websocket-extreme-test/
 excerpt: "채팅 Storage를 MySQL↔MongoDB 전환 가능하게 추상화했다. 부하 테스트에서 채팅방 목록 API가 30초 타임아웃 — WHERE IN 서브쿼리가 3.1M 행 풀스캔. derived JOIN으로 30.9배 개선. WebSocket 극한 테스트에서 Redis Pub/Sub 풀 포화를 발견하고, 1,000VU 스파이크까지 안정화한 기록."

@@ -2,6 +2,7 @@
 layout: post
 title: "해시 테이블 체이닝 심화: 연결 리스트에서 트리까지"
 date: 2026-01-07
+categories: [Algorithm]
 tags: [data-structure, CS, hash-table, linked-list, red-black-tree]
 permalink: /hashtable-chaining-internals/
 excerpt: "해시 테이블의 체이닝 구현에서 연결 리스트가 어떤 역할을 하는지, Java HashMap이 왜 체인 길이 8에서 레드-블랙 트리로 전환하는지를 분석한다."

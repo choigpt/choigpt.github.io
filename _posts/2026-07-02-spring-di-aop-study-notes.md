@@ -2,8 +2,8 @@
 layout: post
 title: "Spring DI와 AOP 학습 노트: ApplicationContext부터 Transaction까지"
 date: 2026-07-02
+categories: [Backend]
 tags: [Spring, DI, AOP, ApplicationContext, Autowired, Transaction, JDBC, TDD]
-category: Backend
 permalink: /spring-di-aop-study-notes/
 excerpt: "Spring DI와 AOP 강의 흐름을 따라 ApplicationContext, Component Scan, @Autowired, XML 설정, JDBC, DAO, Transaction, AOP, @Transactional까지 정리한 학습 노트다."
 ---

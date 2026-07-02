@@ -2,6 +2,7 @@
 layout: post
 title: 피드 도메인 — 부하 테스트 9번 만에 슬로우 쿼리 29,008건에서 전 구간 통과까지
 date: 2026-02-26
+categories: [Project]
 tags: [MySQL, Redis, JPA, 성능최적화, 트러블슈팅, Java, 피드, k6, 캐싱, 인덱스]
 permalink: /feed-performance-load-test/
 excerpt: "피드 도메인 첫 부하 테스트에서 슬로우 쿼리가 29,008건 발생했다. 개인피드 p95 2,198ms, 피드상세 p95 2,725ms. 인덱스 전무, 컬렉션 전체 로딩, 인기피드 전체 테이블 집계 — 하나씩 고치며 9번의 테스트 끝에 전 구간 통과했다."

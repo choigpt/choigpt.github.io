@@ -2,6 +2,7 @@
 layout: post
 title: 최적화 기초 — Convex 함수와 전역 최솟값
 date: 2026-01-22
+categories: [Statistics]
 tags: [optimization, mathematics, machine-learning]
 permalink: /optimization/
 excerpt: "Convex 함수에서는 지역 최솟값이 곧 전역 최솟값이다. 이차 미분이 0 이상(Hessian이 PSD)이면 convex이고, 이 성질이 머신러닝 최적화의 핵심 기반이다."

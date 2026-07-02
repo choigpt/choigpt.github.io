@@ -2,6 +2,7 @@
 layout: post
 title: 로지스틱 회귀 — 이진 분류를 위한 선형 모델
 date: 2026-03-10
+categories: [Statistics]
 tags: [statistics, 머신러닝, 분류, 회귀]
 permalink: /logistic-regression/
 excerpt: "로지스틱 회귀는 예측이 아닌 이진 분류(Yes/No) 문제를 푸는 모델이다. 선형회귀를 분류에 쓰지 못하는 이유, 시그모이드를 쓰는 이유(odds → logit → 선형), 손실 함수로 크로스 엔트로피를 쓰는 이유(= 로그 우도 최대화)를 정리한다."

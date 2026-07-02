@@ -2,6 +2,7 @@
 layout: post
 title: "LightGBM과 CatBoost 공부: Leaf-wise, GOSS, 범주형 직접 처리까지"
 date: 2026-01-19
+categories: [AI-ML]
 tags: [machine-learning, lightgbm, catboost, gradient-boosting, ensemble]
 permalink: /lightgbm-catboost/
 excerpt: "LightGBM은 Leaf-wise 성장과 GOSS로 속도를 극대화하고, CatBoost는 범주형 특성을 원-핫 인코딩 없이 직접 처리한다."

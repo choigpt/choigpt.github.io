@@ -2,6 +2,7 @@
 layout: post
 title: 피드 도메인 고부하 테스트 — FORCE INDEX 실패부터 인메모리 캐싱까지
 date: 2026-03-01
+categories: [Project]
 tags: [MySQL, Redis, JPA, 성능최적화, k6, 캐싱, 인덱스, HikariCP, 부하테스트, Java]
 permalink: /feed-highload-force-index-caching-evolution/
 excerpt: "일반 부하 테스트를 통과한 피드 도메인에 400VU 고부하 테스트를 돌렸다. 개인피드 IN절 p95 919ms, 혼합 쓰기 810ms. FORCE INDEX로 해결하려다 p95가 29,930ms로 폭등했다. UNION ALL 청크 분할, Redis에서 인메모리로 3단 캐싱 진화, 좋아요 warmup 비동기화를 거쳐 전 구간 통과까지의 기록."

@@ -2,6 +2,7 @@
 layout: post
 title: Finance 도메인 부하 테스트 — Mock 도입 후 발견된 버그
 date: 2026-02-28
+categories: [Project]
 tags:
   - Java
   - Spring

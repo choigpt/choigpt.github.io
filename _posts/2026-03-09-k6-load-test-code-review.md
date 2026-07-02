@@ -2,6 +2,7 @@
 layout: post
 title: 부하 테스트 코드 리뷰 — k6 시나리오의 10가지 함정과 수정
 date: 2026-03-09
+categories: [Project]
 tags: [k6, 부하테스트, JavaScript, 테스트코드, 성능최적화, AWS, EC2]
 permalink: /k6-load-test-code-review/
 excerpt: "6개 도메인의 k6 부하 테스트 코드를 리뷰했다. 시드 데이터 불일치로 검색의 50%가 빈 결과를 측정하고, 피드 테스트가 50K 클럽 중 15개에만 집중하고, write 성능 측정에 숨겨진 read 부하가 혼입되는 등 10가지 문제를 발견했다. 부하 테스트에서 시나리오 코드의 정합성이 확보되지 않으면 최적화 방향 자체가 잘못된다."

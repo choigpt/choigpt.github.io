@@ -2,6 +2,7 @@
 layout: post
 title: EC2 다운사이징 후 최적화 (하) — 전체 통합 결과와 코드 리뷰
 date: 2026-03-11
+categories: [Project]
 tags: [AWS, EC2, MySQL, MongoDB, Redis, Kafka, Elasticsearch, k6, 성능최적화, 부하테스트, Java, 코드리뷰]
 permalink: /ec2-downsizing-optimization-part3/
 excerpt: "6개 도메인의 최종 기술 스택 선택 근거, 코드 리뷰 11건 수정 내역, 그리고 전체 성과를 정리한다. 피드 상세 71%, 댓글 생성 95%, 채팅 커넥션 99.7% 감소, 정산 92%, 검색 99.9% — EC2 비용 70% 절감과 함께."

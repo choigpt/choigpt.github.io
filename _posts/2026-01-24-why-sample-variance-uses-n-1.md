@@ -2,6 +2,7 @@
 layout: post
 title: 표본 분산은 왜 N-1로 나누는가
 date: 2026-01-24
+categories: [Statistics]
 tags: [statistics, variance]
 permalink: /why-sample-variance-uses-n-1/
 excerpt: "모집단 분산은 N으로, 표본 분산은 N-1로 나눈다. 표본 평균을 기준으로 편차를 구하면 실제 분산보다 작아지는 편향이 생기고, N-1(베셀 보정)이 이를 교정한다."
