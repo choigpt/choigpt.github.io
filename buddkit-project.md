@@ -179,11 +179,11 @@ erDiagram
 
 | # | 글 | 도메인 | 핵심 |
 |---|---|--------|------|
-| 10 | [채팅 — 상관 서브쿼리·N+1 성능 저하](/chat-subquery-redis-listener/) | 채팅 | 상관 서브쿼리 → GROUP BY+JOIN, findLatest JOIN FETCH |
+| 10 | [채팅 — 상관 서브쿼리·N+1 성능 저하](/chat-subquery-n-plus-1/) | 채팅 | 상관 서브쿼리 → GROUP BY+JOIN, findLatest JOIN FETCH |
 | 11 | [알림 API — 13% → 100%, 9번의 시도](/notification-api-performance-improvement/) | 알림 | QueryDSL JOIN 제거, 인덱스 재구성, 비동기 분리, 40M→47만 행 |
 | 12 | [피드 — 슬로우 쿼리 29,008건 → 전 구간 통과](/feed-performance-load-test/) | 피드 | 인덱스 추가, likeCount 활용, IN절 청크, 커버링 인덱스, 캐싱 |
 | 13 | [SSE 알림 — 7가지 시나리오 부하 테스트](/sse-notification-load-test-analysis/) | 알림 | SSE 7,500 VU 안정, REST 혼합 시 16% 성공률 |
-| 14 | [Finance — Mock 도입 후 detached entity 버그 발견](/finance-domain-load-test-mock-exposed-hidden-bug/) | 결제 | MockTossPaymentClient로 Phase 3 최초 실행, clearAutomatically 버그 |
+| 14 | [Finance — Mock 도입 후 detached entity 버그 발견](/finance-domain-load-test-toss-mock/) | 결제 | MockTossPaymentClient로 Phase 3 최초 실행, clearAutomatically 버그 |
 | 15 | [정산 — p95 19.5초 → 2.46초](/finance-settlement-batch-kafka-tuning/) | 정산 | 배치 UPDATE, Kafka 비재시도 예외 등록 |
 | 16 | [피드 고부하 — FORCE INDEX 실패부터 인메모리 캐싱까지](/feed-highload-force-index-caching-evolution/) | 피드 | UNION ALL 청크, 캐싱 3단 진화, warmup 비동기화 |
 | 17 | [클럽 — Virtual Thread Pinning JVM 크래시](/club-load-test-virtual-thread-pinning/) | 모임 | VT+JDBC synchronized → carrier thread 고갈 |
@@ -198,10 +198,10 @@ erDiagram
 | # | 글 | 도메인 | 핵심 |
 |---|---|--------|------|
 | 19 | [채팅 리팩토링 — WebSocket 핸들러부터 커서 페이징까지](/chat-domain-deep-refactoring/) | 채팅 | MAX(sent_at)→MAX(messageId), try-catch 이중 제거, 35줄→18줄 |
-| 20 | [피드 리팩토링 — 서비스 책임 분리와 네이티브 쿼리 전환](/feed-domain-442-line-service-split/) | 피드 | FeedCacheService·FeedRenderService 분리, QueryDSL 전환 |
-| 21 | [멀티 도메인 코드 정리 — Semaphore 제거까지](/multi-domain-cleanup-surface-to-semaphore/) | 전체 | existsById 교체, Redis 카운터 분리, Semaphore(30) 제거 |
+| 20 | [피드 리팩토링 — 서비스 책임 분리와 네이티브 쿼리 전환](/feed-domain-querydsl-refactoring/) | 피드 | FeedCacheService·FeedRenderService 분리, QueryDSL 전환 |
+| 21 | [멀티 도메인 코드 정리 — Semaphore 제거까지](/multi-domain-refactoring-phase1-2/) | 전체 | existsById 교체, Redis 카운터 분리, Semaphore(30) 제거 |
 | 22 | [멀티 도메인 리팩토링 — ErrorCode 분리와 코드 품질](/multi-domain-refactoring-errorcode-code-quality/) | 전체 | ErrorCode 도메인별 분리, 30파일 정리 |
-| 23 | [채팅 — Storage 추상화, WebSocket 1,000VU](/chat-storage-websocket-extreme-test/) | 채팅 | Port/Adapter MySQL↔MongoDB, WHERE IN 풀스캔 해결 |
+| 23 | [채팅 — Storage 추상화, WebSocket 1,000VU](/chat-storage-abstraction-websocket-extreme/) | 채팅 | Port/Adapter MySQL↔MongoDB, WHERE IN 풀스캔 해결 |
 | 24 | [알림 — Port/Adapter Storage 추상화, MySQL vs MongoDB](/notification-storage-abstraction-mysql-mongodb/) | 알림 | MySQL↔MongoDB 전환, 14M Write Storm에서 p95 1,061배 차이 |
 | 25 | [피드 — Storage 추상화, Lua Script, 3-Backend 비교](/feed-storage-abstraction-lua-script-backend-comparison/) | 피드 | MySQL↔MongoDB↔Hybrid, Lua 스크립트 분석 |
 | 26 | [검색 엔진 추상화 — ES vs MySQL FULLTEXT, 236배](/search-engine-abstraction-es-vs-fulltext/) | 검색 | ES↔MySQL FULLTEXT 전환, ngram 토큰 분석 |
@@ -219,10 +219,10 @@ erDiagram
 | 29 | [피드 EC2 — IN절 병목, covering index, X-lock 해소](/feed-aws-ec2-load-test/) | 피드 | covering index, comment_count 배치 버퍼링, 3,000VU |
 | 30 | [정산 EC2 — 시드 데이터 버그와 5라운드 최적화](/settlement-aws-ec2-load-test/) | 정산 | @Version NULL, pending_out=0, 배치 TX 통합 |
 | 31 | [검색 EC2 — MySQL FULLTEXT ngram 성능 한계](/search-aws-ec2-load-test/) | 검색 | 시드 이중 인코딩, FULLTEXT p95 24s |
-| 32 | [EC2 중간 점검 — 5개 도메인 인프라 진단](/aws-ec2-load-test-midpoint/) | 전체 | 로컬 vs EC2 병목 차이, Buffer Pool 9.4% |
-| 33 | [EC2 다운사이징 (상) — 피드·채팅·알림](/ec2-downsizing-optimization-part1/) | 피드/채팅/알림 | 댓글 비동기 카운터, Redis Streams, 워터마크 |
-| 34 | [EC2 다운사이징 (중) — 정산·검색·인프라](/ec2-downsizing-optimization-part2/) | 정산/검색 | R/W 풀 분리 역효과, JWT ClassLoader lock |
-| 35 | [EC2 다운사이징 (하) — 전체 통합 결과](/ec2-downsizing-optimization-part3/) | 전체 | 통합 테스트, 코드 리뷰 |
+| 32 | [EC2 중간 점검 — 5개 도메인 인프라 진단](/aws-ec2-load-test-review/) | 전체 | 로컬 vs EC2 병목 차이, Buffer Pool 9.4% |
+| 33 | [EC2 다운사이징 (상) — 피드·채팅·알림](/ec2-downsizing-feed-chat-notification/) | 피드/채팅/알림 | 댓글 비동기 카운터, Redis Streams, 워터마크 |
+| 34 | [EC2 다운사이징 (중) — 정산·검색·인프라](/ec2-downsizing-settlement-search-infra/) | 정산/검색 | R/W 풀 분리 역효과, JWT ClassLoader lock |
+| 35 | [EC2 다운사이징 (하) — 전체 통합 결과](/ec2-downsizing-integration-code-review/) | 전체 | 통합 테스트, 코드 리뷰 |
 
 ---
 
@@ -254,11 +254,11 @@ erDiagram
 | 도메인 | Phase 1 (버그) | Phase 2 (성능) | Phase 3 (리팩토링) | Phase 4 (EC2) | Phase 5 |
 |--------|---------------|---------------|-------------------|--------------|---------|
 | **인증** | [#1](/spring-security-jwt-structure-bugs/) [#2](/jwt-sse-auth-filter-mismatch/) [#3](/sse-auth-filter-removal/) | | | | [#36](/production-hardening-chaos-engineering/) |
-| **알림** | [#4](/sse-notification-chained-bugs/) | [#11](/notification-api-performance-improvement/) [#13](/sse-notification-load-test-analysis/) | [#24](/notification-storage-abstraction-mysql-mongodb/) | [#27](/notification-aws-ec2-load-test/) [#33](/ec2-downsizing-optimization-part1/) | [#36](/production-hardening-chaos-engineering/) |
-| **피드** | [#5](/feed-redis-like-n-plus-1/) | [#12](/feed-performance-load-test/) [#16](/feed-highload-force-index-caching-evolution/) | [#20](/feed-domain-442-line-service-split/) [#25](/feed-storage-abstraction-lua-script-backend-comparison/) | [#29](/feed-aws-ec2-load-test/) [#33](/ec2-downsizing-optimization-part1/) | [#36](/production-hardening-chaos-engineering/) |
+| **알림** | [#4](/sse-notification-chained-bugs/) | [#11](/notification-api-performance-improvement/) [#13](/sse-notification-load-test-analysis/) | [#24](/notification-storage-abstraction-mysql-mongodb/) | [#27](/notification-aws-ec2-load-test/) [#33](/ec2-downsizing-feed-chat-notification/) | [#36](/production-hardening-chaos-engineering/) |
+| **피드** | [#5](/feed-redis-like-n-plus-1/) | [#12](/feed-performance-load-test/) [#16](/feed-highload-force-index-caching-evolution/) | [#20](/feed-domain-querydsl-refactoring/) [#25](/feed-storage-abstraction-lua-script-backend-comparison/) | [#29](/feed-aws-ec2-load-test/) [#33](/ec2-downsizing-feed-chat-notification/) | [#36](/production-hardening-chaos-engineering/) |
 | **모임** | [#6](/club-concurrency-ghost-members/) | [#17](/club-load-test-virtual-thread-pinning/) | | | [#36](/production-hardening-chaos-engineering/) |
-| **스케줄/정산** | [#7](/schedule-permission-fund-freeze/) [#8](/wallet-payment-toss-db-failure/) | [#14](/finance-domain-load-test-mock-exposed-hidden-bug/) [#15](/finance-settlement-batch-kafka-tuning/) | | [#30](/settlement-aws-ec2-load-test/) [#34](/ec2-downsizing-optimization-part2/) | [#36](/production-hardening-chaos-engineering/) |
-| **채팅** | | [#10](/chat-subquery-redis-listener/) | [#19](/chat-domain-deep-refactoring/) [#23](/chat-storage-websocket-extreme-test/) | [#28](/chat-aws-ec2-load-test/) [#33](/ec2-downsizing-optimization-part1/) | |
-| **검색** | | [#18](/search-load-test-not-exists-optimization/) | [#26](/search-engine-abstraction-es-vs-fulltext/) | [#31](/search-aws-ec2-load-test/) [#34](/ec2-downsizing-optimization-part2/) | |
+| **스케줄/정산** | [#7](/schedule-permission-fund-freeze/) [#8](/wallet-payment-toss-db-failure/) | [#14](/finance-domain-load-test-toss-mock/) [#15](/finance-settlement-batch-kafka-tuning/) | | [#30](/settlement-aws-ec2-load-test/) [#34](/ec2-downsizing-settlement-search-infra/) | [#36](/production-hardening-chaos-engineering/) |
+| **채팅** | | [#10](/chat-subquery-n-plus-1/) | [#19](/chat-domain-deep-refactoring/) [#23](/chat-storage-abstraction-websocket-extreme/) | [#28](/chat-aws-ec2-load-test/) [#33](/ec2-downsizing-feed-chat-notification/) | |
+| **검색** | | [#18](/search-load-test-not-exists-optimization/) | [#26](/search-engine-abstraction-es-vs-fulltext/) | [#31](/search-aws-ec2-load-test/) [#34](/ec2-downsizing-settlement-search-infra/) | |
 | **유저** | [#9](/user-lifecycle-bugs/) | | | | |
-| **전체** | | | [#21](/multi-domain-cleanup-surface-to-semaphore/) [#22](/multi-domain-refactoring-errorcode-code-quality/) | [#32](/aws-ec2-load-test-midpoint/) [#35](/ec2-downsizing-optimization-part3/) | [#36](/production-hardening-chaos-engineering/) |
+| **전체** | | | [#21](/multi-domain-refactoring-phase1-2/) [#22](/multi-domain-refactoring-errorcode-code-quality/) | [#32](/aws-ec2-load-test-review/) [#35](/ec2-downsizing-integration-code-review/) | [#36](/production-hardening-chaos-engineering/) |
